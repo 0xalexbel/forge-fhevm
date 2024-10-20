@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {Vm} from "forge-std/Vm.sol";
-import {LibFhevmAddresses} from "../LibFhevmAddresses.sol";
+import {FhevmAddressesLib} from "../deploy/FhevmAddressesLib.sol";
 
 /// Note: forge does not handle libraries very well in a script setUp context.
 /// Therefore, solidity code like this one is deployed as a contract instead of a library
@@ -15,7 +15,7 @@ library FhevmAddressesWriterLib {
     function writeACLAddressDotSol(address deployerAddr, string memory rootDir) private {
         _writeDotSolAddressFile(
             "aclAdd",
-            LibFhevmAddresses.computeCreateACLAddress(deployerAddr),
+            FhevmAddressesLib.computeCreateACLAddress(deployerAddr),
             string.concat(rootDir, "/fhevm/lib/ACLAddress.sol")
         );
     }
@@ -26,7 +26,7 @@ library FhevmAddressesWriterLib {
     function writeTFHEExecutorAddressDotSol(address deployerAddr, string memory rootDir) private {
         _writeDotSolAddressFile(
             "tfheExecutorAdd",
-            LibFhevmAddresses.computeCreateTFHEExecutorAddress(deployerAddr),
+            FhevmAddressesLib.computeCreateTFHEExecutorAddress(deployerAddr),
             string.concat(rootDir, "/fhevm/lib/TFHEExecutorAddress.sol")
         );
     }
@@ -37,7 +37,7 @@ library FhevmAddressesWriterLib {
     function writeKMSVerifierAddressDotSol(address deployerAddr, string memory rootDir) private {
         _writeDotSolAddressFile(
             "kmsVerifierAdd",
-            LibFhevmAddresses.computeCreateKMSVerifierAddress(deployerAddr),
+            FhevmAddressesLib.computeCreateKMSVerifierAddress(deployerAddr),
             string.concat(rootDir, "/fhevm/lib/KMSVerifierAddress.sol")
         );
     }
@@ -48,7 +48,7 @@ library FhevmAddressesWriterLib {
     function writeInputVerifierAddressDotSol(address deployerAddr, string memory rootDir) private {
         _writeDotSolAddressFile(
             "inputVerifierAdd",
-            LibFhevmAddresses.computeCreateInputVerifierAddress(deployerAddr),
+            FhevmAddressesLib.computeCreateInputVerifierAddress(deployerAddr),
             string.concat(rootDir, "/fhevm/lib/InputVerifierAddress.sol")
         );
     }
@@ -59,7 +59,7 @@ library FhevmAddressesWriterLib {
     function writeFHEPaymentAddressDotSol(address deployerAddr, string memory rootDir) private {
         _writeDotSolAddressFile(
             "fhePaymentAdd",
-            LibFhevmAddresses.computeCreateFHEPaymentAddress(deployerAddr),
+            FhevmAddressesLib.computeCreateFHEPaymentAddress(deployerAddr),
             string.concat(rootDir, "/fhevm/lib/FHEPaymentAddress.sol")
         );
     }
@@ -70,7 +70,7 @@ library FhevmAddressesWriterLib {
     function writeGatewayContractAddressDotSol(address deployerAddr, string memory rootDir) private {
         _writeDotSolAddressFile(
             "GATEWAY_CONTRACT_PREDEPLOY_ADDRESS",
-            LibFhevmAddresses.computeCreateGatewayContractAddress(deployerAddr),
+            FhevmAddressesLib.computeCreateGatewayContractAddress(deployerAddr),
             string.concat(rootDir, "/fhevm/gateway/lib/GatewayContractAddress.sol")
         );
     }

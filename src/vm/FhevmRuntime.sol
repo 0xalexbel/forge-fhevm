@@ -22,7 +22,7 @@ abstract contract FhevmRuntime {
         // because 'vm.getCode(what)' reverts.
         new FhevmEnv();
 
-        _privDeployCodeTo("forge-fhevm/vm/FhevmEnv.sol", "", 0, fhevmEnvAdd);
+        _privDeployCodeTo("src/vm/FhevmEnv.sol", "", 0, fhevmEnvAdd);
         vm.assertEq(fhevmEnv.IS_FHEVM_ENV(), true);
 
         fhevmEnv.initialize(false /* useDeterministicRandomGenerator */);

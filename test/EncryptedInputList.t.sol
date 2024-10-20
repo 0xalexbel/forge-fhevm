@@ -4,8 +4,8 @@ pragma solidity ^0.8.24;
 import {Vm} from "forge-std/Vm.sol";
 import {console} from "forge-std/Console.sol";
 import {Test} from "forge-std/Test.sol";
-import {EncryptedInputList, EncryptedInputListLib} from "forge-fhevm/encrypted-input/EncryptedInputList.sol";
-import {EncryptedInputSigner} from "forge-fhevm/encrypted-input/EncryptedInputSigner.sol";
+import {EncryptedInputList, EncryptedInputListLib} from "../src/encrypted-input/EncryptedInputList.sol";
+import {EncryptedInputSigner} from "../src/encrypted-input/EncryptedInputSigner.sol";
 
 contract EncryptedInputListTest is Test {
     function setUp() public {}

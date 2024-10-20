@@ -3,10 +3,10 @@ pragma solidity ^0.8.24;
 
 import {Vm} from "forge-std/Vm.sol";
 import {console} from "forge-std/Console.sol";
-import {BytesLib} from "forge-fhevm/utils/BytesLib.sol";
-import {FhevmTest} from "forge-fhevm/FhevmTest.sol";
-import {ReencryptLib} from "forge-fhevm/reencrypt/Reencrypt.sol";
 import {TFHE, euint8, euint64, einput, ebool, ebytes256} from "fhevm/lib/TFHE.sol";
+import {BytesLib} from "../src/utils/BytesLib.sol";
+import {FhevmTest} from "../src/FhevmTest.sol";
+import {ReencryptLib} from "../src/reencrypt/Reencrypt.sol";
 
 contract ReencryptTest is FhevmTest {
     function test_sign() public pure {

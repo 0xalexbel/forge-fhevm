@@ -1,5 +1,23 @@
 [profile.default]
-fs_permissions = [{ access = "read-write", path = "./"}]
+libs = ["node_modules", "lib"]
+solc = "0.8.24"
+evm_version = 'cancun'
+
+#[profile.default]
+#script = "script"
+#solc = "0.8.24"
+#evm_version = 'cancun'
+#src = 'contracts'
+#test = 'test_forge'
+#libs = ["node_modules", "dependencies"]
+#cache_path = 'cache_forge'
+#out = 'artifacts_forge'
+#fs_permissions = [{ access = "read-write", path = "./forge-fhevm/fhevm"}]
+#remappings = [
+#  "forge-std/=dependencies/forge-std-1.9.3/src/",
+#     "forge-fhevm/=forge-fhevm/"
+#]
+
 
 [rpc_endpoints]
 # The RPC URLs are modified versions of the default for testing initialization.
@@ -19,3 +37,19 @@ quote_style = 'double'
 number_underscore = 'preserve'
 single_line_statement_blocks = 'preserve'
 ignore = ["src/console.sol", "src/console2.sol"]
+
+
+#[profile.default]
+#script = "script"
+#solc = "0.8.24"
+#evm_version = 'cancun'
+#src = 'contracts'
+#test = 'test_forge'
+#libs = ["node_modules", "dependencies"]
+#cache_path = 'cache_forge'
+#out = 'artifacts_forge'
+#fs_permissions = [{ access = "read-write", path = "./forge-fhevm/fhevm"}]
+#remappings = [
+#  "forge-std/=dependencies/forge-std-1.9.3/src/",
+#  "forge-fhevm/=forge-fhevm/"
+#]

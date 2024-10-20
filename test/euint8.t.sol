@@ -3,10 +3,10 @@ pragma solidity ^0.8.24;
 
 import {Vm} from "forge-std/Vm.sol";
 import {console} from "forge-std/Console.sol";
-import {FhevmTest} from "forge-fhevm/FhevmTest.sol";
-import {fhevm} from "forge-fhevm/fhevm.sol";
-import {EncryptedInput} from "forge-fhevm/encrypted-input/EncryptedInput.sol";
 import {TFHE, euint8, euint64, einput, ebool, ebytes256} from "fhevm/lib/TFHE.sol";
+import {FhevmTest} from "../src/FhevmTest.sol";
+import {fhevm} from "../src/fhevm.sol";
+import {EncryptedInput} from "../src/encrypted-input/EncryptedInput.sol";
 
 contract EUint8Test is FhevmTest {
     function test_AsEUint8() public {
