@@ -98,8 +98,7 @@ contract EncryptedInputListTest is Test {
     function test_AddBytes64() public pure {
         EncryptedInputList memory input;
         input.addBytes64(
-            bytes.concat(bytes4(uint32(123456))),
-            0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209
+            bytes.concat(bytes4(uint32(123456))), 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209
         );
         assertEq(input.length(), 1);
         assertEq(
@@ -201,12 +200,8 @@ contract EncryptedInputListTest is Test {
         input.add64(123456, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         input.add32(7890, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
 
-        (uint256[] memory handles, bytes memory inputProof) = EncryptedInputListLib.encrypt(
-            input,
-            signer,
-            contractAddress,
-            userAddress
-        );
+        (uint256[] memory handles, bytes memory inputProof) =
+            EncryptedInputListLib.encrypt(input, signer, contractAddress, userAddress);
 
         assertEq(handles.length, 2);
         assertEq(handles[0], 0x496eb5b6fa3270a6c5482f4854ea0d8d503e865e528d9d51ed245edd3f000500);

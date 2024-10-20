@@ -16,10 +16,8 @@ struct EncryptedInputItem {
 library EncryptedInputItemLib {
     function handle(EncryptedInputItem memory self, bytes32 hashedData) public pure returns (bytes32) {
         bytes32 finalHash = keccak256(bytes.concat(hashedData, bytes1(self._index)));
-        return
-            (finalHash & 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000) |
-            (bytes32(uint256(self._index)) << 16) |
-            (bytes32(uint256(self._type)) << 8);
+        return (finalHash & 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000)
+            | (bytes32(uint256(self._index)) << 16) | (bytes32(uint256(self._type)) << 8);
     }
 
     function is256(EncryptedInputItem memory self) public pure returns (bool) {
@@ -39,30 +37,22 @@ library EncryptedInputItemLib {
             return uint256(uint16(bytes2(self._data[1] & 0xFF) | (bytes2(self._data[2] & 0xFF) >> 8)));
         }
         if (self._numBits == 32) {
-            return
-                uint256(
-                    uint32(
-                        bytes4(self._data[1] & 0xFF) |
-                            (bytes4(self._data[2] & 0xFF) >> 8) |
-                            (bytes4(self._data[3] & 0xFF) >> 16) |
-                            (bytes4(self._data[4] & 0xFF) >> 24)
-                    )
-                );
+            return uint256(
+                uint32(
+                    bytes4(self._data[1] & 0xFF) | (bytes4(self._data[2] & 0xFF) >> 8)
+                        | (bytes4(self._data[3] & 0xFF) >> 16) | (bytes4(self._data[4] & 0xFF) >> 24)
+                )
+            );
         }
         if (self._numBits == 64) {
-            return
-                uint256(
-                    uint64(
-                        bytes8(self._data[1] & 0xFF) |
-                            (bytes8(self._data[2] & 0xFF) >> 8) |
-                            (bytes8(self._data[3] & 0xFF) >> 16) |
-                            (bytes8(self._data[4] & 0xFF) >> 24) |
-                            (bytes8(self._data[5] & 0xFF) >> 32) |
-                            (bytes8(self._data[6] & 0xFF) >> 40) |
-                            (bytes8(self._data[7] & 0xFF) >> 48) |
-                            (bytes8(self._data[8] & 0xFF) >> 56)
-                    )
-                );
+            return uint256(
+                uint64(
+                    bytes8(self._data[1] & 0xFF) | (bytes8(self._data[2] & 0xFF) >> 8)
+                        | (bytes8(self._data[3] & 0xFF) >> 16) | (bytes8(self._data[4] & 0xFF) >> 24)
+                        | (bytes8(self._data[5] & 0xFF) >> 32) | (bytes8(self._data[6] & 0xFF) >> 40)
+                        | (bytes8(self._data[7] & 0xFF) >> 48) | (bytes8(self._data[8] & 0xFF) >> 56)
+                )
+            );
         }
         if (self._numBits == 128) {
             return uint256(uint128(BytesLib.bytesToBytes16(self._data, 1)));

@@ -78,6 +78,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
     function exists256(uint256 handle) internal view returns (bool) {
         return db_256[handle].valueType > 0;
     }
+
     function exists2048(uint256 handle) internal view returns (bool) {
         return db_2048[handle].valueType > 0;
     }
@@ -85,9 +86,11 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
     function get256(uint256 handle) public view returns (Entry256 memory) {
         return db_256[handle];
     }
+
     function get2048(uint256 handle) public view returns (Entry2048 memory) {
         return db_2048[handle];
     }
+
     function get256AsBytes(uint256 handle) public view returns (bytes memory clearBytes) {
         Entry256 memory e = db_256[handle];
 
@@ -195,7 +198,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         return e;
     }
 
-    function _newEntry2048(uint256 /*lhs*/, uint256 /*rhs*/) internal pure returns (Entry2048 memory) {
+    function _newEntry2048(uint256, /*lhs*/ uint256 /*rhs*/ ) internal pure returns (Entry2048 memory) {
         Entry2048 memory e;
         return e;
     }
@@ -238,38 +241,39 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         clearCt = entry.value;
     }
 
-    function binaryOpVerify256(
-        uint256 lhs,
-        uint256 rhs,
-        bytes1 scalarByte
-    ) internal view returns (uint256 clearLhs, uint256 clearRhs) {
+    function binaryOpVerify256(uint256 lhs, uint256 rhs, bytes1 scalarByte)
+        internal
+        view
+        returns (uint256 clearLhs, uint256 clearRhs)
+    {
         clearLhs = verifyHandle256(lhs, 0x0, true);
         clearRhs = verifyHandle256(rhs, scalarByte, true);
     }
 
-    function ternaryOpVerify256(
-        uint256 one,
-        uint256 two,
-        uint256 three
-    ) internal view returns (uint256 clearOne, uint256 clearTwo, uint256 clearThree) {
+    function ternaryOpVerify256(uint256 one, uint256 two, uint256 three)
+        internal
+        view
+        returns (uint256 clearOne, uint256 clearTwo, uint256 clearThree)
+    {
         clearOne = verifyHandle256(one, 0x0, true);
         clearTwo = verifyHandle256(two, 0x0, true);
         clearThree = verifyHandle256(three, 0x0, true);
     }
 
-    function binaryOpVerify2048(
-        uint256 lhs,
-        uint256 rhs
-    ) internal view returns (bytes memory clearLhs, bytes memory clearRhs) {
+    function binaryOpVerify2048(uint256 lhs, uint256 rhs)
+        internal
+        view
+        returns (bytes memory clearLhs, bytes memory clearRhs)
+    {
         clearLhs = verifyHandle2048(lhs);
         clearRhs = verifyHandle2048(rhs);
     }
 
-    function ternaryOpVerify2048(
-        uint256 one,
-        uint256 two,
-        uint256 three
-    ) internal view returns (uint256 clearOne, bytes memory clearTwo, bytes memory clearThree) {
+    function ternaryOpVerify2048(uint256 one, uint256 two, uint256 three)
+        internal
+        view
+        returns (uint256 clearOne, bytes memory clearTwo, bytes memory clearThree)
+    {
         // 256 (bool type)
         clearOne = verifyHandle256(one, 0x0, true);
         // 2048
@@ -369,7 +373,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         exit_insertDB256(resultHandle, e);
     }
 
-    function fheMul(uint256 resultHandle, uint256 lhs, uint256 /* rhs */, bytes1 /* scalarByte */) external pure {
+    function fheMul(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
         uint8 lhsType = typeOf(lhs);
 
         require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
@@ -378,7 +382,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         revert("fheMul not yet implemented");
     }
 
-    function fheDiv(uint256 resultHandle, uint256 lhs, uint256 /* rhs */, bytes1 /* scalarByte */) external pure {
+    function fheDiv(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
         uint8 lhsType = typeOf(lhs);
 
         require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
@@ -387,7 +391,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         revert("fheDiv not yet implemented");
     }
 
-    function fheRem(uint256 resultHandle, uint256 lhs, uint256 /* rhs */, bytes1 /* scalarByte */) external pure {
+    function fheRem(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
         uint8 lhsType = typeOf(lhs);
 
         require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
@@ -428,7 +432,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         exit_insertDB256(resultHandle, e);
     }
 
-    function fheBitXor(uint256 resultHandle, uint256 lhs, uint256 /* rhs */, bytes1 /* scalarByte */) external pure {
+    function fheBitXor(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
         uint8 lhsType = typeOf(lhs);
 
         require(lhsType >= Common.ebool_t && lhsType <= Common.euint256_t);
@@ -437,7 +441,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         revert("fheBitXor not yet implemented");
     }
 
-    function fheShl(uint256 resultHandle, uint256 lhs, uint256 /* rhs */, bytes1 /* scalarByte */) external pure {
+    function fheShl(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
         uint8 lhsType = typeOf(lhs);
 
         require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
@@ -446,7 +450,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         revert("fheShl not yet implemented");
     }
 
-    function fheShr(uint256 resultHandle, uint256 lhs, uint256 /* rhs */, bytes1 /* scalarByte */) external pure {
+    function fheShr(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
         uint8 lhsType = typeOf(lhs);
 
         require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
@@ -455,7 +459,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         revert("fheShr not yet implemented");
     }
 
-    function fheRotl(uint256 resultHandle, uint256 lhs, uint256 /* rhs */, bytes1 /* scalarByte */) external pure {
+    function fheRotl(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
         uint8 lhsType = typeOf(lhs);
 
         require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
@@ -464,7 +468,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         revert("fheRotl not yet implemented");
     }
 
-    function fheRotr(uint256 resultHandle, uint256 lhs, uint256 /* rhs */, bytes1 /* scalarByte */) external pure {
+    function fheRotr(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
         uint8 lhsType = typeOf(lhs);
 
         require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
@@ -667,9 +671,9 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
 
     function verifyCiphertext(
         uint256 resultHandle,
-        bytes32 /*inputHandle*/,
-        address /*callerAddress*/,
-        bytes memory /*inputProof*/,
+        bytes32, /*inputHandle*/
+        address, /*callerAddress*/
+        bytes memory, /*inputProof*/
         bytes1 inputType
     ) external view {
         uint8 ctType = uint8(inputType);
@@ -744,7 +748,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         uint8 ifTrueType = typeOf(ifTrue);
 
         if (ifTrueType <= Common.euint256_t) {
-            (uint256 clearControl, , ) = ternaryOpVerify256(control, ifTrue, ifFalse);
+            (uint256 clearControl,,) = ternaryOpVerify256(control, ifTrue, ifFalse);
 
             Entry256 memory e;
             Entry256 memory c = (clearControl == 0) ? db_256[ifFalse] : db_256[ifTrue];
@@ -759,7 +763,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
             // Must be the very last function call
             exit_insertDB256(resultHandle, e);
         } else {
-            (uint256 clearControl, , ) = ternaryOpVerify2048(control, ifTrue, ifFalse);
+            (uint256 clearControl,,) = ternaryOpVerify2048(control, ifTrue, ifFalse);
 
             Entry2048 memory e;
             Entry2048 memory c = (clearControl == 0) ? db_2048[ifFalse] : db_2048[ifTrue];
@@ -772,11 +776,14 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         }
     }
 
-    function fheRand(uint256 /* resultHandle */, bytes1 /* randType */) external pure {
+    function fheRand(uint256, /* resultHandle */ bytes1 /* randType */ ) external pure {
         revert("fheRand not yet implemented");
     }
 
-    function fheRandBounded(uint256 /* resultHandle */, uint256 /* upperBound */, bytes1 /* randType */) external pure {
+    function fheRandBounded(uint256, /* resultHandle */ uint256, /* upperBound */ bytes1 /* randType */ )
+        external
+        pure
+    {
         revert("fheRandBounded not yet implemented");
     }
 }

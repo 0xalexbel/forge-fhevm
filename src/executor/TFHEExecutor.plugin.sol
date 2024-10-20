@@ -40,8 +40,9 @@ contract TFHEExecutor is TFHEExecutorPluginStorage, UUPSUpgradeable, Ownable2Ste
 
     /// @custom:storage-location erc7201:fhevm.storage.TFHEExecutor
     struct TFHEExecutorStorage {
-        uint256 counterRand; /// @notice counter used for computing handles of randomness operators
+        uint256 counterRand;
     }
+    /// @notice counter used for computing handles of randomness operators
 
     struct ContextUserInputs {
         address aclAddress;
@@ -148,13 +149,11 @@ contract TFHEExecutor is TFHEExecutorPluginStorage, UUPSUpgradeable, Ownable2Ste
         acl.allowTransient(result, msg.sender);
     }
 
-    function binaryOp(
-        Operators op,
-        uint256 lhs,
-        uint256 rhs,
-        bytes1 scalar,
-        uint8 resultType
-    ) internal virtual returns (uint256 result) {
+    function binaryOp(Operators op, uint256 lhs, uint256 rhs, bytes1 scalar, uint8 resultType)
+        internal
+        virtual
+        returns (uint256 result)
+    {
         require(acl.isAllowed(lhs, msg.sender), "Sender doesn't own lhs on op");
         if (scalar == 0x00) {
             require(acl.isAllowed(rhs, msg.sender), "Sender doesn't own rhs on op");
@@ -167,12 +166,11 @@ contract TFHEExecutor is TFHEExecutorPluginStorage, UUPSUpgradeable, Ownable2Ste
         acl.allowTransient(result, msg.sender);
     }
 
-    function ternaryOp(
-        Operators op,
-        uint256 lhs,
-        uint256 middle,
-        uint256 rhs
-    ) internal virtual returns (uint256 result) {
+    function ternaryOp(Operators op, uint256 lhs, uint256 middle, uint256 rhs)
+        internal
+        virtual
+        returns (uint256 result)
+    {
         require(acl.isAllowed(lhs, msg.sender), "Sender doesn't own lhs on op");
         require(acl.isAllowed(middle, msg.sender), "Sender doesn't own middle on op");
         require(acl.isAllowed(rhs, msg.sender), "Sender doesn't own rhs on op");
@@ -409,17 +407,13 @@ contract TFHEExecutor is TFHEExecutorPluginStorage, UUPSUpgradeable, Ownable2Ste
         plugin().fheNot(result, ct);
     }
 
-    function verifyCiphertext(
-        bytes32 inputHandle,
-        address userAddress,
-        bytes memory inputProof,
-        bytes1 inputType
-    ) external virtual returns (uint256 result) {
-        ContextUserInputs memory contextUserInputs = ContextUserInputs({
-            aclAddress: address(acl),
-            userAddress: userAddress,
-            contractAddress: msg.sender
-        });
+    function verifyCiphertext(bytes32 inputHandle, address userAddress, bytes memory inputProof, bytes1 inputType)
+        external
+        virtual
+        returns (uint256 result)
+    {
+        ContextUserInputs memory contextUserInputs =
+            ContextUserInputs({aclAddress: address(acl), userAddress: userAddress, contractAddress: msg.sender});
         uint8 typeCt = typeOf(uint256(inputHandle));
         require(uint8(inputType) == typeCt, "Wrong type");
         result = inputVerifier.verifyCiphertext(contextUserInputs, inputHandle, inputProof);
@@ -453,7 +447,11 @@ contract TFHEExecutor is TFHEExecutorPluginStorage, UUPSUpgradeable, Ownable2Ste
         plugin().trivialEncrypt(result, pt, toType);
     }
 
-    function fheIfThenElse(uint256 control, uint256 ifTrue, uint256 ifFalse) external virtual returns (uint256 result) {
+    function fheIfThenElse(uint256 control, uint256 ifTrue, uint256 ifFalse)
+        external
+        virtual
+        returns (uint256 result)
+    {
         uint256 supportedTypes = (1 << 1) + (1 << 2) + (1 << 3) + (1 << 4) + (1 << 5) + (1 << 7);
         requireType(ifTrue, supportedTypes);
         uint8 typeCt = typeOf(ifTrue);
@@ -498,17 +496,16 @@ contract TFHEExecutor is TFHEExecutorPluginStorage, UUPSUpgradeable, Ownable2Ste
     /// @notice Getter for the name and version of the contract
     /// @return string representing the name and the version of the contract
     function getVersion() external pure virtual returns (string memory) {
-        return
-            string(
-                abi.encodePacked(
-                    CONTRACT_NAME,
-                    " v",
-                    Strings.toString(MAJOR_VERSION),
-                    ".",
-                    Strings.toString(MINOR_VERSION),
-                    ".",
-                    Strings.toString(PATCH_VERSION)
-                )
-            );
+        return string(
+            abi.encodePacked(
+                CONTRACT_NAME,
+                " v",
+                Strings.toString(MAJOR_VERSION),
+                ".",
+                Strings.toString(MINOR_VERSION),
+                ".",
+                Strings.toString(PATCH_VERSION)
+            )
+        );
     }
 }

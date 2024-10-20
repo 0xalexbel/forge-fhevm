@@ -2,7 +2,19 @@
 pragma solidity ^0.8.24;
 
 import {ACL} from "fhevm/lib/ACL.sol";
-import {TFHE, ebool, euint4, euint8, euint16, euint32, euint64, eaddress, ebytes256, einput, Common} from "fhevm/lib/TFHE.sol";
+import {
+    TFHE,
+    ebool,
+    euint4,
+    euint8,
+    euint16,
+    euint32,
+    euint64,
+    eaddress,
+    ebytes256,
+    einput,
+    Common
+} from "fhevm/lib/TFHE.sol";
 
 import {TFHEExecutorDB} from "./executor/TFHEExecutorDB.sol";
 
@@ -25,10 +37,11 @@ library fhevm {
         return fhevmEnv.isCoprocessor();
     }
 
-    function createEncryptedInput(
-        address contractAddress,
-        address userAddress
-    ) internal view returns (EncryptedInput memory) {
+    function createEncryptedInput(address contractAddress, address userAddress)
+        internal
+        view
+        returns (EncryptedInput memory)
+    {
         return fhevmEnv.createEncryptedInput(contractAddress, userAddress);
     }
 
@@ -48,7 +61,7 @@ library fhevm {
     }
 
     function _verifyReencryptSig(
-        bytes memory /*privateKey*/,
+        bytes memory, /*privateKey*/
         bytes memory publicKey,
         bytes memory signature,
         address contractAddress,
@@ -131,184 +144,160 @@ library fhevm {
     }
 
     /// Helper: encrypts a single bool value and returns the handle+inputProof pair
-    function encryptBool(
-        bool value,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptBool(bool value, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.addBool(value);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single bool value using a given random salt and returns the handle+inputProof pair
-    function encryptBool(
-        bool value,
-        bytes32 random,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptBool(bool value, bytes32 random, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.addBool(value, random);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint4 value and returns the handle+inputProof pair
-    function encryptU4(
-        uint8 value,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU4(uint8 value, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add4(value);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint4 value using a given random salt and returns the handle+inputProof pair
-    function encryptU4(
-        uint8 value,
-        bytes32 random,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU4(uint8 value, bytes32 random, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add4(value, random);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint8 value and returns the handle+inputProof pair
-    function encryptU8(
-        uint8 value,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU8(uint8 value, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add8(value);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint8 value using a given random salt and returns the handle+inputProof pair
-    function encryptU8(
-        uint8 value,
-        bytes32 random,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU8(uint8 value, bytes32 random, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add8(value, random);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint16 value and returns the handle+inputProof pair
-    function encryptU16(
-        uint16 value,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU16(uint16 value, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add16(value);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint16 value using a given random salt and returns the handle+inputProof pair
-    function encryptU16(
-        uint16 value,
-        bytes32 random,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU16(uint16 value, bytes32 random, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add16(value, random);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint32 value and returns the handle+inputProof pair
-    function encryptU32(
-        uint32 value,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU32(uint32 value, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add32(value);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint32 value using a given random salt and returns the handle+inputProof pair
-    function encryptU32(
-        uint32 value,
-        bytes32 random,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU32(uint32 value, bytes32 random, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add32(value, random);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint64 value and returns the handle+inputProof pair
-    function encryptU64(
-        uint64 value,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU64(uint64 value, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add64(value);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint64 value using a given random salt and returns the handle+inputProof pair
-    function encryptU64(
-        uint64 value,
-        bytes32 random,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU64(uint64 value, bytes32 random, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add64(value, random);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint128 value and returns the handle+inputProof pair
-    function encryptU128(
-        uint128 value,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU128(uint128 value, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add128(value);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint128 value using a given random salt and returns the handle+inputProof pair
-    function encryptU128(
-        uint128 value,
-        bytes32 random,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU128(uint128 value, bytes32 random, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add128(value, random);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint256 value and returns the handle+inputProof pair
-    function encryptU256(
-        uint256 value,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU256(uint256 value, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add256(value);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single uint256 value using a given random salt and returns the handle+inputProof pair
-    function encryptU256(
-        uint256 value,
-        bytes32 random,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptU256(uint256 value, bytes32 random, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.add256(value, random);
         (handle, inputProof) = input.encryptSingleton();
@@ -316,11 +305,10 @@ library fhevm {
 
     /// Helper: encrypts a single 64-bytes value and returns the handle+inputProof pair
     /// Fails if value.length > 64
-    function encryptBytes64(
-        bytes memory value,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptBytes64(bytes memory value, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.addBytes64(value);
         (handle, inputProof) = input.encryptSingleton();
@@ -328,12 +316,10 @@ library fhevm {
 
     /// Helper: encrypts a single 64-bytes value using a given random salt and returns the handle+inputProof pair
     /// Fails if value.length > 64
-    function encryptBytes64(
-        bytes memory value,
-        bytes32 random,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptBytes64(bytes memory value, bytes32 random, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.addBytes64(value, random);
         (handle, inputProof) = input.encryptSingleton();
@@ -341,11 +327,10 @@ library fhevm {
 
     /// Helper: encrypts a single 128-bytes value and returns the handle+inputProof pair
     /// Fails if value.length > 128
-    function encryptBytes128(
-        bytes memory value,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptBytes128(bytes memory value, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.addBytes128(value);
         (handle, inputProof) = input.encryptSingleton();
@@ -353,12 +338,10 @@ library fhevm {
 
     /// Helper: encrypts a single 128-bytes value using a given random salt and returns the handle+inputProof pair
     /// Fails if value.length > 128
-    function encryptBytes128(
-        bytes memory value,
-        bytes32 random,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptBytes128(bytes memory value, bytes32 random, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.addBytes128(value, random);
         (handle, inputProof) = input.encryptSingleton();
@@ -366,23 +349,20 @@ library fhevm {
 
     /// Helper: encrypts a single 256-bytes value and returns the handle+inputProof pair
     /// Fails if value.length > 256
-    function encryptBytes256(
-        bytes memory value,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptBytes256(bytes memory value, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.addBytes256(value);
         (handle, inputProof) = input.encryptSingleton();
     }
 
     /// Helper: encrypts a single 256-bytes value using a given random salt and returns the handle+inputProof pair
-    function encryptBytes256(
-        bytes memory value,
-        bytes32 random,
-        address contractAddress,
-        address userAddress
-    ) internal returns (einput handle, bytes memory inputProof) {
+    function encryptBytes256(bytes memory value, bytes32 random, address contractAddress, address userAddress)
+        internal
+        returns (einput handle, bytes memory inputProof)
+    {
         EncryptedInput memory input = fhevmEnv.createEncryptedInput(contractAddress, userAddress);
         input.addBytes256(value, random);
         (handle, inputProof) = input.encryptSingleton();
@@ -408,11 +388,11 @@ library fhevm {
     /// The function will fail if:
     /// - the contact does not have the permission to decrypt the value
     /// - the user does not have the permission to decrypt the value
-    function decryptBoolStrict(
-        ebool value,
-        address contractAddress,
-        address userAddress
-    ) public view returns (bool result) {
+    function decryptBoolStrict(ebool value, address contractAddress, address userAddress)
+        public
+        view
+        returns (bool result)
+    {
         uint256 handle = ebool.unwrap(value);
 
         _onlyArithmeticallyValidHandle(handle);
@@ -438,11 +418,11 @@ library fhevm {
         return uint8(entry.value);
     }
 
-    function decryptU4Strict(
-        euint4 value,
-        address contractAddress,
-        address userAddress
-    ) internal view returns (uint8 result) {
+    function decryptU4Strict(euint4 value, address contractAddress, address userAddress)
+        internal
+        view
+        returns (uint8 result)
+    {
         uint256 handle = euint4.unwrap(value);
 
         _onlyArithmeticallyValidHandle(handle);
@@ -468,11 +448,11 @@ library fhevm {
         return uint8(entry.value);
     }
 
-    function decryptU8Strict(
-        euint8 value,
-        address contractAddress,
-        address userAddress
-    ) internal view returns (uint8 result) {
+    function decryptU8Strict(euint8 value, address contractAddress, address userAddress)
+        internal
+        view
+        returns (uint8 result)
+    {
         uint256 handle = euint8.unwrap(value);
 
         _onlyArithmeticallyValidHandle(handle);
@@ -486,11 +466,11 @@ library fhevm {
     /// The function will fail if:
     /// - the contact does not have the permission to decrypt the value
     /// - the user does not have the permission to decrypt the value
-    function decryptU64(
-        euint64 value,
-        address contractAddress,
-        address userAddress
-    ) public view returns (uint64 result) {
+    function decryptU64(euint64 value, address contractAddress, address userAddress)
+        public
+        view
+        returns (uint64 result)
+    {
         uint256 handle = euint64.unwrap(value);
         if (handle == 0) {
             return 0;
@@ -506,11 +486,11 @@ library fhevm {
     /// The function will fail if:
     /// - the contact does not have the permission to decrypt the value
     /// - the user does not have the permission to decrypt the value
-    function decryptU64Strict(
-        euint64 value,
-        address contractAddress,
-        address userAddress
-    ) public view returns (uint64 result) {
+    function decryptU64Strict(euint64 value, address contractAddress, address userAddress)
+        public
+        view
+        returns (uint64 result)
+    {
         uint256 handle = euint64.unwrap(value);
 
         _onlyArithmeticallyValidHandle(handle);
@@ -524,11 +504,11 @@ library fhevm {
     /// The function will fail if:
     /// - the contact does not have the permission to decrypt the value
     /// - the user does not have the permission to decrypt the value
-    function decryptBytes256(
-        ebytes256 value,
-        address contractAddress,
-        address userAddress
-    ) public view returns (bytes memory result) {
+    function decryptBytes256(ebytes256 value, address contractAddress, address userAddress)
+        public
+        view
+        returns (bytes memory result)
+    {
         uint256 handle = ebytes256.unwrap(value);
         if (handle == 0) {
             return "";
@@ -590,21 +570,27 @@ library fhevm {
     function isArithmeticallyValid(ebool value) internal view returns (bool) {
         return _isArithmeticallyValidHandle(ebool.unwrap(value));
     }
+
     function isArithmeticallyValid(euint4 value) internal view returns (bool) {
         return _isArithmeticallyValidHandle(euint4.unwrap(value));
     }
+
     function isArithmeticallyValid(euint8 value) internal view returns (bool) {
         return _isArithmeticallyValidHandle(euint8.unwrap(value));
     }
+
     function isArithmeticallyValid(euint16 value) internal view returns (bool) {
         return _isArithmeticallyValidHandle(euint16.unwrap(value));
     }
+
     function isArithmeticallyValid(euint32 value) internal view returns (bool) {
         return _isArithmeticallyValidHandle(euint32.unwrap(value));
     }
+
     function isArithmeticallyValid(euint64 value) internal view returns (bool) {
         return _isArithmeticallyValidHandle(euint64.unwrap(value));
     }
+
     function isArithmeticallyValid(eaddress value) internal view returns (bool) {
         return _isArithmeticallyValidHandle(eaddress.unwrap(value));
     }
@@ -635,8 +621,7 @@ library fhevm {
 
     function _onlyAllowedHandle(uint256 handle, address contractAddress, address userAddress) internal view {
         require(
-            fhevmEnv.acl().isAllowed(handle, contractAddress),
-            "contract does not have permission to decrypt handle"
+            fhevmEnv.acl().isAllowed(handle, contractAddress), "contract does not have permission to decrypt handle"
         );
         require(fhevmEnv.acl().isAllowed(handle, userAddress), "user does not have permission to decrypt handle");
     }
@@ -644,24 +629,31 @@ library fhevm {
     function isTrivial(ebool value) internal view returns (bool) {
         return _isTrivialHandle(ebool.unwrap(value));
     }
+
     function isTrivial(euint4 value) internal view returns (bool) {
         return _isTrivialHandle(euint4.unwrap(value));
     }
+
     function isTrivial(euint8 value) internal view returns (bool) {
         return _isTrivialHandle(euint8.unwrap(value));
     }
+
     function isTrivial(euint16 value) internal view returns (bool) {
         return _isTrivialHandle(euint16.unwrap(value));
     }
+
     function isTrivial(euint32 value) internal view returns (bool) {
         return _isTrivialHandle(euint32.unwrap(value));
     }
+
     function isTrivial(euint64 value) internal view returns (bool) {
         return _isTrivialHandle(euint64.unwrap(value));
     }
+
     function isTrivial(eaddress value) internal view returns (bool) {
         return _isTrivialHandle(eaddress.unwrap(value));
     }
+
     function isTrivial(ebytes256 value) internal view returns (bool) {
         return _isTrivialHandle(ebytes256.unwrap(value));
     }

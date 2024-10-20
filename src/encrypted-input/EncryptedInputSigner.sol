@@ -20,15 +20,13 @@ library EncryptedInputSignerLib {
     bytes32 constant EIP712DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
-    bytes32 constant COPROC_TYPEHASH =
-        keccak256(
-            "CiphertextVerificationForCopro(address aclAddress,bytes32 hashOfCiphertext,uint256[] handlesList,address userAddress,address contractAddress)"
-        );
+    bytes32 constant COPROC_TYPEHASH = keccak256(
+        "CiphertextVerificationForCopro(address aclAddress,bytes32 hashOfCiphertext,uint256[] handlesList,address userAddress,address contractAddress)"
+    );
 
-    bytes32 constant KMS_TYPEHASH =
-        keccak256(
-            "CiphertextVerificationForKMS(address aclAddress,bytes32 hashOfCiphertext,address userAddress,address contractAddress)"
-        );
+    bytes32 constant KMS_TYPEHASH = keccak256(
+        "CiphertextVerificationForKMS(address aclAddress,bytes32 hashOfCiphertext,address userAddress,address contractAddress)"
+    );
 
     /*
         name = "InputVerifier"
@@ -48,8 +46,7 @@ library EncryptedInputSignerLib {
     function _buildKmsVerifierDomainSeparator(EncryptedInputSigner calldata self) private pure returns (bytes32) {
         bytes32 _hashedName = keccak256(bytes("KMSVerifier"));
         bytes32 _hashedVersion = keccak256(bytes("1"));
-        return
-            keccak256(abi.encode(EIP712DOMAIN_TYPEHASH, _hashedName, _hashedVersion, self.chainId, self.kmsVerifier));
+        return keccak256(abi.encode(EIP712DOMAIN_TYPEHASH, _hashedName, _hashedVersion, self.chainId, self.kmsVerifier));
     }
 
     function _hashCiphertextVerificationForCopro(
@@ -59,17 +56,16 @@ library EncryptedInputSignerLib {
         address userAddress,
         address contractAddress
     ) private pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    COPROC_TYPEHASH,
-                    self.acl,
-                    hashOfCiphertext,
-                    keccak256(abi.encodePacked(handlesList)),
-                    userAddress,
-                    contractAddress
-                )
-            );
+        return keccak256(
+            abi.encode(
+                COPROC_TYPEHASH,
+                self.acl,
+                hashOfCiphertext,
+                keccak256(abi.encodePacked(handlesList)),
+                userAddress,
+                contractAddress
+            )
+        );
     }
 
     function _hashCiphertextVerificationForKMS(
@@ -90,17 +86,10 @@ library EncryptedInputSignerLib {
     ) public pure returns (bytes memory signature) {
         // inputVerifierAddr is verifyingContract
         bytes32 domainSep = _buildInputVerifierDomainSeparator(self);
-        bytes32 structHash = _hashCiphertextVerificationForCopro(
-            self,
-            hashOfCiphertext,
-            handlesList,
-            userAddress,
-            contractAddress
-        );
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(
-            self.coprocSigner,
-            MessageHashUtils.toTypedDataHash(domainSep, structHash)
-        );
+        bytes32 structHash =
+            _hashCiphertextVerificationForCopro(self, hashOfCiphertext, handlesList, userAddress, contractAddress);
+        (uint8 v, bytes32 r, bytes32 s) =
+            vm.sign(self.coprocSigner, MessageHashUtils.toTypedDataHash(domainSep, structHash));
         signature = abi.encodePacked(r, s, v);
     }
 
@@ -115,10 +104,8 @@ library EncryptedInputSignerLib {
         // kmsVerifierAddr is verifyingContract
         bytes32 domainSep = _buildKmsVerifierDomainSeparator(self);
         bytes32 structHash = _hashCiphertextVerificationForKMS(self, hashOfCiphertext, userAddress, contractAddress);
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(
-            self.kmsSigners[kmsSignerIndex],
-            MessageHashUtils.toTypedDataHash(domainSep, structHash)
-        );
+        (uint8 v, bytes32 r, bytes32 s) =
+            vm.sign(self.kmsSigners[kmsSignerIndex], MessageHashUtils.toTypedDataHash(domainSep, structHash));
         signature = abi.encodePacked(r, s, v);
     }
 

@@ -26,11 +26,10 @@ library FhevmDeployLib {
     }
 
     /// Deploy a new set of fhevm contracts
-    function deployFhevmWithPlugin(
-        address deployerAddr,
-        bool isCoprocessor,
-        address[] memory kmsSigners
-    ) internal returns (FhevmDeployment memory) {
+    function deployFhevmWithPlugin(address deployerAddr, bool isCoprocessor, address[] memory kmsSigners)
+        internal
+        returns (FhevmDeployment memory)
+    {
         FhevmDeployment memory res;
 
         // Deploy order:
@@ -95,9 +94,8 @@ library FhevmDeployLib {
 
     /// Deploy a new TFHEExecutorWithPlugin contract using the specified deployer wallet
     function deployTFHEExecutorWithPlugin(address deployerAddr) internal returns (TFHEExecutorWithPlugin) {
-        (address expectedImplAddr, address expectedAddr) = FhevmAddressesLib.expectedCreateTFHEExecutorAddress(
-            deployerAddr
-        );
+        (address expectedImplAddr, address expectedAddr) =
+            FhevmAddressesLib.expectedCreateTFHEExecutorAddress(deployerAddr);
 
         TFHEExecutorWithPlugin impl = new TFHEExecutorWithPlugin();
         require(address(impl) == expectedImplAddr, "deployTFHEExecutor: unexpected implementation deploy address");
@@ -112,9 +110,8 @@ library FhevmDeployLib {
 
     /// Deploy a new KMSVerifier contract using the specified deployer wallet
     function deployKMSVerifier(address deployerAddr) internal returns (KMSVerifier) {
-        (address expectedImplAddr, address expectedAddr) = FhevmAddressesLib.expectedCreateKMSVerifierAddress(
-            deployerAddr
-        );
+        (address expectedImplAddr, address expectedAddr) =
+            FhevmAddressesLib.expectedCreateKMSVerifierAddress(deployerAddr);
 
         KMSVerifier impl = new KMSVerifier();
         require(address(impl) == expectedImplAddr, "deployKMSVerifier: unexpected implementation deploy address");
@@ -129,9 +126,8 @@ library FhevmDeployLib {
 
     /// Deploy a new FHEPayment contract using the specified deployer wallet
     function deployFHEPayment(address deployerAddr) internal returns (FHEPayment) {
-        (address expectedImplAddr, address expectedAddr) = FhevmAddressesLib.expectedCreateFHEPaymentAddress(
-            deployerAddr
-        );
+        (address expectedImplAddr, address expectedAddr) =
+            FhevmAddressesLib.expectedCreateFHEPaymentAddress(deployerAddr);
 
         FHEPayment impl = new FHEPayment();
         require(address(impl) == expectedImplAddr, "deployFHEPayment: unexpected implementation deploy address");
@@ -147,14 +143,12 @@ library FhevmDeployLib {
     /// Deploy a new InputVerifier native contract using the specified deployer wallet
     /// Native verifiers are defined in 'InputVerifier.native.sol'
     function deployInputVerifierNative(address deployerAddr) internal returns (address) {
-        (address expectedImplAddr, address expectedAddr) = FhevmAddressesLib.expectedCreateInputVerifierAddress(
-            deployerAddr
-        );
+        (address expectedImplAddr, address expectedAddr) =
+            FhevmAddressesLib.expectedCreateInputVerifierAddress(deployerAddr);
 
         InputVerifierNative impl = new InputVerifierNative();
         require(
-            address(impl) == expectedImplAddr,
-            "deployInputVerifierNative: unexpected implementation deploy address"
+            address(impl) == expectedImplAddr, "deployInputVerifierNative: unexpected implementation deploy address"
         );
 
         ERC1967Proxy proxy = new ERC1967Proxy(address(impl), "");
@@ -168,9 +162,8 @@ library FhevmDeployLib {
     /// Deploy a new InputVerifier coprocessor contract using the specified deployer wallet
     /// Coprocessor verifiers are defined in 'InputVerifier.coprocessor.sol'
     function deployInputVerifierCoprocessor(address deployerAddr) internal returns (address) {
-        (address expectedImplAddr, address expectedAddr) = FhevmAddressesLib.expectedCreateInputVerifierAddress(
-            deployerAddr
-        );
+        (address expectedImplAddr, address expectedAddr) =
+            FhevmAddressesLib.expectedCreateInputVerifierAddress(deployerAddr);
 
         InputVerifierCoprocessor impl = new InputVerifierCoprocessor();
         require(
@@ -188,9 +181,8 @@ library FhevmDeployLib {
 
     /// Deploy a new GatewayContract contract using the specified deployer wallet
     function deployGatewayContract(address deployerAddr) internal returns (GatewayContract) {
-        (address expectedImplAddr, address expectedAddr) = FhevmAddressesLib.expectedCreateGatewayContractAddress(
-            deployerAddr
-        );
+        (address expectedImplAddr, address expectedAddr) =
+            FhevmAddressesLib.expectedCreateGatewayContractAddress(deployerAddr);
 
         GatewayContract impl = new GatewayContract();
         require(address(impl) == expectedImplAddr, "deployGatewayContract: unexpected implementation deploy address");

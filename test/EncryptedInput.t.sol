@@ -38,10 +38,7 @@ contract EncryptedInputTest is FhevmTest {
         address contractAddress = address(this);
 
         (einput inputHandle, bytes memory inputProof) = fhevm.encryptBool(
-            true,
-            0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209,
-            contractAddress,
-            userAddress
+            true, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209, contractAddress, userAddress
         );
 
         ebool b2 = TFHE.asEbool(inputHandle, inputProof);
@@ -64,10 +61,7 @@ contract EncryptedInputTest is FhevmTest {
         address contractAddress = address(this);
 
         (einput inputHandle, bytes memory inputProof) = fhevm.encryptBytes256(
-            b128,
-            0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209,
-            contractAddress,
-            userAddress
+            b128, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209, contractAddress, userAddress
         );
 
         ebytes256 b_enc = TFHE.asEbytes256(inputHandle, inputProof);
@@ -86,17 +80,11 @@ contract EncryptedInputTest is FhevmTest {
         address contractAddress = address(this);
 
         (einput inputHandle1, bytes memory inputProof1) = fhevm.encryptBytes256(
-            b128,
-            0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209,
-            contractAddress,
-            userAddress
+            b128, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209, contractAddress, userAddress
         );
 
         (einput inputHandle2, bytes memory inputProof2) = fhevm.encryptBytes256(
-            b128,
-            0x0201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c4376,
-            contractAddress,
-            userAddress
+            b128, 0x0201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c4376, contractAddress, userAddress
         );
 
         ebytes256 b_enc1 = TFHE.asEbytes256(inputHandle1, inputProof1);

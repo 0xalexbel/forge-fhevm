@@ -9,6 +9,13 @@ remappings = [
 [dependencies]
 forge-std = "1.9.3"
 
+[soldeer]
+remappings_generate = false
+remappings_regenerate = false
+remappings_version = false
+remappings_prefix = ""
+remappings_location = "config"
+
 [fmt]
 # These are all the `forge fmt` defaults.
 line_length = 120

@@ -25,7 +25,7 @@ abstract contract FhevmRuntime {
         _privDeployCodeTo("src/vm/FhevmEnv.sol", "", 0, fhevmEnvAdd);
         vm.assertEq(fhevmEnv.IS_FHEVM_ENV(), true);
 
-        fhevmEnv.initialize(false /* useDeterministicRandomGenerator */);
+        fhevmEnv.initialize(false /* useDeterministicRandomGenerator */ );
         fhevmEnv.deploy();
 
         // Note Prior to calling any TFHE function, the TFHE library must be initialized

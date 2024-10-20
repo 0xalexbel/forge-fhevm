@@ -92,11 +92,8 @@ contract FhevmEnv {
     function deployFhevmWithPlugin(address deployerAddr) private {
         _resetDeployerNonceIfNeeded(deployerAddr);
 
-        FhevmDeployLib.FhevmDeployment memory res = FhevmDeployLib.deployFhevmWithPlugin(
-            deployerAddr,
-            _config.isCoprocessor,
-            _config.getKmsSignersAddr()
-        );
+        FhevmDeployLib.FhevmDeployment memory res =
+            FhevmDeployLib.deployFhevmWithPlugin(deployerAddr, _config.isCoprocessor, _config.getKmsSignersAddr());
 
         _FHEVMConfig.ACLAddress = res.ACLAddress;
         _FHEVMConfig.TFHEExecutorAddress = res.TFHEExecutorAddress;
@@ -178,10 +175,11 @@ contract FhevmEnv {
         return s;
     }
 
-    function createEncryptedInput(
-        address contractAddress,
-        address userAddress
-    ) external view returns (EncryptedInput memory input) {
+    function createEncryptedInput(address contractAddress, address userAddress)
+        external
+        view
+        returns (EncryptedInput memory input)
+    {
         input._signer = getEncryptedInputSigner();
         input._contractAddress = contractAddress;
         input._userAddress = userAddress;

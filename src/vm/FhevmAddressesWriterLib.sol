@@ -85,8 +85,8 @@ library FhevmAddressesWriterLib {
     /// address constant <varName> = <varAddress>;
     ///
     function _writeDotSolAddressFile(string memory varName, address varAddress, string memory path) private {
-        string
-            memory s = "// SPDX-License-Identifier: BSD-3-Clause-Clear\n\npragma solidity ^0.8.24;\n\naddress constant ";
+        string memory s =
+            "// SPDX-License-Identifier: BSD-3-Clause-Clear\n\npragma solidity ^0.8.24;\n\naddress constant ";
         s = string.concat(s, varName, " = ", vm.toString(varAddress), ";\n");
         vm.writeFile(path, s);
     }

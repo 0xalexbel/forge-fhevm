@@ -177,15 +177,15 @@ library EncryptedInputListLib {
     }
 
     /**
-        Format:
-        =======
-        for coprocessor : numHandles + numSignersKMS + hash(bundleCiphertext) + list_handles + signatureCopro + signatureKMSSigners                    
-        for native      : numHandles + numSignersKMS +                        + list_handles +                + signatureKMSSigners + bundleCiphertext
-
-        Total length:
-        =============
-        for coprocessor : 1+1+32+NUM_HANDLES*32+65+65*numSignersKMS
-        for native      : 1+1+NUM_HANDLES*32+65*numSignersKMS+bundleCiphertext.length
+     * Format:
+     *     =======
+     *     for coprocessor : numHandles + numSignersKMS + hash(bundleCiphertext) + list_handles + signatureCopro + signatureKMSSigners                    
+     *     for native      : numHandles + numSignersKMS +                        + list_handles +                + signatureKMSSigners + bundleCiphertext
+     *
+     *     Total length:
+     *     =============
+     *     for coprocessor : 1+1+32+NUM_HANDLES*32+65+65*numSignersKMS
+     *     for native      : 1+1+NUM_HANDLES*32+65*numSignersKMS+bundleCiphertext.length
      */
     function encrypt(
         EncryptedInputList memory self,

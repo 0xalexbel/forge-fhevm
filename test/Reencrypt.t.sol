@@ -10,9 +10,8 @@ import {ReencryptLib} from "../src/reencrypt/Reencrypt.sol";
 
 contract ReencryptTest is FhevmTest {
     function test_sign() public pure {
-        bytes memory publicKey = abi.encodePacked(
-            hex"20000000000000008fcea1dc16897f40ea5142b829cb04b7527e48727a63e993e4561b6824104c2d"
-        );
+        bytes memory publicKey =
+            abi.encodePacked(hex"20000000000000008fcea1dc16897f40ea5142b829cb04b7527e48727a63e993e4561b6824104c2d");
         /*
         bytes memory privateKey = abi.encodePacked(
             hex"2000000000000000a5cb64ce9aea0f7dd66f04fdf61592c74ef6aa16b8f63c1d53da17211bd3ec0e"

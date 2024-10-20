@@ -70,11 +70,11 @@ library ReencryptLib {
         privateKey = bytes.concat(bytes8(0x2000000000000000), bytes32(w.privateKey));
     }
 
-    function createEIP712Digest(
-        bytes memory publicKey,
-        uint256 chainId,
-        address contractAddress
-    ) public pure returns (bytes32 digest) {
+    function createEIP712Digest(bytes memory publicKey, uint256 chainId, address contractAddress)
+        public
+        pure
+        returns (bytes32 digest)
+    {
         bytes32 domainSep = _buildAuthorizationTokenDomainSeparator(chainId, contractAddress);
         bytes32 structHash = _hashReencrypt(publicKey);
         digest = MessageHashUtils.toTypedDataHash(domainSep, structHash);
@@ -85,12 +85,11 @@ library ReencryptLib {
         signature = abi.encodePacked(r, s, v);
     }
 
-    function reencryptSign(
-        bytes memory publicKey,
-        uint256 chainId,
-        address contractAddress,
-        uint256 signer
-    ) public pure returns (bytes memory signature) {
+    function reencryptSign(bytes memory publicKey, uint256 chainId, address contractAddress, uint256 signer)
+        public
+        pure
+        returns (bytes memory signature)
+    {
         bytes32 domainSep = _buildAuthorizationTokenDomainSeparator(chainId, contractAddress);
         bytes32 structHash = _hashReencrypt(publicKey);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signer, MessageHashUtils.toTypedDataHash(domainSep, structHash));
@@ -101,10 +100,11 @@ library ReencryptLib {
         name = "Authorization token"
         version = "1"
     */
-    function _buildAuthorizationTokenDomainSeparator(
-        uint256 chainId,
-        address contractAddress
-    ) private pure returns (bytes32) {
+    function _buildAuthorizationTokenDomainSeparator(uint256 chainId, address contractAddress)
+        private
+        pure
+        returns (bytes32)
+    {
         bytes32 _hashedName = keccak256(bytes("Authorization token"));
         bytes32 _hashedVersion = keccak256(bytes("1"));
         return keccak256(abi.encode(EIP712DOMAIN_TYPEHASH, _hashedName, _hashedVersion, chainId, contractAddress));
@@ -114,12 +114,11 @@ library ReencryptLib {
         return keccak256(abi.encode(REENCRYPT_TYPEHASH, keccak256(publicKey)));
     }
 
-    function verifySig(
-        bytes memory publicKey,
-        uint256 chainId,
-        address contractAddress,
-        bytes memory signature
-    ) public pure returns (address) {
+    function verifySig(bytes memory publicKey, uint256 chainId, address contractAddress, bytes memory signature)
+        public
+        pure
+        returns (address)
+    {
         bytes32 domainSep = _buildAuthorizationTokenDomainSeparator(chainId, contractAddress);
         bytes32 structHash = _hashReencrypt(publicKey);
         address signer = ECDSA.recover(MessageHashUtils.toTypedDataHash(domainSep, structHash), signature);

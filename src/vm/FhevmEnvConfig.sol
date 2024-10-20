@@ -45,10 +45,8 @@ library FhevmEnvConfigLib {
         self.fhevmDeployer = _getEnvSigner("PRIVATE_KEY_FHEVM_DEPLOYER", DEFAULT_PRIVATE_KEY_FHEVM_DEPLOYER);
         self.gatewayDeployer = _getEnvSigner("PRIVATE_KEY_GATEWAY_DEPLOYER", DEFAULT_PRIVATE_KEY_GATEWAY_DEPLOYER);
         self.gatewayRelayer = _getEnvSigner("PRIVATE_KEY_GATEWAY_RELAYER", DEFAULT_PRIVATE_KEY_GATEWAY_RELAYER);
-        self.coprocessorAccount = _getEnvSigner(
-            "PRIVATE_KEY_COPROCESSOR_ACCOUNT",
-            DEFAULT_PRIVATE_KEY_COPROCESSOR_ACCOUNT
-        );
+        self.coprocessorAccount =
+            _getEnvSigner("PRIVATE_KEY_COPROCESSOR_ACCOUNT", DEFAULT_PRIVATE_KEY_COPROCESSOR_ACCOUNT);
 
         // self.kmsSigners = new FhevmEnvConfigLib.FhevmEnvSigner[](self.numKmsSigners);
         for (uint8 i = 0; i < self.numKmsSigners; ++i) {
@@ -57,7 +55,10 @@ library FhevmEnvConfigLib {
         }
     }
 
-    function _getEnvSigner(string memory envVarName, uint256 defaultPk) private returns (FhevmEnvSigner memory signer) {
+    function _getEnvSigner(string memory envVarName, uint256 defaultPk)
+        private
+        returns (FhevmEnvSigner memory signer)
+    {
         // setup fhevm deployer
         uint256 _pk = EnvLib.envPrivateKey(envVarName);
         if (_pk == 0) {
@@ -93,6 +94,7 @@ library FhevmEnvConfigLib {
         }
         return arr;
     }
+
     function getKmsSignersAddr(FhevmEnvConfig memory self) public pure returns (address[] memory) {
         address[] memory arr = new address[](self.numKmsSigners);
         for (uint8 i = 0; i < self.numKmsSigners; ++i) {
