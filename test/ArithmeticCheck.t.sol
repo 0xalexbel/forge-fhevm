@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
-import {Vm} from "forge-std/Vm.sol";
-import {console} from "forge-std/Console.sol";
+import {Vm} from "forge-std/src/Vm.sol";
+import {console} from "forge-std/src/Console.sol";
 import {TFHE, euint8, euint64, einput, ebool, ebytes256} from "fhevm/lib/TFHE.sol";
 import {FhevmTest} from "../src/FhevmTest.sol";
 import {fhevm, ArithmeticCheckingMode} from "../src/fhevm.sol";

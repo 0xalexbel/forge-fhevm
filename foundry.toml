@@ -3,7 +3,8 @@ libs = ["node_modules", "lib"]
 solc = "0.8.24"
 evm_version = 'cancun'
 remappings = [
-  "forge-std/=dependencies/forge-std-1.9.3/src/",
+  "forge-std/=dependencies/forge-std-1.9.3/",
+  "forge-std-1.9.3/=dependencies/forge-std-1.9.3/"
 ]
 
 [dependencies]

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.24;
 
-import {Vm} from "forge-std/Vm.sol";
+import {Vm} from "forge-std/src/Vm.sol";
 import {EnvLib} from "./EnvLib.sol";
 
 struct FhevmEnvConfig {

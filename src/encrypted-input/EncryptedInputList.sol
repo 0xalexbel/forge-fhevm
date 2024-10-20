@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
-import {Vm} from "forge-std/Vm.sol";
-import {console} from "forge-std/console.sol";
+import {Vm} from "forge-std/src/Vm.sol";
+import {console} from "forge-std/src/console.sol";
 
 import {Common} from "fhevm/lib/TFHE.sol";
 import {EncryptedInputSigner} from "./EncryptedInputSigner.sol";
