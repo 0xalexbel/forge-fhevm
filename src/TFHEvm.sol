@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
-import {VmSafe} from "forge-std/src/Vm.sol";
-import {Vm} from "forge-std/src/Vm.sol";
-import {console} from "forge-std/src/Console.sol";
-
 import {
     TFHE,
     einput,
@@ -37,9 +33,9 @@ import {ReencryptLib} from "./reencrypt/Reencrypt.sol";
 import {EncryptedInput} from "./encrypted-input/EncryptedInput.sol";
 import {DBLib} from "./db/DB.sol";
 
-uint256 constant vmTFHEPrivateKey = uint256(keccak256("forge-fhevm cheat code"));
-// = vm.computeCreateAddress(vm.addr(uint256(keccak256("forge-fhevm cheat code"))), 0);
-address constant vmTFHEAdd = 0x2bc76923c34298ddbb470B7f087A20166fdF23C0;
+// uint256 constant vmTFHEPrivateKey = uint256(keccak256("forge-fhevm cheat code"));
+// // = vm.computeCreateAddress(vm.addr(uint256(keccak256("forge-fhevm cheat code"))), 0);
+// address constant vmTFHEAdd = 0x2bc76923c34298ddbb470B7f087A20166fdF23C0;
 
 // interface VmTFHE {}
 
