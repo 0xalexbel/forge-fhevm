@@ -325,70 +325,94 @@ library MathLib {
         // Clamp
         if (typeCt < Common.euint256_t) {
             uint256 mx = maxUint(typeCt);
-            require(a <= mx);
-            require(b <= mx);
+            require(a <= mx, "MathLib.xor lhs operand overflow");
+            require(b <= mx, "MathLib.xor rhs operand overflow");
             unchecked {
                 result = result % (mx + 1);
             }
-            require(result <= mx);
+            require(result <= mx, "MathLib.xor operator overflow");
         }
     }
 
-    function shl(uint256 a, uint256 b, uint8 typeCt) internal pure returns (uint256) {
-        require(a > 0 && b > 0 && typeCt > 0, "Not yet implemented");
-        revert("Not yet implemented");
-        // unchecked {
-        //     result = a << b;
-        // }
+    /// Note: b is interpreted as a uint8
+    function shl(uint256 a, uint256 b, uint8 typeCt) internal pure returns (uint256 result) {
+        // 0 <= b <= 255
+        b = uint256(uint8(b));
 
-        // // Clamp
-        // if (typeCt < Common.euint256_t) {
-        //     uint256 mx = maxUint(typeCt);
-        //     require(a <= mx);
-        //     require(b <= mx);
-        //     unchecked {
-        //         result = result % (mx + 1);
-        //     }
-        //     require(result <= mx);
-        // }
-    }
-
-    function shr(uint256 a, uint256 b, uint8 typeCt) internal pure returns (uint256) {
-        require(a > 0 && b > 0 && typeCt > 0, "Not yet implemented");
-        revert("Not yet implemented");
-    }
-
-    function rotl(uint256 a, uint256 b, uint8 typeCt) internal pure returns (uint256 result) {
         if (typeCt < Common.euint256_t) {
             uint256 mx = maxUint(typeCt);
             uint256 nb = numBits(typeCt);
-            require(a <= mx);
-            require(b <= nb);
+            require(a <= mx, "MathLib.shl left operand overflow");
             unchecked {
-                result = ((a << b) | (a >> (nb - b))) & mx;
+                result = (a << (b % nb)) % (mx + 1);
             }
-            require(result <= mx);
+            require(result <= mx, "MathLib.shl operator overflow");
         } else {
-            require(b <= 256);
             unchecked {
+                result = (a << (b % 256));
+            }
+        }
+    }
+
+    /// Note: b is interpreted as a uint8
+    function shr(uint256 a, uint256 b, uint8 typeCt) internal pure returns (uint256 result) {
+        // 0 <= b <= 255
+        b = uint256(uint8(b));
+
+        if (typeCt < Common.euint256_t) {
+            uint256 mx = maxUint(typeCt);
+            uint256 nb = numBits(typeCt);
+            require(a <= mx, "MathLib.shr left operand overflow");
+            unchecked {
+                result = (a >> (b % nb)) % (mx + 1);
+            }
+            require(result <= mx, "MathLib.shr operator overflow");
+        } else {
+            unchecked {
+                result = (a >> (b % 256));
+            }
+        }
+    }
+
+    /// Note: b is interpreted as a uint8
+    function rotl(uint256 a, uint256 b, uint8 typeCt) internal pure returns (uint256 result) {
+        // 0 <= b <= 255
+        b = uint256(uint8(b));
+
+        if (typeCt < Common.euint256_t) {
+            uint256 mx = maxUint(typeCt);
+            uint256 nb = numBits(typeCt);
+            require(a <= mx, "MathLib.rotl left operand overflow");
+            unchecked {
+                b = (b % nb);
+                result = ((a << b) | (a >> (nb - b))) % (mx + 1);
+            }
+            require(result <= mx, "MathLib.rotl operator overflow");
+        } else {
+            unchecked {
+                b = (b % 256);
                 result = (a << b) | (a >> (256 - b));
             }
         }
     }
 
+    /// Note: b is interpreted as a uint8
     function rotr(uint256 a, uint256 b, uint8 typeCt) internal pure returns (uint256 result) {
+        // 0 <= b <= 255
+        b = uint256(uint8(b));
+
         if (typeCt < Common.euint256_t) {
             uint256 mx = maxUint(typeCt);
             uint256 nb = numBits(typeCt);
-            require(a <= mx);
-            require(b <= nb);
+            require(a <= mx, "MathLib.rotr left operand overflow");
             unchecked {
-                result = ((a >> b) | (a << (nb - b))) & mx;
+                b = (b % nb);
+                result = ((a >> b) | (a << (nb - b))) % (mx + 1);
             }
-            require(result <= mx);
+            require(result <= mx, "MathLib.rotr operator overflow");
         } else {
-            require(b <= 256);
             unchecked {
+                b = (b % 256);
                 result = (a >> b) | (a << (256 - b));
             }
         }
