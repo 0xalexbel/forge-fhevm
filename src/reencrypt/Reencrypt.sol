@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
-import {Vm} from "forge-std/src/Vm.sol";
+import {IForgeStdVmSafe as IVmSafe, forgeStdVmSafeAdd} from "../vm/IForgeStdVmSafe.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
@@ -57,26 +57,26 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 // signature = 0xeb4e999aa1eb1013aadb9de7e9d9e427a7a8e0bbd1dbb70d5d5fb25c35ab0d595d46ee783a78c3ac433990b296aeb4063b8dbde210aacafc2be1320e7cb482551c
 
 library ReencryptLib {
-    Vm private constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+    IVmSafe private constant vm = IVmSafe(forgeStdVmSafeAdd);
 
     bytes32 constant EIP712DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
     bytes32 constant REENCRYPT_TYPEHASH = keccak256("Reencrypt(bytes publicKey)");
 
-    function generateKeyPair() public returns (bytes memory publicKey, bytes memory privateKey) {
-        Vm.Wallet memory w = vm.createWallet(vm.randomUint());
+    function generateKeyPair() internal returns (bytes memory publicKey, bytes memory privateKey) {
+        IVmSafe.Wallet memory w = vm.createWallet(vm.randomUint());
         publicKey = bytes.concat(bytes8(0x2000000000000000), bytes32(w.publicKeyX));
         privateKey = bytes.concat(bytes8(0x2000000000000000), bytes32(w.privateKey));
     }
 
     function createEIP712Digest(bytes memory publicKey, uint256 chainId, address contractAddress)
-        public
+        internal
         pure
         returns (bytes32 digest)
     {
-        bytes32 domainSep = _buildAuthorizationTokenDomainSeparator(chainId, contractAddress);
-        bytes32 structHash = _hashReencrypt(publicKey);
+        bytes32 domainSep = __buildAuthorizationTokenDomainSeparator(chainId, contractAddress);
+        bytes32 structHash = __hashReencrypt(publicKey);
         digest = MessageHashUtils.toTypedDataHash(domainSep, structHash);
     }
 
@@ -86,12 +86,12 @@ library ReencryptLib {
     }
 
     function reencryptSign(bytes memory publicKey, uint256 chainId, address contractAddress, uint256 signer)
-        public
+        internal
         pure
         returns (bytes memory signature)
     {
-        bytes32 domainSep = _buildAuthorizationTokenDomainSeparator(chainId, contractAddress);
-        bytes32 structHash = _hashReencrypt(publicKey);
+        bytes32 domainSep = __buildAuthorizationTokenDomainSeparator(chainId, contractAddress);
+        bytes32 structHash = __hashReencrypt(publicKey);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signer, MessageHashUtils.toTypedDataHash(domainSep, structHash));
         signature = abi.encodePacked(r, s, v);
     }
@@ -100,7 +100,7 @@ library ReencryptLib {
         name = "Authorization token"
         version = "1"
     */
-    function _buildAuthorizationTokenDomainSeparator(uint256 chainId, address contractAddress)
+    function __buildAuthorizationTokenDomainSeparator(uint256 chainId, address contractAddress)
         private
         pure
         returns (bytes32)
@@ -110,49 +110,30 @@ library ReencryptLib {
         return keccak256(abi.encode(EIP712DOMAIN_TYPEHASH, _hashedName, _hashedVersion, chainId, contractAddress));
     }
 
-    function _hashReencrypt(bytes memory publicKey) private pure returns (bytes32) {
+    function __hashReencrypt(bytes memory publicKey) private pure returns (bytes32) {
         return keccak256(abi.encode(REENCRYPT_TYPEHASH, keccak256(publicKey)));
     }
 
-    function verifySig(bytes memory publicKey, uint256 chainId, address contractAddress, bytes memory signature)
-        public
+    function recoverSig(bytes memory publicKey, uint256 chainId, address contractAddress, bytes memory signature)
+        internal
         pure
         returns (address)
     {
-        bytes32 domainSep = _buildAuthorizationTokenDomainSeparator(chainId, contractAddress);
-        bytes32 structHash = _hashReencrypt(publicKey);
+        bytes32 domainSep = __buildAuthorizationTokenDomainSeparator(chainId, contractAddress);
+        bytes32 structHash = __hashReencrypt(publicKey);
         address signer = ECDSA.recover(MessageHashUtils.toTypedDataHash(domainSep, structHash), signature);
         return signer;
     }
+
+    function assertValidEIP712Sig(
+        bytes memory, /* privateKey */
+        bytes memory publicKey,
+        bytes memory signature,
+        uint256 chainId,
+        address contractAddress,
+        address userAddress
+    ) internal pure {
+        address signerAddr = recoverSig(publicKey, chainId, contractAddress, signature);
+        vm.assertEq(userAddress, signerAddr, "Invalid EIP-712 signature");
+    }
 }
-
-/*
-function _hashTypedDataV4(bytes32 structHash) internal view virtual returns (bytes32) {
-        return MessageHashUtils.toTypedDataHash(_domainSeparatorV4(), structHash);
-    }
-
-    function verifyEIP712Copro(CiphertextVerificationForCopro memory cv, bytes memory signature) internal view virtual {
-        bytes32 digest = hashCiphertextVerificationForCopro(cv);
-        address signer = ECDSA.recover(digest, signature);
-        require(signer == coprocessorAddress, "Coprocessor address mismatch");
-    }
-
-    function hashCiphertextVerificationForCopro(
-        CiphertextVerificationForCopro memory CVcopro
-    ) internal view virtual returns (bytes32) {
-        return
-            _hashTypedDataV4(
-                keccak256(
-                    abi.encode(
-                        CIPHERTEXTVERIFICATION_COPRO_TYPE_HASH,
-                        CVcopro.aclAddress,
-                        CVcopro.hashOfCiphertext,
-                        keccak256(abi.encodePacked(CVcopro.handlesList)),
-                        CVcopro.userAddress,
-                        CVcopro.contractAddress
-                    )
-                )
-            );
-    }
-
-*/

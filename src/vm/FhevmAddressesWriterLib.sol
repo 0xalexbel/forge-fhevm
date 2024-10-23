@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: BSD-3-Clause-Clear
 pragma solidity ^0.8.24;
 
-import {Vm} from "forge-std/src/Vm.sol";
+import {IForgeStdVmSafe as IVmSafe, forgeStdVmSafeAdd} from "./IForgeStdVmSafe.sol";
 import {FhevmAddressesLib} from "../deploy/FhevmAddressesLib.sol";
 
 /// Note: forge does not handle libraries very well in a script setUp context.
 /// Therefore, solidity code like this one is deployed as a contract instead of a library
 library FhevmAddressesWriterLib {
-    Vm private constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+    IVmSafe private constant vm = IVmSafe(forgeStdVmSafeAdd);
 
     /// Generates '<rootDir>/fhevm/lib/ACLAddress.sol' solidity file.
     /// This file contains a single line formatted as follow:

@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
-import {Vm} from "forge-std/src/Vm.sol";
-import {console} from "forge-std/src/console.sol";
-
 import {Common} from "fhevm/lib/TFHE.sol";
 import {EncryptedInputSigner} from "./EncryptedInputSigner.sol";
 import {EncryptedInputItem} from "./EncryptedInputItem.sol";
@@ -16,8 +13,6 @@ struct EncryptedInputList {
 }
 
 library EncryptedInputListLib {
-    Vm private constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
-
     function length(EncryptedInputList memory self) public pure returns (uint16) {
         return self._length;
     }
@@ -179,7 +174,7 @@ library EncryptedInputListLib {
     /**
      * Format:
      *     =======
-     *     for coprocessor : numHandles + numSignersKMS + hash(bundleCiphertext) + list_handles + signatureCopro + signatureKMSSigners                    
+     *     for coprocessor : numHandles + numSignersKMS + hash(bundleCiphertext) + list_handles + signatureCopro + signatureKMSSigners
      *     for native      : numHandles + numSignersKMS +                        + list_handles +                + signatureKMSSigners + bundleCiphertext
      *
      *     Total length:

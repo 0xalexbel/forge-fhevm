@@ -2,19 +2,22 @@
 pragma solidity ^0.8.24;
 
 import {Vm} from "forge-std/src/Vm.sol";
+import {Test} from "forge-std/src/Test.sol";
 import {console} from "forge-std/src/Console.sol";
 import {TFHE, euint8, euint64, einput, ebool, ebytes256} from "fhevm/lib/TFHE.sol";
-import {FhevmTest} from "../src/FhevmTest.sol";
-import {fhevm} from "../src/fhevm.sol";
+import {TFHEvm} from "../src/TFHEvm.sol";
 import {EncryptedInput} from "../src/encrypted-input/EncryptedInput.sol";
 
-contract EUint8Test is FhevmTest {
+contract EUint8Test is Test {
+    function setUp() public {
+        TFHEvm.setUp();
+    }
+
     function test_AsEUint8() public {
         TFHE.asEuint8(128);
     }
 
-    function test_revert_AsEUint8_overflow() public {
-        vm.expectRevert("Value overflow");
+    function testFail_AsEUint8_overflow() public {
         TFHE.asEuint8(65000);
     }
 
@@ -27,7 +30,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei3 = TFHE.add(ei1, ei2);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = fhevm.decryptU8(ei3, contractAddress, userAddress);
+        uint8 i3 = TFHEvm.decryptU8(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 128 + 2);
     }
 
@@ -40,7 +43,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei3 = TFHE.add(ei1, ei2);
 
         vm.expectRevert("user does not have permission to decrypt handle");
-        fhevm.decryptU8(ei3, contractAddress, userAddress);
+        TFHEvm.decryptU8(ei3, contractAddress, userAddress);
     }
 
     function test_Add_overflow() public {
@@ -52,7 +55,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei3 = TFHE.add(ei1, ei2);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = fhevm.decryptU8(ei3, contractAddress, userAddress);
+        uint8 i3 = TFHEvm.decryptU8(ei3, contractAddress, userAddress);
         vm.assertEq(i3, uint8(uint16(128 + 129)));
     }
 
@@ -68,7 +71,7 @@ contract EUint8Test is FhevmTest {
         // Note in strict mode, cannot use vm.expectRevert().
         // forge does not detect it
         // use testFail_xxx instead
-        fhevm.decryptU8Strict(ei3, contractAddress, userAddress);
+        TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
     }
 
     function test_Not() public {
@@ -79,7 +82,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei2 = TFHE.not(ei1);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = fhevm.decryptU8Strict(ei2, contractAddress, userAddress);
+        uint8 i2 = TFHEvm.decryptU8Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, uint8(0xfe));
     }
 
@@ -91,7 +94,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei2 = TFHE.neg(ei1);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = fhevm.decryptU8Strict(ei2, contractAddress, userAddress);
+        uint8 i2 = TFHEvm.decryptU8Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 255);
     }
 
@@ -104,7 +107,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei3 = TFHE.sub(ei1, ei2);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = fhevm.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 128 - 2);
     }
 
@@ -117,7 +120,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei3 = TFHE.sub(ei2, ei1);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = fhevm.decryptU8(ei3, contractAddress, userAddress);
+        uint8 i3 = TFHEvm.decryptU8(ei3, contractAddress, userAddress);
         vm.assertEq(i3, uint8(int8(2 - 128)));
     }
 
@@ -133,7 +136,7 @@ contract EUint8Test is FhevmTest {
         // Note in strict mode, cannot use vm.expectRevert().
         // forge does not detect it
         // use testFail_xxx instead
-        fhevm.decryptU8Strict(ei3, contractAddress, userAddress);
+        TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
     }
 
     function test_revert_Sub_no_user_permission() public {
@@ -145,7 +148,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei3 = TFHE.sub(ei1, ei2);
 
         vm.expectRevert("user does not have permission to decrypt handle");
-        fhevm.decryptU8(ei3, contractAddress, userAddress);
+        TFHEvm.decryptU8(ei3, contractAddress, userAddress);
     }
 
     function test_Min() public {
@@ -157,7 +160,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei3 = TFHE.min(ei1, ei2);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = fhevm.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 2);
     }
 
@@ -170,7 +173,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei3 = TFHE.max(ei1, ei2);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = fhevm.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 128);
     }
 
@@ -182,7 +185,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei3 = TFHE.max(ei1, ei2);
         TFHE.allow(ei3, userAddress);
 
-        vm.assertEq(fhevm.isTrivial(ei3), true);
+        vm.assertEq(TFHEvm.isTrivial(ei3), true);
     }
 
     function test_cast_u64_to_u8() public {
@@ -193,7 +196,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei2 = TFHE.asEuint8(ei1);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = fhevm.decryptU8Strict(ei2, contractAddress, userAddress);
+        uint8 i2 = TFHEvm.decryptU8Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 128);
     }
 
@@ -205,7 +208,7 @@ contract EUint8Test is FhevmTest {
         euint8 ei2 = TFHE.asEuint8(ei1);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = fhevm.decryptU8Strict(ei2, contractAddress, userAddress);
+        uint8 i2 = TFHEvm.decryptU8Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, uint8(uint16(9128)));
     }
 
@@ -217,7 +220,7 @@ contract EUint8Test is FhevmTest {
         euint64 ei2 = TFHE.asEuint64(ei1);
         TFHE.allow(ei2, userAddress);
 
-        uint64 i2 = fhevm.decryptU64Strict(ei2, contractAddress, userAddress);
+        uint64 i2 = TFHEvm.decryptU64Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 128);
     }
 }

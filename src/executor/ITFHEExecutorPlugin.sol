@@ -16,7 +16,9 @@ interface ITFHEExecutorPlugin {
     function fheRotl(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external;
     function fheRotr(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external;
     function fheEq(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external;
+    function fheEq(uint256 result, uint256 lhs, bytes memory rhs, bytes1 scalarByte) external;
     function fheNe(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external;
+    function fheNe(uint256 result, uint256 lhs, bytes memory rhs, bytes1 scalarByte) external;
     function fheGe(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external;
     function fheGt(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external;
     function fheLe(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external;
@@ -33,7 +35,8 @@ interface ITFHEExecutorPlugin {
         bytes1 inputType
     ) external;
     function cast(uint256 result, uint256 ct, bytes1 toType) external;
-    function trivialEncrypt(uint256 result, uint256 ct, bytes1 toType) external;
+    function trivialEncrypt(uint256 result, uint256 pt, bytes1 toType) external;
+    function trivialEncrypt(uint256 result, bytes memory pt, bytes1 toType) external;
     function fheIfThenElse(uint256 result, uint256 control, uint256 ifTrue, uint256 ifFalse) external;
     function fheRand(uint256 result, bytes1 randType) external;
     function fheRandBounded(uint256 result, uint256 upperBound, bytes1 randType) external;

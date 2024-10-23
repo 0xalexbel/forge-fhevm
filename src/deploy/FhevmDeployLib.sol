@@ -9,8 +9,10 @@ import {KMSVerifier} from "fhevm/lib/KMSVerifier.sol";
 import {InputVerifier as InputVerifierNative} from "fhevm/lib/InputVerifier.native.sol";
 import {InputVerifier as InputVerifierCoprocessor} from "fhevm/lib/InputVerifier.coprocessor.sol";
 import {GatewayContract} from "fhevm/gateway/GatewayContract.sol";
+import {FHEVMConfig} from "fhevm/lib/FHEVMConfig.sol";
 
 import {TFHEExecutor as TFHEExecutorWithPlugin} from "../executor/TFHEExecutor.plugin.sol";
+import {TFHEExecutorDB} from "../executor/TFHEExecutorDB.sol";
 import {FhevmAddressesLib} from "./FhevmAddressesLib.sol";
 
 library FhevmDeployLib {
@@ -21,8 +23,25 @@ library FhevmDeployLib {
         address FHEPaymentAddress;
         address KMSVerifierAddress;
         // InputVerifiers
-        address inputVerifierNative;
-        address inputVerifierCoprocessor;
+        address InputVerifierAddress;
+        address InputVerifierNativeAddress;
+        address InputVerifierCoprocessorAddress;
+        // Extra
+        address TFHEExecutorDBAddress;
+    }
+
+    function deployGateway(address deployerAddr, address relayerAddr)
+        internal
+        returns (address gatewayContractAddress)
+    {
+        // Deploy order:
+        // 1. GatewayContract
+        // 2. addRelayer
+        GatewayContract gc = deployGatewayContract(deployerAddr);
+        gc.initialize(deployerAddr);
+        gc.addRelayer(relayerAddr);
+
+        gatewayContractAddress = address(gc);
     }
 
     /// Deploy a new set of fhevm contracts
@@ -38,22 +57,30 @@ library FhevmDeployLib {
         // 3. KMSVerfier
         // 4. InputVerifier
         // 5. FHEPayment
+        // Extra:
+        // 6. TFHEExecutorDB
         ACL acl = deployACL(deployerAddr);
         TFHEExecutorWithPlugin tfheExecutorWithPlugin = deployTFHEExecutorWithPlugin(deployerAddr);
         KMSVerifier kmsVerifier = deployKMSVerifier(deployerAddr);
 
         if (isCoprocessor) {
-            res.inputVerifierCoprocessor = address(deployInputVerifierCoprocessor(deployerAddr));
+            res.InputVerifierCoprocessorAddress = address(deployInputVerifierCoprocessor(deployerAddr));
+            res.InputVerifierAddress = res.InputVerifierCoprocessorAddress;
         } else {
-            res.inputVerifierNative = address(deployInputVerifierNative(deployerAddr));
+            res.InputVerifierNativeAddress = address(deployInputVerifierNative(deployerAddr));
+            res.InputVerifierAddress = res.InputVerifierNativeAddress;
         }
 
         FHEPayment fhePayment = deployFHEPayment(deployerAddr);
+
+        // Extra
+        TFHEExecutorDB tfheExecutorDB = deployTFHEExecutorDB(deployerAddr);
 
         res.ACLAddress = address(acl);
         res.TFHEExecutorAddress = address(tfheExecutorWithPlugin);
         res.KMSVerifierAddress = address(kmsVerifier);
         res.FHEPaymentAddress = address(fhePayment);
+        res.TFHEExecutorDBAddress = address(tfheExecutorDB);
 
         acl.initialize(deployerAddr);
         tfheExecutorWithPlugin.initialize(deployerAddr);
@@ -65,20 +92,42 @@ library FhevmDeployLib {
         }
 
         if (isCoprocessor) {
-            InputVerifierCoprocessor iv = InputVerifierCoprocessor(res.inputVerifierCoprocessor);
+            InputVerifierCoprocessor iv = InputVerifierCoprocessor(res.InputVerifierCoprocessorAddress);
             iv.initialize(deployerAddr);
         } else {
-            InputVerifierNative iv = InputVerifierNative(res.inputVerifierNative);
+            InputVerifierNative iv = InputVerifierNative(res.InputVerifierNativeAddress);
             iv.initialize(deployerAddr);
         }
 
         fhePayment.initialize(deployerAddr);
 
+        tfheExecutorWithPlugin.setPlugin(tfheExecutorDB);
+
+        verifyDefaultFHEVMConfig(res);
+
         return res;
     }
 
+    /// Verify that FHEVMConfig.defaultConfig() is consistent.
+    function verifyDefaultFHEVMConfig(FhevmDeployment memory deployment) private pure {
+        FHEVMConfig.FHEVMConfigStruct memory defaultCfg = FHEVMConfig.defaultConfig();
+        require(defaultCfg.ACLAddress == deployment.ACLAddress, "ACL address is invalid. Deployment is inconsistent.");
+        require(
+            defaultCfg.TFHEExecutorAddress == deployment.TFHEExecutorAddress,
+            "TFHEExecutor address is invalid. Deployment is inconsistent."
+        );
+        require(
+            defaultCfg.KMSVerifierAddress == deployment.KMSVerifierAddress,
+            "KMSVerifier address is invalid. Deployment is inconsistent."
+        );
+        require(
+            defaultCfg.FHEPaymentAddress == deployment.FHEPaymentAddress,
+            "FHEPayment address is invalid. Deployment is inconsistent."
+        );
+    }
+
     /// Deploy a new ACL contract using the specified deployer wallet
-    function deployACL(address deployerAddr) internal returns (ACL) {
+    function deployACL(address deployerAddr) private returns (ACL) {
         (address expectedImplAddr, address expectedAddr) = FhevmAddressesLib.expectedCreateACLAddress(deployerAddr);
 
         ACL impl = new ACL();
@@ -93,7 +142,7 @@ library FhevmDeployLib {
     }
 
     /// Deploy a new TFHEExecutorWithPlugin contract using the specified deployer wallet
-    function deployTFHEExecutorWithPlugin(address deployerAddr) internal returns (TFHEExecutorWithPlugin) {
+    function deployTFHEExecutorWithPlugin(address deployerAddr) private returns (TFHEExecutorWithPlugin) {
         (address expectedImplAddr, address expectedAddr) =
             FhevmAddressesLib.expectedCreateTFHEExecutorAddress(deployerAddr);
 
@@ -109,7 +158,7 @@ library FhevmDeployLib {
     }
 
     /// Deploy a new KMSVerifier contract using the specified deployer wallet
-    function deployKMSVerifier(address deployerAddr) internal returns (KMSVerifier) {
+    function deployKMSVerifier(address deployerAddr) private returns (KMSVerifier) {
         (address expectedImplAddr, address expectedAddr) =
             FhevmAddressesLib.expectedCreateKMSVerifierAddress(deployerAddr);
 
@@ -125,7 +174,7 @@ library FhevmDeployLib {
     }
 
     /// Deploy a new FHEPayment contract using the specified deployer wallet
-    function deployFHEPayment(address deployerAddr) internal returns (FHEPayment) {
+    function deployFHEPayment(address deployerAddr) private returns (FHEPayment) {
         (address expectedImplAddr, address expectedAddr) =
             FhevmAddressesLib.expectedCreateFHEPaymentAddress(deployerAddr);
 
@@ -142,7 +191,7 @@ library FhevmDeployLib {
 
     /// Deploy a new InputVerifier native contract using the specified deployer wallet
     /// Native verifiers are defined in 'InputVerifier.native.sol'
-    function deployInputVerifierNative(address deployerAddr) internal returns (address) {
+    function deployInputVerifierNative(address deployerAddr) private returns (address) {
         (address expectedImplAddr, address expectedAddr) =
             FhevmAddressesLib.expectedCreateInputVerifierAddress(deployerAddr);
 
@@ -161,7 +210,7 @@ library FhevmDeployLib {
 
     /// Deploy a new InputVerifier coprocessor contract using the specified deployer wallet
     /// Coprocessor verifiers are defined in 'InputVerifier.coprocessor.sol'
-    function deployInputVerifierCoprocessor(address deployerAddr) internal returns (address) {
+    function deployInputVerifierCoprocessor(address deployerAddr) private returns (address) {
         (address expectedImplAddr, address expectedAddr) =
             FhevmAddressesLib.expectedCreateInputVerifierAddress(deployerAddr);
 
@@ -180,7 +229,7 @@ library FhevmDeployLib {
     }
 
     /// Deploy a new GatewayContract contract using the specified deployer wallet
-    function deployGatewayContract(address deployerAddr) internal returns (GatewayContract) {
+    function deployGatewayContract(address deployerAddr) private returns (GatewayContract) {
         (address expectedImplAddr, address expectedAddr) =
             FhevmAddressesLib.expectedCreateGatewayContractAddress(deployerAddr);
 
@@ -193,5 +242,15 @@ library FhevmDeployLib {
         GatewayContract _gc = GatewayContract(address(proxy));
 
         return _gc;
+    }
+
+    /// Deploy a new TFHEExecutorDB contract using the specified deployer wallet
+    function deployTFHEExecutorDB(address deployerAddr) private returns (TFHEExecutorDB) {
+        address expectedAddr = FhevmAddressesLib.expectedCreateTFHEExecutorDBAddress(deployerAddr);
+
+        TFHEExecutorDB _tfheExecutorDB = new TFHEExecutorDB(deployerAddr);
+        require(address(_tfheExecutorDB) == expectedAddr, "deployTFHEExecutorDB: unexpected contract deploy address");
+
+        return _tfheExecutorDB;
     }
 }

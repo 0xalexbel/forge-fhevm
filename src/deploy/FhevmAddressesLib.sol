@@ -8,6 +8,8 @@ import {coprocessorAdd} from "fhevm/lib/CoprocessorAddress.sol";
 import {fhePaymentAdd} from "fhevm/lib/FHEPaymentAddress.sol";
 import {tfheExecutorAdd} from "fhevm/lib/TFHEExecutorAddress.sol";
 import {GATEWAY_CONTRACT_PREDEPLOY_ADDRESS} from "fhevm/gateway/lib/GatewayContractAddress.sol";
+import {tfheExecutorDBAdd} from "../executor/TFHEExecutorDBAddress.sol";
+import {AddressLib} from "../utils/AddressLib.sol";
 
 /// Note: forge does not handle libraries very well in a script setUp context.
 /// Therefore, solidity code like this one is deployed as a contract instead of a library
@@ -22,30 +24,13 @@ library FhevmAddressesLib {
     uint8 private constant InputVerifierNonce = 7;
     uint8 private constant FHEPaymentImplNonce = 8;
     uint8 private constant FHEPaymentNonce = 9;
+    uint8 private constant TFHEExecutorDBNonce = 10;
 
     uint8 private constant GatewayContractImplNonce = 0;
     uint8 private constant GatewayContractNonce = 1;
 
-    function _computeCreateAddress(address _origin, uint256 _nonce) private pure returns (address) {
-        bytes memory data;
-        if (_nonce == 0x00) {
-            data = abi.encodePacked(bytes1(0xd6), bytes1(0x94), _origin, bytes1(0x80));
-        } else if (_nonce <= 0x7f) {
-            data = abi.encodePacked(bytes1(0xd6), bytes1(0x94), _origin, uint8(_nonce));
-        } else if (_nonce <= 0xff) {
-            data = abi.encodePacked(bytes1(0xd7), bytes1(0x94), _origin, bytes1(0x81), uint8(_nonce));
-        } else if (_nonce <= 0xffff) {
-            data = abi.encodePacked(bytes1(0xd8), bytes1(0x94), _origin, bytes1(0x82), uint16(_nonce));
-        } else if (_nonce <= 0xffffff) {
-            data = abi.encodePacked(bytes1(0xd9), bytes1(0x94), _origin, bytes1(0x83), uint24(_nonce));
-        } else {
-            data = abi.encodePacked(bytes1(0xda), bytes1(0x94), _origin, bytes1(0x84), uint32(_nonce));
-        }
-        return address(uint160(uint256(keccak256(data))));
-    }
-
     function computeCreateAddress(address _origin, uint256 _nonce) private pure returns (address) {
-        address sol_a = _computeCreateAddress(_origin, _nonce);
+        address sol_a = AddressLib.computeCreateAddress(_origin, _nonce);
 
         // // For debug purpose
         // if (address(forgeVm).codehash != bytes32(0)) {
@@ -55,6 +40,8 @@ library FhevmAddressesLib {
 
         return sol_a;
     }
+
+    /// FHEVM contracts
 
     /// Returns a tuple of two addresses:
     /// - the computed 'ACL' contact implementation address
@@ -170,6 +157,23 @@ library FhevmAddressesLib {
         );
     }
 
+    /// Extra contracts
+
+    /// Returns a single address:
+    /// - the 'TFHEExecutorDB' contract address
+    /// Fails if the 'TFHEExecutorDB' contact address differs from the value of 'tfheExecutorDBAdd' stored in
+    /// the 'fhevm/lib/TFHEExecutorDBAddress.sol' solidity file.
+    function expectedCreateTFHEExecutorDBAddress(address deployerAddr) public pure returns (address expectedAddr) {
+        expectedAddr = computeCreateAddress(deployerAddr, TFHEExecutorDBNonce);
+
+        require(
+            tfheExecutorDBAdd == expectedAddr,
+            "TFHEExecutorDB contract address differs from its expected create address. Address solidity files must be regenerated."
+        );
+    }
+
+    /// FHEVM contracts
+
     function computeCreateACLAddress(address deployerAddr) public pure returns (address) {
         return computeCreateAddress(deployerAddr, ACLNonce);
     }
@@ -192,5 +196,11 @@ library FhevmAddressesLib {
 
     function computeCreateGatewayContractAddress(address deployerAddr) public pure returns (address) {
         return computeCreateAddress(deployerAddr, GatewayContractNonce);
+    }
+
+    /// Extra contracts
+
+    function computeCreateTFHEExecutorDBAddress(address deployerAddr) public pure returns (address) {
+        return computeCreateAddress(deployerAddr, TFHEExecutorDBNonce);
     }
 }

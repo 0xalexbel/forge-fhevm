@@ -1,12 +1,28 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
-import {Vm} from "forge-std/src/Vm.sol";
+import {IForgeStdVmSafe as IVmSafe, forgeStdVmSafeAdd} from "./IForgeStdVmSafe.sol";
+import {AddressLib} from "../utils/AddressLib.sol";
 
 library EnvLib {
-    Vm private constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+    IVmSafe private constant vm = IVmSafe(forgeStdVmSafeAdd);
 
-    function envPrivateKey(string memory envName) public view returns (uint256) {
+    function envSigner(string memory envVarName, uint256 defaultPk)
+        internal
+        view
+        returns (AddressLib.Signer memory signer)
+    {
+        // setup fhevm deployer
+        uint256 _pk = envPrivateKey(envVarName);
+        if (_pk == 0) {
+            _pk = defaultPk;
+        }
+        //signer.addr = vm.rememberKey(_pk);
+        signer.addr = vm.addr(_pk);
+        signer.privateKey = _pk;
+    }
+
+    function envPrivateKey(string memory envName) internal view returns (uint256) {
         if (!vm.envExists(envName)) {
             return 0;
         }
@@ -23,7 +39,7 @@ library EnvLib {
         }
     }
 
-    function envMnemonicOr(string memory envName, string memory defaultValue) public view returns (string memory) {
+    function envMnemonicOr(string memory envName, string memory defaultValue) internal view returns (string memory) {
         if (!vm.envExists(envName)) {
             return defaultValue;
         }
@@ -36,7 +52,7 @@ library EnvLib {
         return s;
     }
 
-    function envUIntOr(string memory envName, uint256 defaultValue) public view returns (uint256) {
+    function envUIntOr(string memory envName, uint256 defaultValue) internal view returns (uint256) {
         if (!vm.envExists(envName)) {
             return defaultValue;
         }
@@ -49,7 +65,7 @@ library EnvLib {
         }
     }
 
-    function envBoolOr(string memory envName, bool defaultValue) public view returns (bool) {
+    function envBoolOr(string memory envName, bool defaultValue) internal view returns (bool) {
         if (!vm.envExists(envName)) {
             return defaultValue;
         }

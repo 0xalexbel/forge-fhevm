@@ -241,4 +241,16 @@ contract EncryptedInputListTest is Test {
             )
         );
     }
+
+    // function log(EncryptedInputSigner memory signer) internal pure {
+    //     console.log("chainId: %s", signer.chainId);
+    //     console.log("ACL: %s", signer.acl);
+    //     console.log("KMSVerifier: %s", signer.kmsVerifier);
+    //     console.log("InputVerifier: %s", signer.inputVerifier);
+    //     console.log("Coprocessor signer: %s", vm.toString(bytes32(signer.coprocSigner)));
+    //     console.log("Num kms signers: %s", signer.kmsSigners.length);
+    //     for (uint256 i = 0; i < signer.kmsSigners.length; ++i) {
+    //         console.log("kms signer #%s: %s", i, vm.toString(bytes32(signer.kmsSigners[i])));
+    //     }
+    // }
 }

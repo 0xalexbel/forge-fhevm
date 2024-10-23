@@ -2,10 +2,13 @@
 
 pragma solidity ^0.8.24;
 
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Common} from "fhevm/lib/TFHE.sol";
 import {ITFHEExecutorPlugin} from "./ITFHEExecutorPlugin.sol";
+import {BytesLib} from "../utils/BytesLib.sol";
+import {IRandomGenerator} from "../utils/IRandomGenerator.sol";
+import {DBLib} from "../db/DB.sol";
+import {MathLib} from "../utils/MathLib.sol";
 
 /*
     uint8 internal constant ebool_t = 0;
@@ -23,103 +26,86 @@ import {ITFHEExecutorPlugin} from "./ITFHEExecutorPlugin.sol";
 */
 
 contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
+    // Note: IS_FORGE_TFHE_EXECUTOR_DB() must return true.
+    bool public IS_FORGE_TFHE_EXECUTOR_DB = true;
+
     enum ArithmeticCheckingMode {
         OperandsOnly,
         OperandsAndResult
     }
 
-    error HandleDoesNotExist(uint256 handle);
-    error ArithmeticOverflow(uint256 handle);
-    error ArithmeticUnderflow(uint256 handle);
-    error ArithmeticDivisionByZero(uint256 handle);
-
-    uint256[9] private MAX_UINT = [
-        1, // 2**1 - 1 (0, ebool_t)
-        0xF, // 2**4 - 1 (1, euint4_t)
-        0xFF, // 2**8 - 1 (2, euint8_t)
-        0xFFFF, // 2**16 - 1 (3, euint16_t)
-        0xFFFFFFFF, // 2**32 - 1 (4, euint32_t)
-        0xFFFFFFFFFFFFFFFF, // 2**64 - 1 (5, euint64_t)
-        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, // 2**128 - 1 (6, euint128_t))
-        0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, // 2**160 - 1 (7, euint160_t))
-        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF // 2**256 - 1 (8, euint256_t))
-    ];
-
-    struct Entry256 {
-        // equals to Common.<type> + 1
-        uint8 valueType;
-        uint256 value;
-        bool divisionByZero;
-        bool overflow;
-        bool underflow;
-        bool trivial;
-    }
-
-    struct Entry2048 {
-        // equals to Common.<type> + 1
-        uint8 valueType;
-        bytes value;
-    }
-
-    // Note: IS_FORGE_TFHE_EXECUTOR_DB() must return true.
-    bool public IS_FORGE_TFHE_EXECUTOR_DB = true;
-
-    mapping(uint256 => Entry256) public db_256;
-    mapping(uint256 => Entry2048) public db_2048;
-
-    uint256 public db256Count;
-    uint256 public db2048Count;
-
     uint256 private _throwIfArithmeticError;
     ArithmeticCheckingMode private _arithmeticCheckingMode;
 
+    IRandomGenerator private _randomGenerator;
+
+    DBLib.Set private _db;
+    using DBLib for DBLib.Set;
+
     constructor(address initialOwner) Ownable(initialOwner) {}
 
-    function exists256(uint256 handle) internal view returns (bool) {
-        return db_256[handle].valueType > 0;
+    function setRandomGenerator(IRandomGenerator randomGenerator) external {
+        _randomGenerator = randomGenerator;
     }
 
-    function exists2048(uint256 handle) internal view returns (bool) {
-        return db_2048[handle].valueType > 0;
+    function isTrivial(uint256 handle) external view returns (bool) {
+        return _db.isTrivial(handle);
     }
 
-    function get256(uint256 handle) public view returns (Entry256 memory) {
-        return db_256[handle];
+    function isArithmeticallyValid(uint256 handle) external view returns (bool) {
+        return _db.isArithmeticallyValid(handle);
     }
 
-    function get2048(uint256 handle) public view returns (Entry2048 memory) {
-        return db_2048[handle];
+    function getMeta(uint256 handle) external view returns (DBLib.RecordMeta memory) {
+        return _db.getMeta(handle);
     }
 
-    function get256AsBytes(uint256 handle) public view returns (bytes memory clearBytes) {
-        Entry256 memory e = db_256[handle];
-
-        require(e.valueType != 0, "Handle does not exist");
-
-        uint8 typeCt = e.valueType - 1;
-        if (typeCt <= Common.euint8_t) {
-            clearBytes = bytes.concat(bytes1(uint8(e.value)));
-        } else if (typeCt == Common.euint16_t) {
-            clearBytes = bytes.concat(bytes2(uint16(e.value)));
-        } else if (typeCt == Common.euint32_t) {
-            clearBytes = bytes.concat(bytes4(uint32(e.value)));
-        } else if (typeCt == Common.euint64_t) {
-            clearBytes = bytes.concat(bytes8(uint64(e.value)));
-        } else if (typeCt == Common.euint128_t) {
-            clearBytes = bytes.concat(bytes16(uint128(e.value)));
-        } else if (typeCt == Common.euint256_t) {
-            clearBytes = bytes.concat(bytes32(uint256(e.value)));
-        } else {
-            revert("Value type is not 256-bits compatible");
-        }
+    function getBool(uint256 handle) external view returns (bool) {
+        return _db.getBool(handle);
     }
 
-    function get2048AsBytes(uint256 handle) public view returns (bytes memory clearBytes) {
-        Entry2048 memory e = db_2048[handle];
+    function getU4(uint256 handle) external view returns (uint8) {
+        return _db.getU4(handle);
+    }
 
-        require(e.valueType != 0, "Handle does not exist");
+    function getU8(uint256 handle) external view returns (uint8) {
+        return _db.getU8(handle);
+    }
 
-        clearBytes = e.value;
+    function getU16(uint256 handle) external view returns (uint16) {
+        return _db.getU16(handle);
+    }
+
+    function getU32(uint256 handle) external view returns (uint32) {
+        return _db.getU32(handle);
+    }
+
+    function getU64(uint256 handle) external view returns (uint64) {
+        return _db.getU64(handle);
+    }
+
+    function getU128(uint256 handle) external view returns (uint128) {
+        return _db.getU128(handle);
+    }
+
+    function getAddress(uint256 handle) external view returns (address) {
+        return _db.getAddress(handle);
+    }
+
+    function getU256(uint256 handle) external view returns (uint256) {
+        return _db.getU256(handle);
+    }
+
+    function getBytes64(uint256 handle) external view returns (bytes memory) {
+        return _db.getBytes64(handle);
+    }
+
+    function getBytes128(uint256 handle) external view returns (bytes memory) {
+        return _db.getBytes128(handle);
+    }
+
+    function getBytes256(uint256 handle) external view returns (bytes memory) {
+        return _db.getBytes256(handle);
     }
 
     function startCheckArithmetic() public {
@@ -150,640 +136,595 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         _arithmeticCheckingMode = ArithmeticCheckingMode(mode);
     }
 
-    /**
-     * @dev Throws if handle is not stored in the db 256.
-     */
-    modifier onlyExists256(uint256 handle) {
-        if (db_256[handle].valueType == 0) {
-            revert HandleDoesNotExist(handle);
-        }
-        _;
-    }
-
-    /**
-     * @dev Throws if handle is not a scalar and is not stored in the db 256.
-     */
-    modifier onlyExistsOrScalar256(uint256 handle, bytes1 scalarByte) {
-        if (!(scalarByte == 0x01 || db_256[handle].valueType > 0)) {
-            revert HandleDoesNotExist(handle);
-        }
-        _;
-    }
-
-    function typeOf(uint256 handle) public pure returns (uint8) {
-        uint8 typeCt = uint8(handle >> 8);
-        return typeCt;
-    }
-
-    function _newEntry256(uint256 lhs, uint256 rhs) internal view returns (Entry256 memory) {
-        Entry256 memory l = db_256[lhs];
-        Entry256 memory r = db_256[rhs];
-        Entry256 memory e;
-        e.overflow = l.overflow || r.overflow;
-        e.underflow = l.underflow || r.underflow;
-        e.divisionByZero = l.divisionByZero || r.divisionByZero;
-        e.trivial = l.trivial && r.trivial;
-        return e;
-    }
-
-    function _newEntry256(uint256 ct) internal view returns (Entry256 memory) {
-        Entry256 memory ctEntry = db_256[ct];
-
-        Entry256 memory e;
-        e.overflow = ctEntry.overflow;
-        e.underflow = ctEntry.underflow;
-        e.divisionByZero = ctEntry.divisionByZero;
-        e.trivial = ctEntry.trivial;
-
-        return e;
-    }
-
-    function _newEntry2048(uint256, /*lhs*/ uint256 /*rhs*/ ) internal pure returns (Entry2048 memory) {
-        Entry2048 memory e;
-        return e;
-    }
-
-    function revertIfArithmeticError(uint256 handle) internal view {
-        Entry256 memory e = db_256[handle];
-        if (e.overflow) {
-            revert ArithmeticOverflow(handle);
-        }
-        if (e.underflow) {
-            revert ArithmeticUnderflow(handle);
-        }
-        if (e.divisionByZero) {
-            revert ArithmeticDivisionByZero(handle);
-        }
-    }
-
-    function verifyHandle256(uint256 handle, bytes1 scalarByte, bool operand) internal view returns (uint256 clearCt) {
-        Entry256 memory entry = db_256[handle];
-        if (scalarByte == 0x0) {
-            if (entry.valueType == 0) {
-                revert HandleDoesNotExist(handle);
-            }
-            if (operand || (!operand && _arithmeticCheckingMode == ArithmeticCheckingMode.OperandsAndResult)) {
-                if (_throwIfArithmeticError > 0) {
-                    revertIfArithmeticError(handle);
-                }
-            }
-            clearCt = entry.value;
-        } else {
-            clearCt = handle;
-        }
-    }
-
-    function verifyHandle2048(uint256 handle) internal view returns (bytes memory clearCt) {
-        Entry2048 memory entry = db_2048[handle];
-        if (entry.valueType == 0) {
-            revert HandleDoesNotExist(handle);
-        }
-        clearCt = entry.value;
-    }
-
-    function binaryOpVerify256(uint256 lhs, uint256 rhs, bytes1 scalarByte)
-        internal
-        view
-        returns (uint256 clearLhs, uint256 clearRhs)
-    {
-        clearLhs = verifyHandle256(lhs, 0x0, true);
-        clearRhs = verifyHandle256(rhs, scalarByte, true);
-    }
-
-    function ternaryOpVerify256(uint256 one, uint256 two, uint256 three)
-        internal
-        view
-        returns (uint256 clearOne, uint256 clearTwo, uint256 clearThree)
-    {
-        clearOne = verifyHandle256(one, 0x0, true);
-        clearTwo = verifyHandle256(two, 0x0, true);
-        clearThree = verifyHandle256(three, 0x0, true);
-    }
-
-    function binaryOpVerify2048(uint256 lhs, uint256 rhs)
-        internal
-        view
-        returns (bytes memory clearLhs, bytes memory clearRhs)
-    {
-        clearLhs = verifyHandle2048(lhs);
-        clearRhs = verifyHandle2048(rhs);
-    }
-
-    function ternaryOpVerify2048(uint256 one, uint256 two, uint256 three)
-        internal
-        view
-        returns (uint256 clearOne, bytes memory clearTwo, bytes memory clearThree)
-    {
-        // 256 (bool type)
-        clearOne = verifyHandle256(one, 0x0, true);
-        // 2048
-        clearTwo = verifyHandle2048(two);
-        // 2048
-        clearThree = verifyHandle2048(three);
-    }
-
-    function insertDB256(uint256 handle, uint256 valueCt, uint8 typeCt) external {
-        require(typeCt >= Common.ebool_t && typeCt <= Common.euint256_t, "Invalid 256 type");
-        require(db_256[handle].valueType == 0, "Handle already exists");
-
-        db256Count++;
-
-        Entry256 memory e;
-        e.valueType = typeCt + 1;
-        e.value = valueCt;
-
-        db_256[handle] = e;
-    }
-
-    function insertDB2048(uint256 handle, bytes memory valueCt, uint8 typeCt) external {
-        require(typeCt >= Common.ebytes64_t && typeCt <= Common.ebytes256_t, "Invalid 2048 type");
-        require(db_2048[handle].valueType == 0, "Handle already exists");
-
-        db2048Count++;
-
-        Entry2048 memory e;
-        e.valueType = typeCt + 1;
-        e.value = valueCt;
-
-        db_2048[handle] = e;
-    }
-
-    function exit_insertDB256(uint256 handle, Entry256 memory e) internal {
-        // Does not already exist
-        if (db_256[handle].valueType == 0) {
-            db256Count++;
-        }
-        db_256[handle] = e;
-
+    function __exit_checkArithmetic(uint256 result, MathLib.ArithmeticFlags memory flags) private {
         if (_throwIfArithmeticError > 0) {
             if (_arithmeticCheckingMode == ArithmeticCheckingMode.OperandsAndResult) {
-                revertIfArithmeticError(handle);
+                DBLib.checkArithmetic(result, flags);
             }
             _throwIfArithmeticError--;
         }
     }
 
-    function exit_insertDB2048(uint256 handle, Entry2048 memory e) internal {
-        // Does not already exist
-        if (db_2048[handle].valueType == 0) {
-            db2048Count++;
-        }
-        db_2048[handle] = e;
+    // ===== Numeric binary op =====
 
-        if (_throwIfArithmeticError > 0) {
-            // No artithmetic error with bytes
-            _throwIfArithmeticError--;
-        }
-    }
+    /**
+     * Note: 2 cases
+     *
+     * 1. TFHE.add(euint64, euint64)
+     *
+     *    - typeOf(lhs) == typeOf(rhs) == typeOf(resultHandle)
+     *    - Common.euint4_t <= type <= Common.euint256_t
+     *
+     * 2. TFHE.add(euint64, 12345)
+     *
+     *    - typeOf(lhs) == typeOf(resultHandle)
+     *    - Common.euint4_t <= type <= Common.euint256_t
+     *
+     */
+    function _fheNumericBinaryOp(
+        function(uint256,uint256,uint8) internal pure returns(MathLib.ArithmeticFlags memory, uint256)
+            numericBinaryOpFunc,
+        uint256 resultHandle,
+        uint256 lhs,
+        uint256 rhs,
+        bool rhsIsScalar
+    ) private {
+        uint8 lhsType = DBLib.typeOf(lhs);
+        DBLib.checkIsNumeric(lhs, lhsType);
+        DBLib.checkTypeEq(resultHandle, lhsType);
 
-    function fheAdd(uint256 resultHandle, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
-        uint8 lhsType = typeOf(lhs);
+        DBLib.RecordMeta memory meta;
+        uint256 lClearNum;
+        uint256 rClearNum;
 
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        (uint256 clearLhs, uint256 clearRhs) = binaryOpVerify256(lhs, rhs, scalarByte);
-
-        Entry256 memory e = _newEntry256(lhs, rhs);
-        e.valueType = lhsType + 1;
-        (bool succeeded, uint256 result) = Math.tryAdd(clearLhs, clearRhs);
-        e.value = result % (MAX_UINT[lhsType] + 1);
-        e.overflow = (succeeded ? (result > MAX_UINT[lhsType]) : true) || e.overflow;
-
-        // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
-    }
-
-    function fheSub(uint256 resultHandle, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        (uint256 clearLhs, uint256 clearRhs) = binaryOpVerify256(lhs, rhs, scalarByte);
-
-        Entry256 memory e = _newEntry256(lhs, rhs);
-        e.valueType = lhsType + 1;
-        e.underflow = (clearRhs > clearLhs) || e.underflow;
-        unchecked {
-            e.value = (clearLhs - clearRhs) % (MAX_UINT[lhsType] + 1);
-        }
-
-        // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
-    }
-
-    function fheMul(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        revert("fheMul not yet implemented");
-    }
-
-    function fheDiv(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        revert("fheDiv not yet implemented");
-    }
-
-    function fheRem(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        revert("fheRem not yet implemented");
-    }
-
-    function fheBitAnd(uint256 resultHandle, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.ebool_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        (uint256 clearLhs, uint256 clearRhs) = binaryOpVerify256(lhs, rhs, scalarByte);
-
-        Entry256 memory e = _newEntry256(lhs, rhs);
-        e.valueType = lhsType + 1;
-        e.value = (clearLhs & clearRhs);
-
-        // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
-    }
-
-    function fheBitOr(uint256 resultHandle, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.ebool_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        (uint256 clearLhs, uint256 clearRhs) = binaryOpVerify256(lhs, rhs, scalarByte);
-
-        Entry256 memory e = _newEntry256(lhs, rhs);
-        e.valueType = lhsType + 1;
-        e.value = (clearLhs | clearRhs);
-
-        // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
-    }
-
-    function fheBitXor(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.ebool_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        revert("fheBitXor not yet implemented");
-    }
-
-    function fheShl(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        revert("fheShl not yet implemented");
-    }
-
-    function fheShr(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        revert("fheShr not yet implemented");
-    }
-
-    function fheRotl(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        revert("fheRotl not yet implemented");
-    }
-
-    function fheRotr(uint256 resultHandle, uint256 lhs, uint256, /* rhs */ bytes1 /* scalarByte */ ) external pure {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        revert("fheRotl not yet implemented");
-    }
-
-    function fheEq(uint256 resultHandle, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.euint4_t && lhsType <= Common.ebytes256_t);
-        require(typeOf(resultHandle) == Common.ebool_t);
-
-        if (lhsType <= Common.euint256_t) {
-            (uint256 clearLhs, uint256 clearRhs) = binaryOpVerify256(lhs, rhs, scalarByte);
-
-            Entry256 memory e = _newEntry256(lhs, rhs);
-            e.valueType = Common.ebool_t + 1;
-            e.value = (clearLhs == clearRhs) ? 1 : 0;
-
-            // Must be the very last function call
-            exit_insertDB256(resultHandle, e);
+        if (rhsIsScalar) {
+            (meta, lClearNum) = _db.binaryOpNumCtNumPt(resultHandle, lhs, (_throwIfArithmeticError > 0));
+            rClearNum = rhs;
         } else {
-            require(scalarByte == 0x0, "rhs scalar not supported with ebytes types");
-
-            (bytes memory clearLhs, bytes memory clearRhs) = binaryOpVerify2048(lhs, rhs);
-
-            bool areEqual = clearLhs.length == clearRhs.length && keccak256(clearLhs) == keccak256(clearRhs);
-
-            Entry256 memory e = _newEntry256(lhs, rhs);
-            e.valueType = Common.ebool_t + 1;
-            e.value = (areEqual) ? 1 : 0;
-
-            // Must be the very last function call
-            exit_insertDB256(resultHandle, e);
+            (meta, lClearNum, rClearNum) = _db.binaryOpNumCtNumCt(resultHandle, lhs, rhs, (_throwIfArithmeticError > 0));
         }
+
+        (MathLib.ArithmeticFlags memory flags, uint256 value) =
+            numericBinaryOpFunc(lClearNum, rClearNum, meta.valueType - 1);
+
+        meta.arithmeticFlags = MathLib.orArithmeticFlags(meta.arithmeticFlags, flags);
+
+        DBLib.Record memory r;
+        r.meta = meta;
+        r.value = bytes.concat(bytes32(value));
+
+        _db.insertUnsafe(resultHandle, r);
+
+        // Must be the very last function call
+        __exit_checkArithmetic(resultHandle, meta.arithmeticFlags);
     }
 
-    function fheNe(uint256 resultHandle, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
-        uint8 lhsType = typeOf(lhs);
+    function fheAdd(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheNumericBinaryOp(MathLib.add, result, lhs, rhs, (scalarByte != 0));
+    }
 
-        require(lhsType >= Common.euint4_t && lhsType <= Common.ebytes256_t);
-        require(typeOf(resultHandle) == Common.ebool_t);
+    function fheSub(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheNumericBinaryOp(MathLib.sub, result, lhs, rhs, (scalarByte != 0));
+    }
 
-        if (lhsType <= Common.euint256_t) {
-            (uint256 clearLhs, uint256 clearRhs) = binaryOpVerify256(lhs, rhs, scalarByte);
+    function fheMul(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheNumericBinaryOp(MathLib.mul, result, lhs, rhs, (scalarByte != 0));
+    }
 
-            Entry256 memory e = _newEntry256(lhs, rhs);
-            e.valueType = lhsType + 1;
-            e.value = (clearLhs != clearRhs) ? 1 : 0;
+    function fheDiv(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheNumericBinaryOp(MathLib.div, result, lhs, rhs, (scalarByte != 0));
+    }
 
-            // Must be the very last function call
-            exit_insertDB256(resultHandle, e);
+    function fheRem(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheNumericBinaryOp(MathLib.rem, result, lhs, rhs, (scalarByte != 0));
+    }
+
+    function fheMin(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheNumericBinaryOp(MathLib.min, result, lhs, rhs, (scalarByte != 0));
+    }
+
+    function fheMax(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheNumericBinaryOp(MathLib.max, result, lhs, rhs, (scalarByte != 0));
+    }
+
+    // ===== Numeric unary op =====
+
+    /**
+     * Note: 1 case
+     *
+     * 1. euint64 TFHE.neg(euint64)
+     *
+     *    - typeOf(lhs) == typeOf(resultHandle)
+     *    - Common.euint4_t <= type <= Common.euint256_t
+     *
+     */
+    function _fheNumericUnaryOp(
+        function(uint256,uint8) internal pure returns(MathLib.ArithmeticFlags memory, uint256) numericUnaryOpFunc,
+        uint256 resultHandle,
+        uint256 ct,
+        bool resultTypeEqCtType
+    ) private {
+        uint8 ctType = DBLib.typeOf(ct);
+        DBLib.checkIsNumeric(ct, ctType);
+
+        if (resultTypeEqCtType) {
+            DBLib.checkTypeEq(resultHandle, ctType);
+        }
+
+        DBLib.RecordMeta memory meta;
+        uint256 clearNum;
+
+        (meta, clearNum) = _db.unaryOpNumCt(resultHandle, ct, (_throwIfArithmeticError > 0));
+
+        (MathLib.ArithmeticFlags memory flags, uint256 value) = numericUnaryOpFunc(clearNum, meta.valueType - 1);
+
+        meta.arithmeticFlags = MathLib.orArithmeticFlags(meta.arithmeticFlags, flags);
+
+        DBLib.Record memory r;
+        r.meta = meta;
+        r.value = bytes.concat(bytes32(value));
+
+        _db.insertUnsafe(resultHandle, r);
+
+        // Must be the very last function call
+        __exit_checkArithmetic(resultHandle, meta.arithmeticFlags);
+    }
+
+    function fheNeg(uint256 result, uint256 ct) external {
+        // typeOf(result) == typeOf(ct)
+        _fheNumericUnaryOp(MathLib.neg, result, ct, true /* resultTypeEqCtType */);
+    }
+
+    function cast(uint256 result, uint256 ct, bytes1 toType) external {
+        DBLib.checkTypeEq(result, uint8(toType));
+
+        if (result == ct) {
+            _db.checkHandleExist(ct,uint8(toType));
+            return;
+        }
+
+        // typeOf(result) != typeOf(ct)
+        _fheNumericUnaryOp(MathLib.cast, result, ct, false /* resultTypeEqCtType */);
+    }
+
+
+    // ===== Bit binary op =====
+
+    /**
+     * Note: 2 cases
+     *
+     * 1. euint64 = TFHE.xor(euint64, euint64)
+     *
+     *    - typeOf(lhs) == typeOf(rhs) == typeOf(resultHandle)
+     *    - Common.ebool_t <= typeOf(lhs, rhs, resultHandle) <= Common.euint256_t
+     *
+     * 2. euint64 = TFHE.xor(euint64, 12345)
+     *
+     *    - typeOf(lhs) == typeOf(resultHandle)
+     *    - Common.ebool_t <= typeOf(lhs, resultHandle) <= Common.euint256_t
+     *
+     */
+    function _fheBitBinaryOp(
+        function(uint256,uint256,uint8) internal pure returns(uint256) bitBinaryOpFunc,
+        uint256 resultHandle,
+        uint256 lhs,
+        uint256 rhs,
+        bool rhsIsScalar
+    ) private {
+        uint8 lhsType = DBLib.typeOf(lhs);
+        DBLib.checkIs256Bits(lhs, lhsType);
+        DBLib.checkTypeEq(resultHandle, lhsType);
+
+        DBLib.RecordMeta memory meta;
+        uint256 lClearNum;
+        uint256 rClearNum;
+
+        if (rhsIsScalar) {
+            (meta, lClearNum) = _db.binaryOpNumCtNumPt(resultHandle, lhs, (_throwIfArithmeticError > 0));
+            rClearNum = rhs;
         } else {
-            require(scalarByte == 0x0, "rhs scalar not supported with ebytes types");
-
-            (bytes memory clearLhs, bytes memory clearRhs) = binaryOpVerify2048(lhs, rhs);
-
-            bool areEqual = clearLhs.length == clearRhs.length && keccak256(clearLhs) == keccak256(clearRhs);
-
-            Entry256 memory e = _newEntry256(lhs, rhs);
-            e.valueType = Common.ebool_t + 1;
-            e.value = (!areEqual) ? 1 : 0;
-
-            // Must be the very last function call
-            exit_insertDB256(resultHandle, e);
+            (meta, lClearNum, rClearNum) = _db.binaryOpNumCtNumCt(resultHandle, lhs, rhs, (_throwIfArithmeticError > 0));
         }
-    }
 
-    function fheGe(uint256 resultHandle, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
-        uint8 lhsType = typeOf(lhs);
+        uint256 value = bitBinaryOpFunc(lClearNum, rClearNum, meta.valueType - 1);
 
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(typeOf(resultHandle) == Common.ebool_t);
+        DBLib.Record memory r;
+        r.meta = meta;
+        r.value = bytes.concat(bytes32(value));
 
-        (uint256 clearLhs, uint256 clearRhs) = binaryOpVerify256(lhs, rhs, scalarByte);
-
-        Entry256 memory e = _newEntry256(lhs, rhs);
-        e.valueType = lhsType + 1;
-        e.value = (clearLhs >= clearRhs) ? 1 : 0;
+        _db.insertUnsafe(resultHandle, r);
 
         // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
+        __exit_checkArithmetic(resultHandle, meta.arithmeticFlags);
     }
 
-    function fheGt(uint256 resultHandle, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
-        uint8 lhsType = typeOf(lhs);
+    function fheBitAnd(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheBitBinaryOp(MathLib.and, result, lhs, rhs, (scalarByte != 0));
+    }
 
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(typeOf(resultHandle) == Common.ebool_t);
+    function fheBitOr(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheBitBinaryOp(MathLib.or, result, lhs, rhs, (scalarByte != 0));
+    }
 
-        (uint256 clearLhs, uint256 clearRhs) = binaryOpVerify256(lhs, rhs, scalarByte);
+    function fheBitXor(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheBitBinaryOp(MathLib.xor, result, lhs, rhs, (scalarByte != 0));
+    }
 
-        Entry256 memory e = _newEntry256(lhs, rhs);
-        e.valueType = lhsType + 1;
-        e.value = (clearLhs > clearRhs) ? 1 : 0;
+    function fheShl(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheBitBinaryOp(MathLib.shl, result, lhs, rhs, (scalarByte != 0));
+    }
+
+    function fheShr(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheBitBinaryOp(MathLib.shr, result, lhs, rhs, (scalarByte != 0));
+    }
+
+    function fheRotl(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheBitBinaryOp(MathLib.rotl, result, lhs, rhs, (scalarByte != 0));
+    }
+
+    function fheRotr(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheBitBinaryOp(MathLib.rotr, result, lhs, rhs, (scalarByte != 0));
+    }
+
+    // ===== Bit unary op =====
+
+    /**
+     * Note: 1 case
+     *
+     * 1. euint64 TFHE.not(euint64)
+     *
+     *    - typeOf(lhs)== typeOf(resultHandle)
+     *    - Common.ebool_t <= type <= Common.euint256_t
+     *
+     */
+    function _fheBitUnaryOp(
+        function(uint256,uint8) internal pure returns(uint256) bitUnaryOpFunc,
+        uint256 resultHandle,
+        uint256 ct
+    ) private {
+        uint8 typeCt = DBLib.typeOf(ct);
+        DBLib.checkIs256Bits(ct, typeCt);
+        DBLib.checkTypeEq(resultHandle, typeCt);
+
+        DBLib.RecordMeta memory meta;
+        uint256 clearNum;
+
+        (meta, clearNum) = _db.unaryOpNumCt(resultHandle, ct, (_throwIfArithmeticError > 0));
+
+        uint256 value = bitUnaryOpFunc(clearNum, meta.valueType - 1);
+
+        DBLib.Record memory r;
+        r.meta = meta;
+        r.value = bytes.concat(bytes32(value));
+
+        _db.insertUnsafe(resultHandle, r);
 
         // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
+        __exit_checkArithmetic(resultHandle, meta.arithmeticFlags);
     }
 
-    function fheLe(uint256 resultHandle, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(typeOf(resultHandle) == Common.ebool_t);
-
-        (uint256 clearLhs, uint256 clearRhs) = binaryOpVerify256(lhs, rhs, scalarByte);
-
-        Entry256 memory e = _newEntry256(lhs, rhs);
-        e.valueType = lhsType + 1;
-        e.value = (clearLhs <= clearRhs) ? 1 : 0;
-
-        // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
+    function fheNot(uint256 result, uint256 ct) external {
+        _fheBitUnaryOp(MathLib.not, result, ct);
     }
 
-    function fheLt(uint256 resultHandle, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
-        uint8 lhsType = typeOf(lhs);
+    // ===== Cmp binary op =====
 
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(typeOf(resultHandle) == Common.ebool_t);
+    /**
+     * Note 2 cases
+     *
+     * 1. ebool = TFHE.eq(euint64, euint64)
+     *
+     *    - !! Boolean is also supported !!
+     *    - typeOf(lhs) == typeOf(rhs)
+     *    - typeOf(resultHandle) = Common.ebool_t
+     *    - Common.ebool_t <= typeOf(lhs,rhs) <= Common.euint256_t
+     *
+     * 2. ebool = TFHE.eq(euint64, 12345)
+     *
+     *    - !! Boolean is also supported !!
+     *    - typeOf(resultHandle) = Common.ebool_t
+     *    - Common.ebool_t <= typeOf(lhs) <= Common.euint256_t
+     *
+     */
+    function _fheCmpBinaryOp_NumCt_NumCtOrPt(
+        function(uint256,uint256,uint8) internal pure returns(bool) numericCmpBinaryOpFunc,
+        uint256 resultHandle,
+        uint256 lhs,
+        uint256 rhs,
+        bool rhsIsScalar
+    ) private {
+        DBLib.RecordMeta memory meta;
+        uint256 lClearNum;
+        uint256 rClearNum;
 
-        (uint256 clearLhs, uint256 clearRhs) = binaryOpVerify256(lhs, rhs, scalarByte);
-
-        Entry256 memory e = _newEntry256(lhs, rhs);
-        e.valueType = lhsType + 1;
-        e.value = (clearLhs < clearRhs) ? 1 : 0;
-
-        // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
-    }
-
-    function fheMin(uint256 resultHandle, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        (uint256 clearLhs, uint256 clearRhs) = binaryOpVerify256(lhs, rhs, scalarByte);
-
-        Entry256 memory e = _newEntry256(lhs, rhs);
-        e.valueType = lhsType + 1;
-        e.value = (clearLhs < clearRhs) ? clearLhs : clearRhs;
-
-        // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
-    }
-
-    function fheMax(uint256 resultHandle, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
-        uint8 lhsType = typeOf(lhs);
-
-        require(lhsType >= Common.euint4_t && lhsType <= Common.euint256_t);
-        require(lhsType == typeOf(resultHandle));
-
-        (uint256 clearLhs, uint256 clearRhs) = binaryOpVerify256(lhs, rhs, scalarByte);
-
-        Entry256 memory e = _newEntry256(lhs, rhs);
-        e.valueType = lhsType + 1;
-        e.value = (clearLhs > clearRhs) ? clearLhs : clearRhs;
-
-        // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
-    }
-
-    function fheNeg(uint256 resultHandle, uint256 ct) external {
-        uint8 ctType = typeOf(ct);
-        uint256 clearCt = verifyHandle256(ct, 0x0, true);
-
-        require(ctType >= Common.euint4_t && ctType <= Common.euint256_t);
-
-        Entry256 memory e = _newEntry256(ct);
-        e.valueType = ctType + 1;
-
-        uint256 not = (clearCt ^ type(uint256).max) & MAX_UINT[ctType];
-        if (ctType == Common.euint256_t) {
-            e.value = not + 1;
+        if (rhsIsScalar) {
+            (meta, lClearNum) = _db.binaryOpNumCtNumPt(resultHandle, lhs, (_throwIfArithmeticError > 0));
+            rClearNum = rhs;
         } else {
-            e.value = (not + 1) % (MAX_UINT[ctType] + 1);
+            (meta, lClearNum, rClearNum) = _db.binaryOpNumCtNumCt(resultHandle, lhs, rhs, (_throwIfArithmeticError > 0));
         }
 
+        // MathLib.eq, ne, ge, gt, le, lt
+        bool cmp = numericCmpBinaryOpFunc(lClearNum, rClearNum, DBLib.typeOf(lhs));
+
+        DBLib.Record memory r;
+        r.meta = meta;
+        r.value = (cmp) ? bytes.concat(bytes32(uint256(1))) : bytes.concat(bytes32(uint256(0)));
+
+        _db.insertUnsafe(resultHandle, r);
+
         // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
+        __exit_checkArithmetic(resultHandle, meta.arithmeticFlags);
     }
 
-    function fheNot(uint256 resultHandle, uint256 ct) external {
-        uint8 ctType = typeOf(ct);
-        uint256 clearCt = verifyHandle256(ct, 0x0, true);
+    /**
+     * Note: 1 case
+     *
+     *    ebool = TFHE.eq(ebytes128, ebytes128)
+     *
+     *    - typeOf(lhs) == typeOf(rhs)
+     *    - typeOf(resultHandle) = Common.ebool_t
+     *    - Common.ebytes64_t <= typeOf(lhs,rhs) <= Common.ebytes256_t
+     *
+     */
+    function _fheCmpBinaryOp_BytesCt_BytesCt(
+        function(bytes memory,bytes memory,uint8) internal pure returns(bool) bytesCmpBinaryOpFunc,
+        uint256 resultHandle,
+        uint256 lhs,
+        uint256 rhs
+    ) private {
+        DBLib.RecordMeta memory meta;
+        bytes memory lClearBytes;
+        bytes memory rClearBytes;
 
-        require(ctType >= Common.ebool_t && ctType <= Common.euint256_t);
+        (meta, lClearBytes, rClearBytes) =
+            _db.binaryOpBytesCtBytesCt(resultHandle, lhs, rhs, (_throwIfArithmeticError > 0));
 
-        Entry256 memory e = _newEntry256(ct);
-        e.valueType = ctType + 1;
-        e.value = (clearCt ^ type(uint256).max) & MAX_UINT[ctType];
+        // MathLib.eq, ne
+        bool cmp = bytesCmpBinaryOpFunc(lClearBytes, rClearBytes, DBLib.typeOf(lhs));
+
+        DBLib.Record memory r;
+        r.meta = meta;
+        r.value = (cmp) ? bytes.concat(bytes32(uint256(1))) : bytes.concat(bytes32(uint256(0)));
+
+        _db.insertUnsafe(resultHandle, r);
 
         // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
+        __exit_checkArithmetic(resultHandle, meta.arithmeticFlags);
+    }
+
+    /**
+     * Note: 1 case
+     *
+     *    ebool = TFHE.eq(ebytes128, bytes.concat(...))
+     *
+     *    - typeOf(resultHandle) = Common.ebool_t
+     *    - Common.ebytes64_t <= typeOf(lhs) <= Common.ebytes256_t
+     *
+     */
+    function _fheCmpBinaryOp_BytesCt_BytesPt(
+        function(bytes memory,bytes memory,uint8) internal pure returns(bool) bytesCmpBinaryOpFunc,
+        uint256 resultHandle,
+        uint256 lhs,
+        bytes memory clearRhs
+    ) private {
+        DBLib.RecordMeta memory meta;
+        bytes memory lClearBytes;
+
+        (meta, lClearBytes) = _db.binaryOpBytesCtBytesPt(resultHandle, lhs, (_throwIfArithmeticError > 0));
+
+        // MathLib.eq, ne
+        bool cmp = bytesCmpBinaryOpFunc(lClearBytes, clearRhs, DBLib.typeOf(lhs));
+
+        DBLib.Record memory r;
+        r.meta = meta;
+        r.value = (cmp) ? bytes.concat(bytes32(uint256(1))) : bytes.concat(bytes32(uint256(0)));
+
+        _db.insertUnsafe(resultHandle, r);
+
+        // Must be the very last function call
+        __exit_checkArithmetic(resultHandle, meta.arithmeticFlags);
+    }
+
+    /**
+     * Note: 3 cases
+     *
+     * 1. ebool = TFHE.eq(euint64, euint64)
+     *
+     *    - !! Boolean is also supported !!
+     *    - typeOf(lhs) == typeOf(rhs)
+     *    - typeOf(resultHandle) = Common.ebool_t
+     *    - Common.ebool_t <= typeOf(lhs,rhs) <= Common.euint256_t
+     *    - rhsIsScalar = false
+     *
+     * 2. ebool = TFHE.eq(euint64, 12345)
+     *
+     *    - !! Boolean is also supported !!
+     *    - typeOf(resultHandle) = Common.ebool_t
+     *    - Common.ebool_t <= typeOf(lhs) <= Common.euint256_t
+     *    - rhsIsScalar = true
+     *
+     * 3. ebool = TFHE.eq(ebytes128, ebytes128)
+     *
+     *    - typeOf(resultHandle) = Common.ebool_t
+     *    - Common.ebytes64_t <= typeOf(lhs) <= Common.ebytes256_t
+     *    - rhsIsScalar = false
+     *
+     */
+    function _fheCmpBinaryOp(
+        function(uint256,uint256,uint8) internal pure returns(bool) numericCmpBinaryOpFunc,
+        function(bytes memory,bytes memory,uint8) internal pure returns(bool) bytesCmpBinaryOpFunc,
+        uint256 resultHandle,
+        uint256 lhs,
+        uint256 rhs,
+        bool rhsIsScalar
+    ) private {
+        DBLib.checkTypeEq(resultHandle, Common.ebool_t);
+
+        uint8 lhsType = DBLib.typeOf(lhs);
+        if (lhsType >= Common.ebytes64_t) {
+            require(!rhsIsScalar);
+            _fheCmpBinaryOp_BytesCt_BytesCt(bytesCmpBinaryOpFunc, resultHandle, lhs, rhs);
+        } else {
+            _fheCmpBinaryOp_NumCt_NumCtOrPt(numericCmpBinaryOpFunc, resultHandle, lhs, rhs, rhsIsScalar);
+        }
+    }
+
+    /**
+     * Note: 2 cases
+     *
+     * 1. ebool = TFHE.eq(euint64, euint64)
+     *
+     *    - !! Boolean is also supported !!
+     *    - typeOf(lhs) == typeOf(rhs)
+     *    - typeOf(resultHandle) = Common.ebool_t
+     *    - Common.ebool_t <= typeOf(lhs,rhs) <= Common.euint256_t
+     *    - rhsIsScalar = false
+     *
+     * 2. ebool = TFHE.eq(euint64, 12345)
+     *
+     *    - !! Boolean is also supported !!
+     *    - typeOf(resultHandle) = Common.ebool_t
+     *    - Common.ebool_t <= typeOf(lhs) <= Common.euint256_t
+     *    - rhsIsScalar = true
+     *
+     */
+    function _fheNumericCmpBinaryOp(
+        function(uint256,uint256,uint8) internal pure returns(bool) numericCmpBinaryOpFunc,
+        uint256 resultHandle,
+        uint256 lhs,
+        uint256 rhs,
+        bool rhsIsScalar
+    ) private {
+        DBLib.checkTypeEq(resultHandle, Common.ebool_t);
+
+        uint8 lhsType = DBLib.typeOf(lhs);
+        if (lhsType >= Common.ebytes64_t) {
+            revert("Operation not yet supported");
+        } else {
+            _fheCmpBinaryOp_NumCt_NumCtOrPt(numericCmpBinaryOpFunc, resultHandle, lhs, rhs, rhsIsScalar);
+        }
+    }
+
+    /**
+     * Note: 1 case
+     *
+     *    ebool = TFHE.eq(ebytes128, bytes.concat(...))
+     *
+     *    - typeOf(resultHandle) = Common.ebool_t
+     *    - Common.ebytes64_t <= typeOf(lhs) <= Common.ebytes256_t
+     *    - rhsIsScalar == true
+     *
+     */
+    function _fheBytesCmpBinaryOp(
+        function(bytes memory,bytes memory,uint8) internal pure returns(bool) bytesCmpBinaryOpFunc,
+        uint256 resultHandle,
+        uint256 lhs,
+        bytes memory rhs,
+        bool rhsIsScalar
+    ) private {
+        // scalar is always true
+        require(rhsIsScalar, "Operation only supported in scalar mode");
+        DBLib.checkTypeEq(resultHandle, Common.ebool_t);
+
+        uint8 lhsType = DBLib.typeOf(lhs);
+        if (lhsType >= Common.ebytes64_t) {
+            // TFHE.eq(ebytes128, bytes.concact(bytes2(0x1234)))
+            _fheCmpBinaryOp_BytesCt_BytesPt(bytesCmpBinaryOpFunc, resultHandle, lhs, rhs);
+        } else {
+            // TFHE.eq(euint64, bytes.concact(bytes2(0x1234)))
+            revert("Operation not yet supported");
+        }
+    }
+
+    function fheEq(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheCmpBinaryOp(MathLib.eq, MathLib.eqBytes, result, lhs, rhs, (scalarByte != 0x0));
+    }
+
+    function fheEq(uint256 result, uint256 lhs, bytes memory rhs, bytes1 scalarByte) external {
+        _fheBytesCmpBinaryOp(MathLib.eqBytes, result, lhs, rhs, (scalarByte != 0x0));
+    }
+
+    function fheNe(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheCmpBinaryOp(MathLib.ne, MathLib.neBytes, result, lhs, rhs, (scalarByte != 0x0));
+    }
+
+    function fheNe(uint256 result, uint256 lhs, bytes memory rhs, bytes1 scalarByte) external {
+        _fheBytesCmpBinaryOp(MathLib.neBytes, result, lhs, rhs, (scalarByte != 0x0));
+    }
+
+    function fheGe(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheNumericCmpBinaryOp(MathLib.ge, result, lhs, rhs, (scalarByte != 0x0));
+    }
+
+    function fheGt(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheNumericCmpBinaryOp(MathLib.gt, result, lhs, rhs, (scalarByte != 0x0));
+    }
+
+    function fheLe(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheNumericCmpBinaryOp(MathLib.le, result, lhs, rhs, (scalarByte != 0x0));
+    }
+
+    function fheLt(uint256 result, uint256 lhs, uint256 rhs, bytes1 scalarByte) external {
+        _fheNumericCmpBinaryOp(MathLib.lt, result, lhs, rhs, (scalarByte != 0x0));
     }
 
     function verifyCiphertext(
-        uint256 resultHandle,
+        uint256 result,
         bytes32, /*inputHandle*/
         address, /*callerAddress*/
         bytes memory, /*inputProof*/
         bytes1 inputType
     ) external view {
-        uint8 ctType = uint8(inputType);
-        if (ctType <= Common.euint256_t) {
-            require(exists256(resultHandle), "verifyCiphertext: 256-bits result handle is not stored in the db");
-            require(
-                !exists2048(resultHandle),
-                "verifyCiphertext: 256-bits result handle is already stored in as a 2048-bits handle."
-            );
-        } else {
-            require(exists2048(resultHandle), "verifyCiphertext: 2048-bits result handle is not stored in the db");
-            require(
-                !exists256(resultHandle),
-                "verifyCiphertext: 2048-bits result handle is already stored in as a 256-bits handle."
-            );
-        }
+        _db.checkHandleExist(result, uint8(inputType));
     }
 
-    function cast(uint256 resultHandle, uint256 ct, bytes1 toType) external {
-        uint8 toT = uint8(toType);
+    function trivialEncrypt(uint256 result, uint256 pt, bytes1 toType) external {
+        _db.checkAndInsert256Bits(result, pt, uint8(toType), true /* trivial */);
+    }
 
-        require(toT >= Common.ebool_t && toT <= Common.euint256_t, "Unsupported type");
+    function trivialEncrypt(uint256 result, bytes memory pt, bytes1 toType) external {
+        _db.checkAndInsertBytes(result, pt, uint8(toType), true /* trivial */);
+    }
 
-        uint8 ctType = typeOf(ct);
-        uint256 clearCt = verifyHandle256(ct, 0x0, true);
-
-        require(ctType >= Common.ebool_t && ctType <= Common.euint256_t);
-
-        Entry256 memory e = _newEntry256(ct);
-        e.valueType = toT + 1;
-        if (toT == Common.ebool_t) {
-            e.value = uint256((clearCt != 0) ? 1 : 0);
-        } else if (toT == Common.euint4_t) {
-            revert("cast to euint4 not yet supported");
-        } else if (toT == Common.euint8_t) {
-            e.value = uint256(uint8(clearCt));
-        } else if (toT == Common.euint16_t) {
-            e.value = uint256(uint16(clearCt));
-        } else if (toT == Common.euint32_t) {
-            e.value = uint256(uint32(clearCt));
-        } else if (toT == Common.euint64_t) {
-            e.value = uint256(uint64(clearCt));
-        } else if (toT == Common.euint128_t) {
-            e.value = uint256(uint128(clearCt));
-        } else if (toT == Common.euint256_t) {
-            e.value = clearCt;
-        } else {
-            revert("cast to unknown type");
-        }
+    function fheIfThenElse(uint256 result, uint256 control, uint256 ifTrue, uint256 ifFalse) external {
+        DBLib.RecordMeta memory meta = _db.ifCtThenCtElseCt(result, control, ifTrue, ifFalse, (_throwIfArithmeticError > 0));
 
         // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
+        __exit_checkArithmetic(result, meta.arithmeticFlags);
     }
 
-    function trivialEncrypt(uint256 resultHandle, uint256 plaintext, bytes1 toType) external {
-        uint8 toT = uint8(toType);
+    function fheRand(uint256 result, bytes1 randType) external {
+        uint8 typeCt = uint8(randType); 
 
-        require(toT >= Common.ebool_t && toT <= Common.euint256_t, "Unsupported type");
-        require(plaintext <= MAX_UINT[toT], "Value overflow");
+        DBLib.checkTypeEq(result, typeCt);
+        DBLib.checkIs256Bits(result, typeCt);
 
-        Entry256 memory e;
-        e.valueType = toT + 1;
-        e.value = plaintext;
-        e.trivial = true;
+        (, uint256 random) = MathLib.cast(_randomGenerator.randomUint(), typeCt);
 
-        // Must be the very last function call
-        exit_insertDB256(resultHandle, e);
+        _db.checkAndInsert256Bits(result, random, typeCt, false /* trivial */);
     }
 
-    function fheIfThenElse(uint256 resultHandle, uint256 control, uint256 ifTrue, uint256 ifFalse) external {
-        // typeOf(resultHandle) == typeOf(ifTrue) == typeOf(ifFalse)
-        uint8 ifTrueType = typeOf(ifTrue);
+    function fheRandBounded(uint256 result, uint256 upperBound, bytes1 randType) external {
+        uint8 typeCt = uint8(randType); 
 
-        if (ifTrueType <= Common.euint256_t) {
-            (uint256 clearControl,,) = ternaryOpVerify256(control, ifTrue, ifFalse);
+        DBLib.checkTypeEq(result, typeCt);
+        DBLib.checkIs256Bits(result, typeCt);
 
-            Entry256 memory e;
-            Entry256 memory c = (clearControl == 0) ? db_256[ifFalse] : db_256[ifTrue];
+        (, uint256 random) = MathLib.cast(_randomGenerator.randomUint(), typeCt);
 
-            e.valueType = c.valueType;
-            e.value = c.value;
-            e.trivial = c.trivial;
-            e.overflow = c.overflow;
-            e.underflow = c.underflow;
-            e.divisionByZero = c.divisionByZero;
-
-            // Must be the very last function call
-            exit_insertDB256(resultHandle, e);
-        } else {
-            (uint256 clearControl,,) = ternaryOpVerify2048(control, ifTrue, ifFalse);
-
-            Entry2048 memory e;
-            Entry2048 memory c = (clearControl == 0) ? db_2048[ifFalse] : db_2048[ifTrue];
-
-            e.valueType = c.valueType;
-            e.value = c.value;
-
-            // Must be the very last function call
-            exit_insertDB2048(resultHandle, e);
+        if (random > upperBound) {
+            random = upperBound;
         }
+
+        _db.checkAndInsert256Bits(result, random, typeCt, false /* trivial */);
     }
 
-    function fheRand(uint256, /* resultHandle */ bytes1 /* randType */ ) external pure {
-        revert("fheRand not yet implemented");
+    function insertEncrypted256Bits(uint256 handle, uint256 valuePt, uint8 typePt) external {
+        _db.checkAndInsert256Bits(handle, valuePt, typePt, false /* trivial */);
     }
 
-    function fheRandBounded(uint256, /* resultHandle */ uint256, /* upperBound */ bytes1 /* randType */ )
-        external
-        pure
-    {
-        revert("fheRandBounded not yet implemented");
+    function insertEncryptedBytes(uint256 handle, bytes memory valuePt, uint8 typePt) external {
+        _db.checkAndInsertBytes(handle, valuePt, typePt, false /* trivial */);
     }
 }

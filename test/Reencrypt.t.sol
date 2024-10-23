@@ -2,21 +2,23 @@
 pragma solidity ^0.8.24;
 
 import {Vm} from "forge-std/src/Vm.sol";
+import {Test} from "forge-std/src/Test.sol";
 import {console} from "forge-std/src/Console.sol";
 import {TFHE, euint8, euint64, einput, ebool, ebytes256} from "fhevm/lib/TFHE.sol";
 import {BytesLib} from "../src/utils/BytesLib.sol";
-import {FhevmTest} from "../src/FhevmTest.sol";
+import {TFHEvm} from "../src/TFHEvm.sol";
 import {ReencryptLib} from "../src/reencrypt/Reencrypt.sol";
 
-contract ReencryptTest is FhevmTest {
+contract ReencryptTest is Test {
+    function setUp() public {
+        TFHEvm.setUp();
+    }
+
     function test_sign() public pure {
         bytes memory publicKey =
             abi.encodePacked(hex"20000000000000008fcea1dc16897f40ea5142b829cb04b7527e48727a63e993e4561b6824104c2d");
-        /*
-        bytes memory privateKey = abi.encodePacked(
-            hex"2000000000000000a5cb64ce9aea0f7dd66f04fdf61592c74ef6aa16b8f63c1d53da17211bd3ec0e"
-        );
-        */
+        bytes memory privateKey =
+            abi.encodePacked(hex"2000000000000000a5cb64ce9aea0f7dd66f04fdf61592c74ef6aa16b8f63c1d53da17211bd3ec0e");
         uint256 signerPk = 0x21521291d36b38112e2ae2b780ac39df94dd40bace399f479833f6a813e43b09;
         address signerAddr = 0x813787401A8CC716B6C7B834Ecd89D0fA34e0132;
         uint256 chainId = 31337;
@@ -27,8 +29,7 @@ contract ReencryptTest is FhevmTest {
         bytes memory sig = ReencryptLib.reencryptSign(publicKey, chainId, verifyingContract, signerPk);
         vm.assertEq(sig, signature);
 
-        address signer = ReencryptLib.verifySig(publicKey, chainId, verifyingContract, sig);
-        vm.assertEq(signer, signerAddr);
+        ReencryptLib.assertValidEIP712Sig(privateKey, publicKey, sig, chainId, verifyingContract, signerAddr);
     }
 
     function test_generateKeyPair() public {
