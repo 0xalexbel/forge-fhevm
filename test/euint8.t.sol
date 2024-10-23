@@ -21,6 +21,8 @@ contract EUint8Test is Test {
         TFHE.asEuint8(65000);
     }
 
+    // ===== Add =====
+
     function test_Add() public {
         address userAddress = msg.sender;
         address contractAddress = address(this);
@@ -74,41 +76,7 @@ contract EUint8Test is Test {
         TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
     }
 
-    function test_Not() public {
-        address userAddress = msg.sender;
-        address contractAddress = address(this);
-
-        euint8 ei1 = TFHE.asEuint8(1);
-        euint8 ei2 = TFHE.not(ei1);
-        TFHE.allow(ei2, userAddress);
-
-        uint8 i2 = TFHEvm.decryptU8Strict(ei2, contractAddress, userAddress);
-        vm.assertEq(i2, uint8(0xfe));
-    }
-
-    function test_Neg_1() public {
-        address userAddress = msg.sender;
-        address contractAddress = address(this);
-
-        euint8 ei1 = TFHE.asEuint8(1);
-        euint8 ei2 = TFHE.neg(ei1);
-        TFHE.allow(ei2, userAddress);
-
-        uint8 i2 = TFHEvm.decryptU8Strict(ei2, contractAddress, userAddress);
-        vm.assertEq(i2, 255);
-    }
-
-    function test_Neg_2() public {
-        address userAddress = msg.sender;
-        address contractAddress = address(this);
-
-        euint8 ei1 = TFHE.asEuint8(186);
-        euint8 ei2 = TFHE.neg(ei1);
-        TFHE.allow(ei2, userAddress);
-
-        uint8 i2 = TFHEvm.decryptU8Strict(ei2, contractAddress, userAddress);
-        vm.assertEq(i2, 70);
-    }
+    // ===== Sub =====
 
     function test_Sub() public {
         address userAddress = msg.sender;
@@ -163,6 +131,327 @@ contract EUint8Test is Test {
         TFHEvm.decryptU8(ei3, contractAddress, userAddress);
     }
 
+    // ===== Mul =====
+
+    function test_Mul_1() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(8);
+        euint8 ei2 = TFHE.asEuint8(12);
+        euint8 ei3 = TFHE.mul(ei1, ei2);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = TFHEvm.decryptU8(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, 8 * 12);
+    }
+
+    function test_Mul_2() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(12);
+        euint8 ei2 = TFHE.asEuint8(14);
+        euint8 ei3 = TFHE.mul(ei1, ei2);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = TFHEvm.decryptU8(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, 168);
+    }
+
+    function test_Mul_3() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(14);
+        euint8 ei2 = TFHE.asEuint8(14);
+        euint8 ei3 = TFHE.mul(ei1, ei2);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = TFHEvm.decryptU8(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, 196);
+    }
+
+    // ===== Div =====
+
+    function test_Div_1() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(87);
+        euint8 ei2 = TFHE.div(ei1, 167);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = TFHEvm.decryptU8(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, 0);
+    }
+
+    function test_Div_2() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(31);
+        euint8 ei2 = TFHE.div(ei1, 35);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = TFHEvm.decryptU8(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, 0);
+    }
+
+    function test_Div_3() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(35);
+        euint8 ei2 = TFHE.div(ei1, 35);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = TFHEvm.decryptU8(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, 1);
+    }
+
+    function test_Div_4() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(35);
+        euint8 ei2 = TFHE.div(ei1, 31);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = TFHEvm.decryptU8(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, 1);
+    }
+
+    // ===== Rem =====
+
+    function test_Rem_1() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(85);
+        euint8 ei2 = TFHE.rem(ei1, 232);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = TFHEvm.decryptU8(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, 85);
+    }
+
+    function test_Rem_2() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(38);
+        euint8 ei2 = TFHE.rem(ei1, 42);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = TFHEvm.decryptU8(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, 38);
+    }
+
+    function test_Rem_3() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(42);
+        euint8 ei2 = TFHE.rem(ei1, 42);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = TFHEvm.decryptU8(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, 0);
+    }
+
+    function test_Rem_4() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(42);
+        euint8 ei2 = TFHE.rem(ei1, 38);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = TFHEvm.decryptU8(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, 4);
+    }
+
+    // ===== Not =====
+
+    function test_Not() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(1);
+        euint8 ei2 = TFHE.not(ei1);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = TFHEvm.decryptU8Strict(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, uint8(0xfe));
+    }
+
+    // ===== Neg =====
+
+    function test_Neg_1() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(1);
+        euint8 ei2 = TFHE.neg(ei1);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = TFHEvm.decryptU8Strict(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, 255);
+    }
+
+    function test_Neg_2() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(186);
+        euint8 ei2 = TFHE.neg(ei1);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = TFHEvm.decryptU8Strict(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, 70);
+    }
+
+    // ===== Eq =====
+
+    function test_Eq_1() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(128);
+        ebool eb = TFHE.eq(ei1, ei2);
+        TFHE.allow(eb, userAddress);
+
+        bool b = TFHEvm.decryptBoolStrict(eb, contractAddress, userAddress);
+        vm.assertEq(b, true);
+    }
+
+    function test_Eq_2() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(27);
+        ebool eb = TFHE.eq(ei1, ei2);
+        TFHE.allow(eb, userAddress);
+
+        bool b = TFHEvm.decryptBoolStrict(eb, contractAddress, userAddress);
+        vm.assertEq(b, false);
+    }
+    
+    // ===== Ne =====
+
+    function test_Ne_1() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(128);
+        ebool eb = TFHE.ne(ei1, ei2);
+        TFHE.allow(eb, userAddress);
+
+        bool b = TFHEvm.decryptBoolStrict(eb, contractAddress, userAddress);
+        vm.assertEq(b, false);
+    }
+
+    function test_Ne_2() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(27);
+        ebool eb = TFHE.ne(ei1, ei2);
+        TFHE.allow(eb, userAddress);
+
+        bool b = TFHEvm.decryptBoolStrict(eb, contractAddress, userAddress);
+        vm.assertEq(b, true);
+    }
+
+    // ===== Gt =====
+
+    function test_Gt_1() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(54);
+        ebool eb = TFHE.gt(ei1, ei2);
+        TFHE.allow(eb, userAddress);
+
+        bool b = TFHEvm.decryptBoolStrict(eb, contractAddress, userAddress);
+        vm.assertEq(b, true);
+    }
+
+    function test_Gt_2() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(128);
+        ebool eb = TFHE.gt(ei1, ei2);
+        TFHE.allow(eb, userAddress);
+
+        bool b = TFHEvm.decryptBoolStrict(eb, contractAddress, userAddress);
+        vm.assertEq(b, false);
+    }
+
+    function test_Gt_3() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(200);
+        ebool eb = TFHE.gt(ei1, ei2);
+        TFHE.allow(eb, userAddress);
+
+        bool b = TFHEvm.decryptBoolStrict(eb, contractAddress, userAddress);
+        vm.assertEq(b, false);
+    }
+
+    // ===== Lt =====
+
+    function test_Lt_1() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(54);
+        ebool eb = TFHE.lt(ei1, ei2);
+        TFHE.allow(eb, userAddress);
+
+        bool b = TFHEvm.decryptBoolStrict(eb, contractAddress, userAddress);
+        vm.assertEq(b, false);
+    }
+
+    function test_Lt_2() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(128);
+        ebool eb = TFHE.lt(ei1, ei2);
+        TFHE.allow(eb, userAddress);
+
+        bool b = TFHEvm.decryptBoolStrict(eb, contractAddress, userAddress);
+        vm.assertEq(b, false);
+    }
+
+    function test_Lt_3() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(200);
+        ebool eb = TFHE.lt(ei1, ei2);
+        TFHE.allow(eb, userAddress);
+
+        bool b = TFHEvm.decryptBoolStrict(eb, contractAddress, userAddress);
+        vm.assertEq(b, true);
+    }
+
+    // ===== Min =====
+
     function test_Min() public {
         address userAddress = msg.sender;
         address contractAddress = address(this);
@@ -175,6 +464,8 @@ contract EUint8Test is Test {
         uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 2);
     }
+
+    // ===== Max =====
 
     function test_Max() public {
         address userAddress = msg.sender;
@@ -189,6 +480,8 @@ contract EUint8Test is Test {
         vm.assertEq(i3, 128);
     }
 
+    // ===== IsTrivial =====
+
     function test_IsTrivial() public {
         address userAddress = msg.sender;
 
@@ -199,6 +492,8 @@ contract EUint8Test is Test {
 
         vm.assertEq(TFHEvm.isTrivial(ei3), true);
     }
+
+    // ===== Cast =====
 
     function test_Cast_u64_to_u8() public {
         address userAddress = msg.sender;
@@ -247,6 +542,8 @@ contract EUint8Test is Test {
         uint64 i2 = TFHEvm.decryptU4Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 0xa);
     }
+
+    // ===== Rotl =====
 
     /// rotl(52, 1) == 104
     function test_Rotl_1() public {
@@ -304,6 +601,8 @@ contract EUint8Test is Test {
         vm.assertEq(i3, 128);
     }
 
+    // ===== Rotr =====
+
     /// rotr(50, 4) == 35
     function test_Rotr_1() public {
         address userAddress = msg.sender;
@@ -347,7 +646,7 @@ contract EUint8Test is Test {
     }
 
     /// rotr(8, 4) == 128
-    function test_Rotr_u8_4() public {
+    function test_Rotr_4() public {
         address userAddress = msg.sender;
         address contractAddress = address(this);
 
@@ -359,6 +658,8 @@ contract EUint8Test is Test {
         uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 128);
     }
+
+    // ===== Shl =====
 
     /// shl(201, 7) == 128
     function test_Shl_1() public {
@@ -416,6 +717,8 @@ contract EUint8Test is Test {
         vm.assertEq(i3, 128);
     }
 
+    // ===== Shr =====
+
     /// shr(15, 4) == 0
     function test_Shr_1() public {
         address userAddress = msg.sender;
@@ -466,6 +769,124 @@ contract EUint8Test is Test {
         euint8 ei1 = TFHE.asEuint8(8);
         euint8 ei2 = TFHE.asEuint8(4);
         euint8 ei3 = TFHE.shr(ei1, ei2);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, 0);
+    }
+
+    // ===== And =====
+
+    /// and(183, 70) == 6
+    function test_And_1() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(183);
+        euint8 ei2 = TFHE.asEuint8(70);
+        euint8 ei3 = TFHE.and(ei1, ei2);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, 6);
+    }
+
+    /// and(131, 135) == 131
+    function test_And_2() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(131);
+        euint8 ei2 = TFHE.asEuint8(135);
+        euint8 ei3 = TFHE.and(ei1, ei2);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, 131);
+    }
+
+    /// and(135, 135) == 135
+    function test_And_3() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(135);
+        euint8 ei2 = TFHE.asEuint8(135);
+        euint8 ei3 = TFHE.and(ei1, ei2);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, 135);
+    }
+
+    /// and(146, 70) == 2
+    function test_And_4() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(146);
+        euint8 ei2 = TFHE.asEuint8(70);
+        euint8 ei3 = TFHE.and(ei1, ei2);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, 2);
+    }
+
+    // ===== Or =====
+
+    /// or(189, 140) == 189
+    function test_Or_1() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(189);
+        euint8 ei2 = TFHE.asEuint8(140);
+        euint8 ei3 = TFHE.or(ei1, ei2);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, 189);
+    }
+
+    /// or(139, 140) == 143
+    function test_Or_2() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(139);
+        euint8 ei2 = TFHE.asEuint8(140);
+        euint8 ei3 = TFHE.or(ei1, ei2);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, 143);
+    }
+
+    // ===== Xor =====
+
+    /// xor(146, 150) == 4
+    function test_Xor_1() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(146);
+        euint8 ei2 = TFHE.asEuint8(150);
+        euint8 ei3 = TFHE.xor(ei1, ei2);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, 4);
+    }
+
+    /// xor(62, 62) == 0
+    function test_Xor_2() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(62);
+        euint8 ei2 = TFHE.asEuint8(62);
+        euint8 ei3 = TFHE.xor(ei1, ei2);
         TFHE.allow(ei3, userAddress);
 
         uint8 i3 = TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
