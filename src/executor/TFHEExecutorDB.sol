@@ -283,6 +283,12 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
             return;
         }
 
+        if (uint8(toType) == Common.ebool_t) {
+            revert("Cast to bool not supported");
+        }
+
+        DBLib.checkTypeNe(result, DBLib.typeOf(ct));
+
         // typeOf(result) != typeOf(ct)
         _fheNumericUnaryOp(MathLib.cast, result, ct, false /* resultTypeEqCtType */);
     }

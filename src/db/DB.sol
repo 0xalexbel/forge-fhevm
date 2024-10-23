@@ -71,6 +71,12 @@ library DBLib {
         }
     }
 
+    function checkTypeNe(uint256 handle, uint8 typeCt) internal pure {
+        if (typeOf(handle) == typeCt) {
+            revert WrongHandleType(handle, typeCt);
+        }
+    }
+
     function checkHandleExist(Set storage self, uint256 handle, uint8 typeCt) internal view {
         Record memory r = self.records[handle];
         if (r.meta.valueType == 0) {

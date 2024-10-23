@@ -15,9 +15,7 @@ contract DBTest is Test {
 
     function setUp() public {}
 
-    function test_Add() public {
-        // (bool succeeded, uint256 result) = Math.tryAdd(clearNumLhs, clearNumRhs);
-        // e.value = result % (MAX_UINT[e.valueType-1] + 1);
-        // e.overflow = (succeeded ? (result > MAX_UINT[e.valueType-1]) : true) || e.overflow;
+    function test_Add() public pure {
+        
     }
 }

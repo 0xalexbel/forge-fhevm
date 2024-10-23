@@ -38,6 +38,16 @@ library MathLib {
         return MAX_UINT[typeCt];
     }
 
+    function numBits(uint8 typeCt) internal pure returns (uint256) {
+        if (typeCt == 0) return 1;
+        if (typeCt == 7) return 160;
+        if (typeCt == 8) return 256;
+        unchecked {
+            if (typeCt < 7) return 1 << (typeCt + 1);
+            return 1 << typeCt;
+        }
+    }
+
     // ====== Numeric binary ops ======
 
     function add(uint256 a, uint256 b, uint8 typeCt)
@@ -239,7 +249,11 @@ library MathLib {
         if (toType == Common.ebool_t) {
             result = uint256((a != 0) ? 1 : 0);
         } else if (toType == Common.euint4_t) {
-            result = a & uint256(0xF);
+            if (a > 0xF) {
+                result = a % (0xF + 1);
+            } else {
+                result = a;
+            }
         } else if (toType == Common.euint8_t) {
             result = uint256(uint8(a));
         } else if (toType == Common.euint16_t) {
@@ -344,13 +358,39 @@ library MathLib {
         revert("Not yet implemented");
     }
 
-    function rotl(uint256 a, uint256 b, uint8 typeCt) internal pure returns (uint256) {
-        require(a > 0 && b > 0 && typeCt > 0, "Not yet implemented");
-        revert("Not yet implemented");
+    function rotl(uint256 a, uint256 b, uint8 typeCt) internal pure returns (uint256 result) {
+        if (typeCt < Common.euint256_t) {
+            uint256 mx = maxUint(typeCt);
+            uint256 nb = numBits(typeCt);
+            require(a <= mx);
+            require(b <= nb);
+            unchecked {
+                result = ((a << b) | (a >> (nb - b))) & mx;
+            }
+            require(result <= mx);
+        } else {
+            require(b <= 256);
+            unchecked {
+                result = (a << b) | (a >> (256 - b));
+            }
+        }
     }
 
-    function rotr(uint256 a, uint256 b, uint8 typeCt) internal pure returns (uint256) {
-        require(a > 0 && b > 0 && typeCt > 0, "Not yet implemented");
-        revert("Not yet implemented");
+    function rotr(uint256 a, uint256 b, uint8 typeCt) internal pure returns (uint256 result) {
+        if (typeCt < Common.euint256_t) {
+            uint256 mx = maxUint(typeCt);
+            uint256 nb = numBits(typeCt);
+            require(a <= mx);
+            require(b <= nb);
+            unchecked {
+                result = ((a >> b) | (a << (nb - b))) & mx;
+            }
+            require(result <= mx);
+        } else {
+            require(b <= 256);
+            unchecked {
+                result = (a >> b) | (a << (256 - b));
+            }
+        }
     }
 }
