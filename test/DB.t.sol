@@ -15,7 +15,5 @@ contract DBTest is Test {
 
     function setUp() public {}
 
-    function test_Add() public pure {
-        
-    }
+    function test_Add() public pure {}
 }

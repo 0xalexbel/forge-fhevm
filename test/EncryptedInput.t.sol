@@ -14,47 +14,51 @@ contract EncryptedInputTest is Test {
         TFHEvm.setUp();
     }
 
-    // function test_AsBoolAnd() public {
-    //     ebool b1 = TFHE.asEbool(true);
+    function test_AsBoolAnd() public {
+        ebool b1 = TFHE.asEbool(true);
 
-    //     address userAddress = msg.sender;
-    //     address contractAddress = address(this);
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
 
-    //     EncryptedInput memory input = TFHEvm.createEncryptedInput(contractAddress, userAddress);
-    //     input.addBool(true, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
-    //     (einput[] memory handles, bytes memory inputProof) = input.encrypt();
+        EncryptedInput memory input = TFHEvm.createEncryptedInput(contractAddress, userAddress);
+        input.addBool(true, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
+        (einput[] memory handles, bytes memory inputProof) = input.encrypt();
 
-    //     ebool b2 = TFHE.asEbool(handles[0], inputProof);
-    //     ebool b3 = TFHE.and(b1, b2);
-    //     TFHE.allow(b3, userAddress);
+        ebool b2 = TFHE.asEbool(handles[0], inputProof);
+        ebool b3 = TFHE.and(b1, b2);
 
-    //     bool b2_ct = TFHEvm.decryptBool(b2, contractAddress, userAddress);
-    //     bool b3_ct = TFHEvm.decryptBool(b3, contractAddress, userAddress);
+        bool b2_ct = TFHEvm.getClear(b2);
+        bool b3_ct = TFHEvm.getClear(b3);
 
-    //     vm.assertEq(b2_ct, true);
-    //     vm.assertEq(b3_ct, true);
-    // }
+        vm.assertEq(b2_ct, true);
+        vm.assertEq(b3_ct, true);
+    }
 
-    // function test_helper_AsBoolAnd() public {
-    //     ebool b1 = TFHE.asEbool(true);
+    function test_helper_AsBoolAnd() public {
+        ebool b1 = TFHE.asEbool(true);
 
-    //     address userAddress = msg.sender;
-    //     address contractAddress = address(this);
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
 
-    //     (einput inputHandle, bytes memory inputProof) = TFHEvm.encryptBool(
-    //         true, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209, contractAddress, userAddress
-    //     );
+        (einput inputHandle, bytes memory inputProof) = TFHEvm.encryptBool(
+            true, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209, contractAddress, userAddress
+        );
 
-    //     ebool b2 = TFHE.asEbool(inputHandle, inputProof);
-    //     ebool b3 = TFHE.and(b1, b2);
-    //     TFHE.allow(b3, userAddress);
+        ebool b2 = TFHE.asEbool(inputHandle, inputProof);
+        ebool b3 = TFHE.and(b1, b2);
 
-    //     bool b2_ct = TFHEvm.decryptBool(b2, contractAddress, userAddress);
-    //     bool b3_ct = TFHEvm.decryptBool(b3, contractAddress, userAddress);
+        TFHE.allow(b2, contractAddress);
+        TFHE.allow(b2, userAddress);
 
-    //     vm.assertEq(b2_ct, true);
-    //     vm.assertEq(b3_ct, true);
-    // }
+        TFHE.allow(b3, contractAddress);
+        TFHE.allow(b3, userAddress);
+
+        bool b2_ct = TFHEvm.decryptBool(b2, contractAddress, userAddress);
+        bool b3_ct = TFHEvm.decryptBool(b3, contractAddress, userAddress);
+
+        vm.assertEq(b2_ct, true);
+        vm.assertEq(b3_ct, true);
+    }
 
     function test_helper_AsBytes() public {
         bytes memory b128 = abi.encodePacked(
@@ -69,6 +73,9 @@ contract EncryptedInputTest is Test {
         );
 
         ebytes256 b_enc = TFHE.asEbytes256(inputHandle, inputProof);
+
+        TFHE.allow(b_enc, contractAddress);
+        TFHE.allow(b_enc, userAddress);
 
         bytes memory b_ct = TFHEvm.decryptBytes256(b_enc, contractAddress, userAddress);
 
@@ -95,6 +102,8 @@ contract EncryptedInputTest is Test {
         ebytes256 b_enc2 = TFHE.asEbytes256(inputHandle2, inputProof2);
 
         ebool eq_enc = TFHE.eq(b_enc1, b_enc2);
+
+        TFHE.allow(eq_enc, contractAddress);
         TFHE.allow(eq_enc, userAddress);
 
         bool eq_ct = TFHEvm.decryptBool(eq_enc, contractAddress, userAddress);

@@ -268,7 +268,7 @@ library MathLib {
             result = a;
         } else {
             revert("cast to unsupported type");
-        }        
+        }
 
         return (flags, result);
     }

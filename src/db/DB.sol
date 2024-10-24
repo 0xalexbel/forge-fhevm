@@ -575,9 +575,8 @@ library DBLib {
     ) internal returns (RecordMeta memory meta) {
         uint8 typeCt = typeOf(ifTrue);
 
-        checkIsBytes(ifTrue, typeCt);
         checkTypeEq(ifFalse, typeCt);
-        checkTypeEq(resultHandle, Common.ebool_t);
+        checkTypeEq(control, Common.ebool_t);
 
         Record memory ifTrue_record = self.records[ifTrue];
         RecordMeta memory ifTrue_meta = ifTrue_record.meta;
@@ -602,7 +601,7 @@ library DBLib {
         if (revertIfArithmeticError) {
             checkArithmetic(control, control_meta.arithmeticFlags);
 
-            // 
+            //
             // question: ?? should we check both ifTrue and ifFalse ??
             //
             if (clearControl) {

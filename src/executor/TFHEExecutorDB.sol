@@ -40,6 +40,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
     IRandomGenerator private _randomGenerator;
 
     DBLib.Set private _db;
+
     using DBLib for DBLib.Set;
 
     constructor(address initialOwner) Ownable(initialOwner) {}
@@ -272,14 +273,14 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
 
     function fheNeg(uint256 result, uint256 ct) external {
         // typeOf(result) == typeOf(ct)
-        _fheNumericUnaryOp(MathLib.neg, result, ct, true /* resultTypeEqCtType */);
+        _fheNumericUnaryOp(MathLib.neg, result, ct, true /* resultTypeEqCtType */ );
     }
 
     function cast(uint256 result, uint256 ct, bytes1 toType) external {
         DBLib.checkTypeEq(result, uint8(toType));
 
         if (result == ct) {
-            _db.checkHandleExist(ct,uint8(toType));
+            _db.checkHandleExist(ct, uint8(toType));
             return;
         }
 
@@ -290,9 +291,8 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
         DBLib.checkTypeNe(result, DBLib.typeOf(ct));
 
         // typeOf(result) != typeOf(ct)
-        _fheNumericUnaryOp(MathLib.cast, result, ct, false /* resultTypeEqCtType */);
+        _fheNumericUnaryOp(MathLib.cast, result, ct, false /* resultTypeEqCtType */ );
     }
-
 
     // ===== Bit binary op =====
 
@@ -686,33 +686,34 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
     }
 
     function trivialEncrypt(uint256 result, uint256 pt, bytes1 toType) external {
-        _db.checkAndInsert256Bits(result, pt, uint8(toType), true /* trivial */);
+        _db.checkAndInsert256Bits(result, pt, uint8(toType), true /* trivial */ );
     }
 
     function trivialEncrypt(uint256 result, bytes memory pt, bytes1 toType) external {
-        _db.checkAndInsertBytes(result, pt, uint8(toType), true /* trivial */);
+        _db.checkAndInsertBytes(result, pt, uint8(toType), true /* trivial */ );
     }
 
     function fheIfThenElse(uint256 result, uint256 control, uint256 ifTrue, uint256 ifFalse) external {
-        DBLib.RecordMeta memory meta = _db.ifCtThenCtElseCt(result, control, ifTrue, ifFalse, (_throwIfArithmeticError > 0));
+        DBLib.RecordMeta memory meta =
+            _db.ifCtThenCtElseCt(result, control, ifTrue, ifFalse, (_throwIfArithmeticError > 0));
 
         // Must be the very last function call
         __exit_checkArithmetic(result, meta.arithmeticFlags);
     }
 
     function fheRand(uint256 result, bytes1 randType) external {
-        uint8 typeCt = uint8(randType); 
+        uint8 typeCt = uint8(randType);
 
         DBLib.checkTypeEq(result, typeCt);
         DBLib.checkIs256Bits(result, typeCt);
 
         (, uint256 random) = MathLib.cast(_randomGenerator.randomUint(), typeCt);
 
-        _db.checkAndInsert256Bits(result, random, typeCt, false /* trivial */);
+        _db.checkAndInsert256Bits(result, random, typeCt, false /* trivial */ );
     }
 
     function fheRandBounded(uint256 result, uint256 upperBound, bytes1 randType) external {
-        uint8 typeCt = uint8(randType); 
+        uint8 typeCt = uint8(randType);
 
         DBLib.checkTypeEq(result, typeCt);
         DBLib.checkIs256Bits(result, typeCt);
@@ -723,14 +724,14 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
             random = upperBound;
         }
 
-        _db.checkAndInsert256Bits(result, random, typeCt, false /* trivial */);
+        _db.checkAndInsert256Bits(result, random, typeCt, false /* trivial */ );
     }
 
     function insertEncrypted256Bits(uint256 handle, uint256 valuePt, uint8 typePt) external {
-        _db.checkAndInsert256Bits(handle, valuePt, typePt, false /* trivial */);
+        _db.checkAndInsert256Bits(handle, valuePt, typePt, false /* trivial */ );
     }
 
     function insertEncryptedBytes(uint256 handle, bytes memory valuePt, uint8 typePt) external {
-        _db.checkAndInsertBytes(handle, valuePt, typePt, false /* trivial */);
+        _db.checkAndInsertBytes(handle, valuePt, typePt, false /* trivial */ );
     }
 }

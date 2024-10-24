@@ -17,6 +17,7 @@ import {
     ebytes128,
     ebytes256
 } from "fhevm/lib/TFHE.sol";
+
 import {ACL} from "fhevm/lib/ACL.sol";
 import {FHEVMConfig} from "fhevm/lib/FHEVMConfig.sol";
 
@@ -403,6 +404,56 @@ library TFHEvm {
 
     // ====================================================================== //
     //
+    //                  ⭐️ API: getClear cheat functions ⭐️
+    //
+    // ====================================================================== //
+
+    function getClear(ebool value) internal view returns (bool) {
+        return __db().getBool(ebool.unwrap(value));
+    }
+
+    function getClear(euint4 value) internal view returns (uint8) {
+        return __db().getU4(euint4.unwrap(value));
+    }
+
+    function getClear(euint8 value) internal view returns (uint8) {
+        return __db().getU8(euint8.unwrap(value));
+    }
+
+    function getClear(euint16 value) internal view returns (uint16) {
+        return __db().getU16(euint16.unwrap(value));
+    }
+
+    function getClear(euint32 value) internal view returns (uint32) {
+        return __db().getU32(euint32.unwrap(value));
+    }
+
+    function getClear(euint64 value) internal view returns (uint64) {
+        return __db().getU64(euint64.unwrap(value));
+    }
+
+    function getClear(euint128 value) internal view returns (uint128) {
+        return __db().getU128(euint128.unwrap(value));
+    }
+
+    function getClear(euint256 value) internal view returns (uint256) {
+        return __db().getU256(euint256.unwrap(value));
+    }
+
+    function getClear(ebytes64 value) internal view returns (bytes memory) {
+        return __db().getBytes64(ebytes64.unwrap(value));
+    }
+
+    function getClear(ebytes128 value) internal view returns (bytes memory) {
+        return __db().getBytes128(ebytes128.unwrap(value));
+    }
+
+    function getClear(ebytes256 value) internal view returns (bytes memory) {
+        return __db().getBytes256(ebytes256.unwrap(value));
+    }
+
+    // ====================================================================== //
+    //
     //                     ⭐️ API: Decrypt functions ⭐️
     //
     // ====================================================================== //
@@ -423,7 +474,7 @@ library TFHEvm {
     {
         uint256 handle = ebool.unwrap(value);
 
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getBool(handle);
     }
@@ -446,7 +497,7 @@ library TFHEvm {
         uint256 handle = ebool.unwrap(value);
 
         __assertArithmeticallyValidHandle(handle);
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getBool(handle);
     }
@@ -463,7 +514,7 @@ library TFHEvm {
     function decryptU4(euint4 value, address contractAddress, address userAddress) public view returns (uint8 result) {
         uint256 handle = euint4.unwrap(value);
 
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU4(handle);
     }
@@ -486,7 +537,7 @@ library TFHEvm {
         uint256 handle = euint4.unwrap(value);
 
         __assertArithmeticallyValidHandle(handle);
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU4(handle);
     }
@@ -503,7 +554,7 @@ library TFHEvm {
     function decryptU8(euint8 value, address contractAddress, address userAddress) public view returns (uint8 result) {
         uint256 handle = euint8.unwrap(value);
 
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU8(handle);
     }
@@ -526,7 +577,7 @@ library TFHEvm {
         uint256 handle = euint8.unwrap(value);
 
         __assertArithmeticallyValidHandle(handle);
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU8(handle);
     }
@@ -547,7 +598,7 @@ library TFHEvm {
     {
         uint256 handle = euint16.unwrap(value);
 
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU16(handle);
     }
@@ -570,7 +621,7 @@ library TFHEvm {
         uint256 handle = euint16.unwrap(value);
 
         __assertArithmeticallyValidHandle(handle);
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU16(handle);
     }
@@ -591,7 +642,7 @@ library TFHEvm {
     {
         uint256 handle = euint32.unwrap(value);
 
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU32(handle);
     }
@@ -614,7 +665,7 @@ library TFHEvm {
         uint256 handle = euint32.unwrap(value);
 
         __assertArithmeticallyValidHandle(handle);
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU32(handle);
     }
@@ -635,7 +686,7 @@ library TFHEvm {
     {
         uint256 handle = euint64.unwrap(value);
 
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU64(handle);
     }
@@ -658,7 +709,7 @@ library TFHEvm {
         uint256 handle = euint64.unwrap(value);
 
         __assertArithmeticallyValidHandle(handle);
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU64(handle);
     }
@@ -679,7 +730,7 @@ library TFHEvm {
     {
         uint256 handle = euint128.unwrap(value);
 
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU128(handle);
     }
@@ -702,7 +753,7 @@ library TFHEvm {
         uint256 handle = euint128.unwrap(value);
 
         __assertArithmeticallyValidHandle(handle);
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU128(handle);
     }
@@ -723,7 +774,7 @@ library TFHEvm {
     {
         uint256 handle = euint256.unwrap(value);
 
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU256(handle);
     }
@@ -746,7 +797,7 @@ library TFHEvm {
         uint256 handle = euint256.unwrap(value);
 
         __assertArithmeticallyValidHandle(handle);
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getU256(handle);
     }
@@ -767,7 +818,7 @@ library TFHEvm {
     {
         uint256 handle = ebytes64.unwrap(value);
 
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getBytes64(handle);
     }
@@ -788,7 +839,7 @@ library TFHEvm {
     {
         uint256 handle = ebytes128.unwrap(value);
 
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getBytes128(handle);
     }
@@ -809,7 +860,7 @@ library TFHEvm {
     {
         uint256 handle = ebytes256.unwrap(value);
 
-        __assertAllowedHandle(handle, contractAddress, userAddress);
+        __assertDecryptAllowed(handle, contractAddress, userAddress);
 
         return __db().getBytes256(handle);
     }
@@ -1189,10 +1240,19 @@ library TFHEvm {
         return __db().isArithmeticallyValid(handle);
     }
 
-    function __assertAllowedHandle(uint256 handle, address contractAddress, address userAddress) private view {
+    function __assertDecryptAllowed(uint256 handle, address contractAddress, address userAddress) private view {
         vm.assertNotEq(handle, 0, "Handle is null");
-        vm.assertTrue(acl().isAllowed(handle, contractAddress), "contract does not have permission to decrypt handle");
-        vm.assertTrue(acl().isAllowed(handle, userAddress), "user does not have permission to decrypt handle");
+        vm.assertTrue(
+            acl().persistAllowed(handle, contractAddress), "contractAddress does not have permission to decrypt handle"
+        );
+        vm.assertTrue(
+            acl().persistAllowed(handle, userAddress), "userAddress does not have permission to decrypt handle"
+        );
+        vm.assertNotEq(
+            uint160(userAddress),
+            uint160(contractAddress),
+            "userAddress should not be equal to contractAddress when requesting reencryption!"
+        );
     }
 
     function __assertArithmeticallyValidHandle(uint256 handle) private view {
