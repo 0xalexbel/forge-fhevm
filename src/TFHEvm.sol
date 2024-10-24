@@ -16,7 +16,7 @@ import {
     ebytes64,
     ebytes128,
     ebytes256
-} from "fhevm/lib/TFHE.sol";
+} from "../lib/TFHE.sol";
 
 import {ACL} from "fhevm/lib/ACL.sol";
 import {FHEVMConfig} from "fhevm/lib/FHEVMConfig.sol";
@@ -26,8 +26,9 @@ import {DeterministicRandomGenerator} from "./utils/DeterministicRandomGenerator
 
 import {IForgeStdVmSafe as IVmSafe, forgeStdVmSafeAdd} from "./vm/IForgeStdVmSafe.sol";
 import {FhevmDeployConfig} from "./vm/FhevmDeployConfig.sol";
-import {VmTFHEStorage} from "./vm/TFHEvmStorage.sol";
+import {TFHEvmStorage} from "./vm/TFHEvmStorage.sol";
 
+import {FhevmAddressesLib} from "./deploy/FhevmAddressesLib.sol";
 import {FhevmDeployLib} from "./deploy/FhevmDeployLib.sol";
 import {TFHEExecutorDB} from "./executor/TFHEExecutorDB.sol";
 import {ReencryptLib} from "./reencrypt/Reencrypt.sol";
@@ -55,18 +56,23 @@ import {DBLib} from "./db/DB.sol";
 //     }
 // }
 
+//ln -s ./node_modules/fhevm/lib/ACL.sol ./src/fhevm/lib/.
+//ln -s ./node_modules/fhevm/lib/ACLAddress.sol ./src/fhevm/lib/.
+
+//"forge-std/=dependencies/forge-std-1.9.3/",
+//"fhevm/lib/=dependencies/forge-fhevm/src/fhevm/lib",
 enum ArithmeticCheckingMode {
     Operands,
     OperandsAndResult
 }
 
 library TFHEvm {
-    // keccak256(abi.encode(uint256(keccak256("forge-fhevm.storage.VmTFHE")) - 1)) & ~bytes32(uint256(0xff))
-    bytes32 private constant VmTFHEStorageLocation = 0xc83cf3fb0cc42676bb4003f1b47f89845a0a35d8345c37bc9676616f7aae2d00;
+    // keccak256(abi.encode(uint256(keccak256("forge-fhevm.storage.TFHEvm")) - 1)) & ~bytes32(uint256(0xff))
+    bytes32 private constant TFHEvmStorageLocation = 0x43727d8b11d0755cbc84c6fab7d46a0b3153c4c95e15288858b7ea51d9adcd00;
 
-    function __get() internal pure returns (VmTFHEStorage storage $) {
+    function __get() internal pure returns (TFHEvmStorage storage $) {
         assembly {
-            $.slot := VmTFHEStorageLocation
+            $.slot := TFHEvmStorageLocation
         }
     }
 
@@ -84,12 +90,12 @@ library TFHEvm {
 
     function setUp(FhevmDeployConfig memory deployConfig) internal {
         require(
-            keccak256(abi.encode(uint256(keccak256("forge-fhevm.storage.VmTFHE")) - 1)) & ~bytes32(uint256(0xff))
-                == VmTFHEStorageLocation,
-            "Wrong VmTFHEStorageLocation, recompute needed"
+            keccak256(abi.encode(uint256(keccak256("forge-fhevm.storage.TFHEvm")) - 1)) & ~bytes32(uint256(0xff))
+                == TFHEvmStorageLocation,
+            "Wrong TFHEvmStorageLocation, recompute needed"
         );
-        VmTFHEStorage storage $ = __get();
-        require($.initialized == false, "VmTFHE already setUp");
+        TFHEvmStorage storage $ = __get();
+        require($.initialized == false, "TFHEvm already setUp");
         $.initialized = true;
 
         // vm.startBroadcast(vmTFHEPrivateKey);
@@ -97,8 +103,12 @@ library TFHEvm {
         // vm.stopBroadcast();
         // require(address(vmTFHE) == vmTFHEAdd, "ForgeTFHE.setUp: unexpected deploy address");
 
+        if (deployConfig.isCoprocessor) {
+            FhevmAddressesLib.checkCoprocessorAddress(deployConfig.coprocessorAccount.addr);
+        }
+
         vm.startBroadcast(deployConfig.fhevmDeployer.privateKey);
-        FhevmDeployLib.FhevmDeployment memory res = FhevmDeployLib.deployFhevmWithPlugin(
+        FhevmDeployLib.FhevmDeployment memory res = FhevmDeployLib.deployFhevmNoPlugin(
             deployConfig.fhevmDeployer.addr, deployConfig.isCoprocessor, deployConfig.getKmsSignersAddr()
         );
         vm.stopBroadcast();
@@ -137,17 +147,17 @@ library TFHEvm {
     // ====================================================================== //
 
     function fhevmDeployer() internal view returns (address) {
-        VmTFHEStorage storage $ = __get();
+        TFHEvmStorage storage $ = __get();
         return $.deployConfig.fhevmDeployer.addr;
     }
 
-    function acl() internal view returns (ACL) {
-        VmTFHEStorage storage $ = __get();
+    function acl() private view returns (ACL) {
+        TFHEvmStorage storage $ = __get();
         return ACL($.fhevmConfig.ACLAddress);
     }
 
     function isCoprocessor() public view returns (bool) {
-        VmTFHEStorage storage $ = __get();
+        TFHEvmStorage storage $ = __get();
         return $.deployConfig.isCoprocessor;
     }
 
@@ -162,7 +172,7 @@ library TFHEvm {
         view
         returns (EncryptedInput memory input)
     {
-        VmTFHEStorage storage $ = __get();
+        TFHEvmStorage storage $ = __get();
         return $.createEncryptedInput(contractAddress, userAddress);
     }
 

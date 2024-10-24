@@ -4,7 +4,6 @@ pragma solidity ^0.8.24;
 import {Vm} from "forge-std/src/Vm.sol";
 import {Test} from "forge-std/src/Test.sol";
 import {console} from "forge-std/src/Console.sol";
-import {TFHE, euint8, euint64, einput, ebool, ebytes256} from "fhevm/lib/TFHE.sol";
 import {BytesLib} from "../src/utils/BytesLib.sol";
 import {TFHEvm} from "../src/TFHEvm.sol";
 import {ReencryptLib} from "../src/reencrypt/Reencrypt.sol";

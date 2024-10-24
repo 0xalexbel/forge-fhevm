@@ -4,9 +4,10 @@ pragma solidity ^0.8.24;
 import {Vm} from "forge-std/src/Vm.sol";
 import {Test} from "forge-std/src/Test.sol";
 import {console} from "forge-std/src/Console.sol";
-import {TFHE, euint8, euint64, einput, ebool, ebytes256} from "fhevm/lib/TFHE.sol";
 import {TFHEvm, ArithmeticCheckingMode} from "../src/TFHEvm.sol";
 import {EncryptedInput} from "../src/encrypted-input/EncryptedInput.sol";
+
+import {TFHE, euint8, euint64, einput, ebool, ebytes256} from "../lib/TFHE.sol";
 
 contract ArithmeticCheckTest is Test {
     function setUp() public {

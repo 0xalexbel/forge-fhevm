@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
-import {Common} from "fhevm/lib/TFHE.sol";
+import {Common} from "../../lib/TFHE.sol";
 import {EncryptedInputSigner} from "./EncryptedInputSigner.sol";
 import {EncryptedInputItem} from "./EncryptedInputItem.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";

@@ -6,7 +6,7 @@ import {EncryptedInput} from "../encrypted-input/EncryptedInput.sol";
 import {FhevmDeployConfig} from "./FhevmDeployConfig.sol";
 import {FHEVMConfig} from "fhevm/lib/FHEVMConfig.sol";
 
-struct VmTFHEStorage {
+struct TFHEvmStorage {
     bool initialized;
     FhevmDeployConfig deployConfig;
     address IRandomGeneratorAddress;
@@ -21,8 +21,8 @@ struct VmTFHEStorage {
     address TFHEExecutorDBAddress;
 }
 
-library VmTFHEStorageLib {
-    function getEncryptedInputSigner(VmTFHEStorage memory self) internal view returns (EncryptedInputSigner memory) {
+library TFHEvmStorageLib {
+    function getEncryptedInputSigner(TFHEvmStorage memory self) internal view returns (EncryptedInputSigner memory) {
         EncryptedInputSigner memory s;
         s.chainId = block.chainid;
         s.acl = self.fhevmConfig.ACLAddress;
@@ -33,7 +33,7 @@ library VmTFHEStorageLib {
         return s;
     }
 
-    function createEncryptedInput(VmTFHEStorage memory self, address contractAddress, address userAddress)
+    function createEncryptedInput(TFHEvmStorage memory self, address contractAddress, address userAddress)
         internal
         view
         returns (EncryptedInput memory input)
@@ -46,4 +46,4 @@ library VmTFHEStorageLib {
     }
 }
 
-using VmTFHEStorageLib for VmTFHEStorage global;
+using TFHEvmStorageLib for TFHEvmStorage global;

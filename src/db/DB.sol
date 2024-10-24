@@ -3,7 +3,7 @@
 pragma solidity ^0.8.24;
 
 import {console} from "forge-std/src/Console.sol";
-import {Common} from "fhevm/lib/TFHE.sol";
+import {Common} from "../../lib/TFHE.sol";
 import {BytesLib} from "../utils/BytesLib.sol";
 import {MathLib} from "../utils/MathLib.sol";
 

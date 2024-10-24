@@ -6,7 +6,7 @@ import {Test} from "forge-std/src/Test.sol";
 import {TFHEvm, ArithmeticCheckingMode} from "../../src/TFHEvm.sol";
 import {EncryptedInput} from "../../src/encrypted-input/EncryptedInput.sol";
 
-import {TFHE, euint64, einput, Common} from "fhevm/lib/TFHE.sol";
+import {TFHE, euint64, einput, Common} from "../../lib/TFHE.sol";
 
 import {Signers} from "./Signers.sol";
 import {EncryptedERC20} from "./EncryptedERC20.sol";
@@ -24,7 +24,8 @@ contract EncryptedERC20Test is Test {
         vm.broadcast(signers.alice());
         erc20 = new EncryptedERC20("Naraggara", "NARA");
     }
-
+//node /Users/alex/src/github/downloads/fhevmjs-0.5.7/bin/fhevm.js encrypt -n https://devnet.zama.ai 0x5FbDB2315678afecb367f032d93F642f64180aa3 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 3324242:64    
+//npx fhevm encrypt 0x5FbDB2315678afecb367f032d93F642f64180aa3 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 
     function test_should_mint_contract() public {
         vm.assertEq(erc20.owner(), signers.aliceAddr());
 
@@ -37,6 +38,9 @@ contract EncryptedERC20Test is Test {
 
         uint64 totalSupply = erc20.totalSupply();
         vm.assertEq(totalSupply, 1000);
+
+        console.log("alice=%s", signers.aliceAddr());
+        console.log("erc20=%s", address(erc20));
     }
 
     function test_should_mint_contract_v2() public {

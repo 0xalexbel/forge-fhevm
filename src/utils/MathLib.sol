@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.24;
 
-import {Common} from "fhevm/lib/TFHE.sol";
+import {Common} from "../../lib/TFHE.sol";
 import {BytesLib} from "../utils/BytesLib.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 

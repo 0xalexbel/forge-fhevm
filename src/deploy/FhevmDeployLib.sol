@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 import {ACL} from "fhevm/lib/ACL.sol";
+import {TFHEExecutor} from "fhevm/lib/TFHEExecutor.sol";
 import {FHEPayment} from "fhevm/lib/FHEPayment.sol";
 import {KMSVerifier} from "fhevm/lib/KMSVerifier.sol";
 import {InputVerifier as InputVerifierNative} from "fhevm/lib/InputVerifier.native.sol";
@@ -45,11 +46,79 @@ library FhevmDeployLib {
     }
 
     /// Deploy a new set of fhevm contracts
+    function deployFhevmNoPlugin(address deployerAddr, bool isCoprocessor, address[] memory kmsSigners)
+        internal
+        returns (FhevmDeployment memory)
+    {
+        FhevmDeployment memory res;
+
+        // Verify coprocAddress
+        // coprocessorAdd
+
+        // Deploy order:
+        // 1. ACL
+        // 2. TFHEExecutor
+        // 3. KMSVerfier
+        // 4. InputVerifier
+        // 5. FHEPayment
+        // Extra:
+        // 6. TFHEExecutorDB
+        ACL acl = deployACL(deployerAddr);
+        TFHEExecutor tfheExecutor = deployTFHEExecutor(deployerAddr);
+        KMSVerifier kmsVerifier = deployKMSVerifier(deployerAddr);
+
+        if (isCoprocessor) {
+            res.InputVerifierCoprocessorAddress = address(deployInputVerifierCoprocessor(deployerAddr));
+            res.InputVerifierAddress = res.InputVerifierCoprocessorAddress;
+        } else {
+            res.InputVerifierNativeAddress = address(deployInputVerifierNative(deployerAddr));
+            res.InputVerifierAddress = res.InputVerifierNativeAddress;
+        }
+
+        FHEPayment fhePayment = deployFHEPayment(deployerAddr);
+
+        // Extra
+        TFHEExecutorDB tfheExecutorDB = deployTFHEExecutorDB(deployerAddr);
+
+        res.ACLAddress = address(acl);
+        res.TFHEExecutorAddress = address(tfheExecutor);
+        res.KMSVerifierAddress = address(kmsVerifier);
+        res.FHEPaymentAddress = address(fhePayment);
+        res.TFHEExecutorDBAddress = address(tfheExecutorDB);
+
+        acl.initialize(deployerAddr);
+        tfheExecutor.initialize(deployerAddr);
+        kmsVerifier.initialize(deployerAddr);
+
+        // Add kms signers to the KMSVerifier
+        for (uint256 i = 0; i < kmsSigners.length; ++i) {
+            kmsVerifier.addSigner(kmsSigners[i]);
+        }
+
+        if (isCoprocessor) {
+            InputVerifierCoprocessor iv = InputVerifierCoprocessor(res.InputVerifierCoprocessorAddress);
+            iv.initialize(deployerAddr);
+        } else {
+            InputVerifierNative iv = InputVerifierNative(res.InputVerifierNativeAddress);
+            iv.initialize(deployerAddr);
+        }
+
+        fhePayment.initialize(deployerAddr);
+
+        verifyDefaultFHEVMConfig(res);
+
+        return res;
+    }
+
+    /// Deploy a new set of fhevm contracts
     function deployFhevmWithPlugin(address deployerAddr, bool isCoprocessor, address[] memory kmsSigners)
         internal
         returns (FhevmDeployment memory)
     {
         FhevmDeployment memory res;
+
+        // Verify coprocAddress
+        // coprocessorAdd
 
         // Deploy order:
         // 1. ACL
@@ -153,6 +222,22 @@ library FhevmDeployLib {
         require(address(proxy) == expectedAddr, "deployTFHEExecutor: unexpected proxy deploy address");
 
         TFHEExecutorWithPlugin _tfheExecutor = TFHEExecutorWithPlugin(address(proxy));
+
+        return _tfheExecutor;
+    }
+
+    /// Deploy a new TFHEExecutor contract using the specified deployer wallet
+    function deployTFHEExecutor(address deployerAddr) private returns (TFHEExecutor) {
+        (address expectedImplAddr, address expectedAddr) =
+            FhevmAddressesLib.expectedCreateTFHEExecutorAddress(deployerAddr);
+
+        TFHEExecutor impl = new TFHEExecutor();
+        require(address(impl) == expectedImplAddr, "deployTFHEExecutor: unexpected implementation deploy address");
+
+        ERC1967Proxy proxy = new ERC1967Proxy(address(impl), "");
+        require(address(proxy) == expectedAddr, "deployTFHEExecutor: unexpected proxy deploy address");
+
+        TFHEExecutor _tfheExecutor = TFHEExecutor(address(proxy));
 
         return _tfheExecutor;
     }

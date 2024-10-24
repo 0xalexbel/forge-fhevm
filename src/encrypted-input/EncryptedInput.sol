@@ -5,7 +5,7 @@ import {EncryptedInputSigner} from "./EncryptedInputSigner.sol";
 import {EncryptedInputList} from "./EncryptedInputList.sol";
 import {TFHEExecutorDB} from "../executor/TFHEExecutorDB.sol";
 import {IRandomGenerator} from "../utils/IRandomGenerator.sol";
-import {einput, Common} from "fhevm/lib/TFHE.sol";
+import {einput, Common} from "../../lib/TFHE.sol";
 
 struct EncryptedInput {
     EncryptedInputList _list;

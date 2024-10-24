@@ -30,15 +30,7 @@ library FhevmAddressesLib {
     uint8 private constant GatewayContractNonce = 1;
 
     function computeCreateAddress(address _origin, uint256 _nonce) private pure returns (address) {
-        address sol_a = AddressLib.computeCreateAddress(_origin, _nonce);
-
-        // // For debug purpose
-        // if (address(forgeVm).codehash != bytes32(0)) {
-        //     address forgeVm_a = forgeVm.computeCreateAddress(_origin, _nonce);
-        //     require(forgeVm_a == sol_a, "computeCreateAddress solidity function failed.");
-        // }
-
-        return sol_a;
+        return AddressLib.computeCreateAddress(_origin, _nonce);
     }
 
     /// FHEVM contracts
@@ -49,7 +41,7 @@ library FhevmAddressesLib {
     /// Fails if the 'ACL' contact address differs from the value of 'aclAdd' stored in
     /// the 'fhevm/lib/ACLAddress.sol' solidity file.
     function expectedCreateACLAddress(address deployerAddr)
-        public
+        internal
         pure
         returns (address expectedImplAddr, address expectedAddr)
     {
@@ -68,7 +60,7 @@ library FhevmAddressesLib {
     /// Fails if the 'TFHEExecutor' contact address differs from the value of 'tfheExecutorAdd' stored in
     /// the 'fhevm/lib/TFHEExecutorAddress.sol' solidity file.
     function expectedCreateTFHEExecutorAddress(address deployerAddr)
-        public
+        internal
         pure
         returns (address expectedImplAddr, address expectedAddr)
     {
@@ -87,7 +79,7 @@ library FhevmAddressesLib {
     /// Fails if the 'KMSVerifier' contact address differs from the value of 'kmsVerifierAdd' stored in
     /// the 'fhevm/lib/KMSVerifierAddress.sol' solidity file.
     function expectedCreateKMSVerifierAddress(address deployerAddr)
-        public
+        internal
         pure
         returns (address expectedImplAddr, address expectedAddr)
     {
@@ -106,7 +98,7 @@ library FhevmAddressesLib {
     /// Fails if the 'InputVerifier' contact address differs from the value of 'inputVerifierAdd' stored in
     /// the 'fhevm/lib/InputVerifierAddress.sol' solidity file.
     function expectedCreateInputVerifierAddress(address deployerAddr)
-        public
+        internal
         pure
         returns (address expectedImplAddr, address expectedAddr)
     {
@@ -125,7 +117,7 @@ library FhevmAddressesLib {
     /// Fails if the 'FHEPayment' contact address differs from the value of 'fhePaymentAdd' stored in
     /// the 'fhevm/lib/FHEPaymentAddress.sol' solidity file.
     function expectedCreateFHEPaymentAddress(address deployerAddr)
-        public
+        internal
         pure
         returns (address expectedImplAddr, address expectedAddr)
     {
@@ -144,7 +136,7 @@ library FhevmAddressesLib {
     /// Fails if the 'GatewayContract' contact address differs from the value of 'GATEWAY_CONTRACT_PREDEPLOY_ADDRESS' stored in
     /// the 'fhevm/gateway/lib/GatewayContractAddress.sol' solidity file.
     function expectedCreateGatewayContractAddress(address deployerAddr)
-        public
+        internal
         pure
         returns (address expectedImplAddr, address expectedAddr)
     {
@@ -163,7 +155,7 @@ library FhevmAddressesLib {
     /// - the 'TFHEExecutorDB' contract address
     /// Fails if the 'TFHEExecutorDB' contact address differs from the value of 'tfheExecutorDBAdd' stored in
     /// the 'fhevm/lib/TFHEExecutorDBAddress.sol' solidity file.
-    function expectedCreateTFHEExecutorDBAddress(address deployerAddr) public pure returns (address expectedAddr) {
+    function expectedCreateTFHEExecutorDBAddress(address deployerAddr) internal pure returns (address expectedAddr) {
         expectedAddr = computeCreateAddress(deployerAddr, TFHEExecutorDBNonce);
 
         require(
@@ -172,35 +164,43 @@ library FhevmAddressesLib {
         );
     }
 
+    /// Fails if the provided address is not equal to 'fhevm/lib/CoprocessorAddress.sol'
+    function checkCoprocessorAddress(address coprocAddress) internal pure {
+        require(
+            coprocessorAdd == coprocAddress,
+            "Coprocessor address mismtach. The coprocessor private key does not match the required address stored in 'fhevm/lib/CoprocessorAddress.sol'"
+        );
+    }
+
     /// FHEVM contracts
 
-    function computeCreateACLAddress(address deployerAddr) public pure returns (address) {
+    function computeCreateACLAddress(address deployerAddr) internal pure returns (address) {
         return computeCreateAddress(deployerAddr, ACLNonce);
     }
 
-    function computeCreateTFHEExecutorAddress(address deployerAddr) public pure returns (address) {
+    function computeCreateTFHEExecutorAddress(address deployerAddr) internal pure returns (address) {
         return computeCreateAddress(deployerAddr, TFHEExecutorNonce);
     }
 
-    function computeCreateKMSVerifierAddress(address deployerAddr) public pure returns (address) {
+    function computeCreateKMSVerifierAddress(address deployerAddr) internal pure returns (address) {
         return computeCreateAddress(deployerAddr, KMSVerifierNonce);
     }
 
-    function computeCreateInputVerifierAddress(address deployerAddr) public pure returns (address) {
+    function computeCreateInputVerifierAddress(address deployerAddr) internal pure returns (address) {
         return computeCreateAddress(deployerAddr, InputVerifierNonce);
     }
 
-    function computeCreateFHEPaymentAddress(address deployerAddr) public pure returns (address) {
+    function computeCreateFHEPaymentAddress(address deployerAddr) internal pure returns (address) {
         return computeCreateAddress(deployerAddr, FHEPaymentNonce);
     }
 
-    function computeCreateGatewayContractAddress(address deployerAddr) public pure returns (address) {
+    function computeCreateGatewayContractAddress(address deployerAddr) internal pure returns (address) {
         return computeCreateAddress(deployerAddr, GatewayContractNonce);
     }
 
     /// Extra contracts
 
-    function computeCreateTFHEExecutorDBAddress(address deployerAddr) public pure returns (address) {
+    function computeCreateTFHEExecutorDBAddress(address deployerAddr) internal pure returns (address) {
         return computeCreateAddress(deployerAddr, TFHEExecutorDBNonce);
     }
 }

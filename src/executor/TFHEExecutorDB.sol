@@ -3,7 +3,7 @@
 pragma solidity ^0.8.24;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Common} from "fhevm/lib/TFHE.sol";
+import {Common} from "../../lib/TFHE.sol";
 import {ITFHEExecutorPlugin} from "./ITFHEExecutorPlugin.sol";
 import {BytesLib} from "../utils/BytesLib.sol";
 import {IRandomGenerator} from "../utils/IRandomGenerator.sol";
