@@ -1,6 +1,15 @@
 # forge-fhevm
 A forge library to run Zama's fhevm 
 
+## Remappings
+
+Warning: The 2 following remapping lines are importants
+
+```bash
+"fhevm/=dependencies/forge-fhevm-0.6.0-4/"
+"forge-fhevm/=dependencies/forge-fhevm-0.6.0-4/"
+```
+
 ## foundry.toml
 
 ```toml
@@ -11,11 +20,11 @@ src = "src"
 out = "out"
 libs = ["dependencies"]
 remappings= [
-    "@openzeppelin/contracts-upgradeable/=dependencies/@openzeppelin-contracts-upgradeable-5.0.2/",
+    "forge-std/=dependencies/forge-std-1.9.3/",
     "@openzeppelin/contracts/=dependencies/@openzeppelin-contracts-5.0.2/",
-    "fhevm/=dependencies/forge-fhevm-0.6.0-3/",
-    "forge-fhevm/=dependencies/forge-fhevm-0.6.0-3/",
-    "forge-std/=dependencies/forge-std-1.9.3/"
+    "@openzeppelin/contracts-upgradeable/=dependencies/@openzeppelin-contracts-upgradeable-5.0.2/",
+    "fhevm/=dependencies/forge-fhevm-0.6.0-4/",
+    "forge-fhevm/=dependencies/forge-fhevm-0.6.0-4/"
 ]
 
 [dependencies]
@@ -31,7 +40,16 @@ remappings_version = false
 ## Development
 
 ```bash
-npm install
+# restore foundry.toml
+mv ./foundry.toml.dev ./foundry.toml
+
+# restore remappings.txt (for vscode)
+mv ./remappings.txt.dev ./remappings.txt
+
+# install dependencies
 forge soldeer install
+
+# run tests
+forge test
 ```
 
