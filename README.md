@@ -40,7 +40,16 @@ remappings_version = false
 ## Development
 
 ```bash
-npm install
+# restore foundry.toml
+mv ./foundry.toml.dev ./foundry.toml
+
+# restore remappings.txt (for vscode)
+mv ./remappings.txt.dev ./remappings.txt
+
+# install dependencies
 forge soldeer install
+
+# run tests
+forge test
 ```
 
