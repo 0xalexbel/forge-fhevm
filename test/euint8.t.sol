@@ -38,7 +38,7 @@ contract EUint8Test is Test {
         vm.assertEq(i3, 128 + 2);
     }
 
-    function test_revert_Add_no_user_permission() public {
+    function testFail_revert_Add_no_user_permission() public {
         address userAddress = msg.sender;
         address contractAddress = address(this);
 
@@ -48,11 +48,14 @@ contract EUint8Test is Test {
 
         TFHE.allow(ei3, contractAddress);
 
-        vm.expectRevert("userAddress does not have permission to decrypt handle");
+        // serAddress does not have permission to decrypt handle
+        // Note cannot use vm.expectRevert().
+        // forge does not detect it
+        // use testFail_xxx instead
         TFHEvm.decryptU8(ei3, contractAddress, userAddress);
     }
 
-    function test_revert_Add_no_contract_permission() public {
+    function testFail_revert_Add_no_contract_permission() public {
         address userAddress = msg.sender;
         address contractAddress = address(this);
 
@@ -62,7 +65,10 @@ contract EUint8Test is Test {
 
         TFHE.allow(ei3, userAddress);
 
-        vm.expectRevert("contractAddress does not have permission to decrypt handle");
+        // contractAddress does not have permission to decrypt handle
+        // Note cannot use vm.expectRevert().
+        // forge does not detect it
+        // use testFail_xxx instead
         TFHEvm.decryptU8(ei3, contractAddress, userAddress);
     }
 
@@ -92,7 +98,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        // Note in strict mode, cannot use vm.expectRevert().
+        // Note cannot use vm.expectRevert().
         // forge does not detect it
         // use testFail_xxx instead
         TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
@@ -147,7 +153,7 @@ contract EUint8Test is Test {
         TFHEvm.decryptU8Strict(ei3, contractAddress, userAddress);
     }
 
-    function test_revert_Sub_no_user_permission() public {
+    function testFail_revert_Sub_no_user_permission() public {
         address userAddress = msg.sender;
         address contractAddress = address(this);
 
@@ -157,11 +163,14 @@ contract EUint8Test is Test {
 
         TFHE.allow(ei3, contractAddress);
 
-        vm.expectRevert("userAddress does not have permission to decrypt handle");
+        // userAddress does not have permission to decrypt handle
+        // Note cannot use vm.expectRevert().
+        // forge does not detect it
+        // use testFail_xxx instead
         TFHEvm.decryptU8(ei3, contractAddress, userAddress);
     }
 
-    function test_revert_Sub_no_contract_permission() public {
+    function testFail_revert_Sub_no_contract_permission() public {
         address userAddress = msg.sender;
         address contractAddress = address(this);
 
@@ -171,7 +180,10 @@ contract EUint8Test is Test {
 
         TFHE.allow(ei3, userAddress);
 
-        vm.expectRevert("contractAddress does not have permission to decrypt handle");
+        // contractAddress does not have permission to decrypt handle
+        // Note cannot use vm.expectRevert().
+        // forge does not detect it
+        // use testFail_xxx instead
         TFHEvm.decryptU8(ei3, contractAddress, userAddress);
     }
 
@@ -701,7 +713,7 @@ contract EUint8Test is Test {
     }
 
     /// rotl(8, 4) == 128
-    function test_Rotl_u8_4() public {
+    function test_Rotl_4() public {
         address userAddress = msg.sender;
         address contractAddress = address(this);
 
@@ -774,7 +786,7 @@ contract EUint8Test is Test {
         euint8 ei1 = TFHE.asEuint8(8);
         euint8 ei2 = TFHE.asEuint8(4);
         euint8 ei3 = TFHE.rotr(ei1, ei2);
-        
+
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 

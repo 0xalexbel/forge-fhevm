@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.24;
 
-import {console} from "forge-std/src/Console.sol";
 import {Common} from "../../lib/TFHE.sol";
 import {BytesLib} from "../utils/BytesLib.sol";
 import {MathLib} from "../utils/MathLib.sol";
@@ -92,8 +91,6 @@ library DBLib {
             revert HandleDoesNotExist(handle);
         }
         if (valueType != typeCt + 1) {
-            console.log("valueType = %s", valueType);
-            console.log("typeCt = %s", typeCt);
             revert InternalError();
         }
         if (typeOf(handle) != typeCt) {

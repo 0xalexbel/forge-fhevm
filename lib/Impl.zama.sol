@@ -5,13 +5,6 @@ pragma solidity ^0.8.24;
 import "./TFHE.sol";
 import "./FHEVMConfig.sol";
 
-/// Begin forge-fhevm patch
-import {ITFHEExecutorPlugin} from "../src/executor/ITFHEExecutorPlugin.sol";
-import {tfheExecutorDBAdd} from "../src/executor/TFHEExecutorDBAddress.sol";
-// For gas metering
-import {IForgeStdVmSafe as IVmSafe, forgeStdVmSafeAdd} from "../src/vm/IForgeStdVmSafe.sol";
-/// End forge-fhevm patch
-
 interface ITFHEExecutor {
     function fheAdd(uint256 lhs, uint256 rhs, bytes1 scalarByte) external returns (uint256 result);
     function fheSub(uint256 lhs, uint256 rhs, bytes1 scalarByte) external returns (uint256 result);
@@ -62,10 +55,6 @@ interface IACL {
 library Impl {
     // keccak256(abi.encode(uint256(keccak256("fhevm.storage.FHEVMConfig")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant FHEVMConfigLocation = 0xed8d60e34876f751cc8b014c560745351147d9de11b9347c854e881b128ea600;
-    
-    /// Begin forge-fhevm patch
-    IVmSafe private constant vm = IVmSafe(forgeStdVmSafeAdd);
-    /// End forge-fhevm patch
 
     function getFHEVMConfig() internal pure returns (FHEVMConfig.FHEVMConfigStruct storage $) {
         assembly {
@@ -90,13 +79,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheAdd(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheAdd(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch
     }
 
     function sub(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -108,13 +90,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheSub(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheSub(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch
     }
 
     function mul(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -126,39 +101,18 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheMul(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheMul(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function div(uint256 lhs, uint256 rhs) internal returns (uint256 result) {
         bytes1 scalarByte = 0x01;
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheDiv(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheDiv(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function rem(uint256 lhs, uint256 rhs) internal returns (uint256 result) {
         bytes1 scalarByte = 0x01;
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheRem(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheRem(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function and(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -170,13 +124,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheBitAnd(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheBitAnd(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function or(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -188,13 +135,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheBitOr(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheBitOr(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function xor(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -206,13 +146,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheBitXor(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheBitXor(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function shl(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -224,13 +157,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheShl(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheShl(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function shr(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -242,13 +168,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheShr(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheShr(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function rotl(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -260,13 +179,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheRotl(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheRotl(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function rotr(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -278,13 +190,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheRotr(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheRotr(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function eq(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -296,13 +201,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheEq(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheEq(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function ne(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -314,13 +212,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheNe(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheNe(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function ge(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -332,13 +223,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheGe(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheGe(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function gt(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -350,13 +234,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheGt(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheGt(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function le(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -368,13 +245,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheLe(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheLe(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function lt(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -386,13 +256,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheLt(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheLt(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function min(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -404,13 +267,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheMin(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheMin(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function max(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
@@ -422,37 +278,16 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheMax(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheMax(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function neg(uint256 ct) internal returns (uint256 result) {
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheNeg(ct);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheNeg(result, ct);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function not(uint256 ct) internal returns (uint256 result) {
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheNot(ct);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheNot(result, ct);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     // If 'control's value is 'true', the result has the same value as 'ifTrue'.
@@ -460,13 +295,6 @@ library Impl {
     function select(uint256 control, uint256 ifTrue, uint256 ifFalse) internal returns (uint256 result) {
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheIfThenElse(control, ifTrue, ifFalse);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheIfThenElse(result, control, ifTrue, ifFalse);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function verify(bytes32 inputHandle, bytes memory inputProof, uint8 toType) internal returns (uint256 result) {
@@ -477,50 +305,22 @@ library Impl {
             inputProof,
             bytes1(toType)
         );
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).verifyCiphertext(result, inputHandle, msg.sender, inputProof, bytes1(toType));
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
         IACL($.ACLAddress).allowTransient(result, msg.sender);
     }
 
     function cast(uint256 ciphertext, uint8 toType) internal returns (uint256 result) {
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).cast(ciphertext, bytes1(toType));
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).cast(result, ciphertext, bytes1(toType));
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function trivialEncrypt(uint256 value, uint8 toType) internal returns (uint256 result) {
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).trivialEncrypt(value, bytes1(toType));
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).trivialEncrypt(result, value, bytes1(toType));
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function trivialEncrypt(bytes memory value, uint8 toType) internal returns (uint256 result) {
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).trivialEncrypt(value, bytes1(toType));
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).trivialEncrypt(result, value, bytes1(toType));
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function eq(uint256 lhs, bytes memory rhs, bool scalar) internal returns (uint256 result) {
@@ -532,13 +332,6 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheEq(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheEq(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function ne(uint256 lhs, bytes memory rhs, bool scalar) internal returns (uint256 result) {
@@ -550,37 +343,16 @@ library Impl {
         }
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheNe(lhs, rhs, scalarByte);
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheNe(result, lhs, rhs, scalarByte);
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function rand(uint8 randType) internal returns (uint256 result) {
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheRand(bytes1(randType));
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheRand(result, bytes1(randType));
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function randBounded(uint256 upperBound, uint8 randType) internal returns (uint256 result) {
         FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
         result = ITFHEExecutor($.TFHEExecutorAddress).fheRandBounded(upperBound, bytes1(randType));
-        ///
-        /// Begin forge-fhevm patch
-        ///
-        vm.pauseGasMetering();
-        ITFHEExecutorPlugin(tfheExecutorDBAdd).fheRandBounded(result, upperBound, bytes1(randType));
-        vm.resumeGasMetering();
-        /// End forge-fhevm patch 
     }
 
     function allowTransient(uint256 handle, address account) internal {

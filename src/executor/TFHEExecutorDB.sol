@@ -281,6 +281,7 @@ contract TFHEExecutorDB is Ownable, ITFHEExecutorPlugin {
 
         if (result == ct) {
             _db.checkHandleExist(ct, uint8(toType));
+
             return;
         }
 

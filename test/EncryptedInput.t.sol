@@ -111,7 +111,7 @@ contract EncryptedInputTest is Test {
         vm.assertEq(eq_ct, true);
     }
 
-    function test_AddBool() public view {
+    function test_AddBool() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
@@ -121,7 +121,7 @@ contract EncryptedInputTest is Test {
         vm.assertEq(a, 1);
     }
 
-    function test_Add4() public view {
+    function test_Add4() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
@@ -131,7 +131,7 @@ contract EncryptedInputTest is Test {
         vm.assertEq(a, 15);
     }
 
-    function test_Add8() public view {
+    function test_Add8() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
@@ -141,7 +141,7 @@ contract EncryptedInputTest is Test {
         vm.assertEq(a, 255);
     }
 
-    function test_Add16() public view {
+    function test_Add16() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
@@ -151,7 +151,7 @@ contract EncryptedInputTest is Test {
         vm.assertEq(a, 65535);
     }
 
-    function test_Add32() public view {
+    function test_Add32() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
@@ -162,7 +162,7 @@ contract EncryptedInputTest is Test {
         vm.assertEq(a, 2 ** 32 - 1);
     }
 
-    function test_Add64() public view {
+    function test_Add64() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
@@ -172,17 +172,16 @@ contract EncryptedInputTest is Test {
         vm.assertEq(a, 2 ** 64 - 1);
     }
 
-    function test_Add128() public view {
+    function test_Add128() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-
         EncryptedInput memory input = TFHEvm.createEncryptedInput(contractAddress, userAddress);
         input.add128(2 ** 128 - 1, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         uint256 a = input._list._items[0].extract256();
         vm.assertEq(a, 2 ** 128 - 1);
     }
 
-    function test_Add256() public view {
+    function test_Add256() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
@@ -192,7 +191,7 @@ contract EncryptedInputTest is Test {
         vm.assertEq(a, 2 ** 256 - 1);
     }
 
-    function test_AddBytes64() public view {
+    function test_AddBytes64() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
@@ -214,7 +213,7 @@ contract EncryptedInputTest is Test {
         vm.assertEq(a[7], uint256(0));
     }
 
-    function test_AddBytes128() public view {
+    function test_AddBytes128() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
@@ -236,7 +235,7 @@ contract EncryptedInputTest is Test {
         vm.assertEq(a[7], uint256(0));
     }
 
-    function test_AddBytes256() public view {
+    function test_AddBytes256() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 

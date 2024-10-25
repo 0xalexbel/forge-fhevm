@@ -7,6 +7,9 @@ import {TFHEExecutorDB} from "../executor/TFHEExecutorDB.sol";
 import {IRandomGenerator} from "../utils/IRandomGenerator.sol";
 import {einput, Common} from "../../lib/TFHE.sol";
 
+// For gas metering
+import {IForgeStdVmSafe as IVmSafe, forgeStdVmSafeAdd} from "../vm/IForgeStdVmSafe.sol";
+
 struct EncryptedInput {
     EncryptedInputList _list;
     EncryptedInputSigner _signer;
@@ -17,95 +20,142 @@ struct EncryptedInput {
 }
 
 library EncryptedInputLib {
+    IVmSafe private constant vm = IVmSafe(forgeStdVmSafeAdd);
+
     function addBool(EncryptedInput memory self, bool value) internal {
+        vm.pauseGasMetering();
         self._list.addBool(value, bytes32(IRandomGenerator(self._randomGeneratorAddress).randomUint()));
+        vm.resumeGasMetering();
     }
 
-    function addBool(EncryptedInput memory self, bool value, bytes32 random) internal pure {
+    function addBool(EncryptedInput memory self, bool value, bytes32 random) internal {
+        vm.pauseGasMetering();
         self._list.addBool(value, random);
+        vm.resumeGasMetering();
     }
 
     function add4(EncryptedInput memory self, uint8 value) internal {
+        vm.pauseGasMetering();
         self._list.add4(value, bytes32(IRandomGenerator(self._randomGeneratorAddress).randomUint()));
+        vm.resumeGasMetering();
     }
 
-    function add4(EncryptedInput memory self, uint8 value, bytes32 random) internal pure {
+    function add4(EncryptedInput memory self, uint8 value, bytes32 random) internal {
+        vm.pauseGasMetering();
         self._list.add4(value, random);
+        vm.resumeGasMetering();
     }
 
     function add8(EncryptedInput memory self, uint8 value) internal {
+        vm.pauseGasMetering();
         self._list.add8(value, bytes32(IRandomGenerator(self._randomGeneratorAddress).randomUint()));
+        vm.resumeGasMetering();
     }
 
-    function add8(EncryptedInput memory self, uint8 value, bytes32 random) internal pure {
+    function add8(EncryptedInput memory self, uint8 value, bytes32 random) internal {
+        vm.pauseGasMetering();
         self._list.add8(value, random);
+        vm.resumeGasMetering();
     }
 
     function add16(EncryptedInput memory self, uint16 value) internal {
+        vm.pauseGasMetering();
         self._list.add16(value, bytes32(IRandomGenerator(self._randomGeneratorAddress).randomUint()));
+        vm.resumeGasMetering();
     }
 
-    function add16(EncryptedInput memory self, uint16 value, bytes32 random) internal pure {
+    function add16(EncryptedInput memory self, uint16 value, bytes32 random) internal {
+        vm.pauseGasMetering();
         self._list.add16(value, random);
+        vm.resumeGasMetering();
     }
 
     function add32(EncryptedInput memory self, uint32 value) internal {
+        vm.pauseGasMetering();
         self._list.add32(value, bytes32(IRandomGenerator(self._randomGeneratorAddress).randomUint()));
+        vm.resumeGasMetering();
     }
 
-    function add32(EncryptedInput memory self, uint32 value, bytes32 random) internal pure {
+    function add32(EncryptedInput memory self, uint32 value, bytes32 random) internal {
+        vm.pauseGasMetering();
         self._list.add32(value, random);
+        vm.resumeGasMetering();
     }
 
     function add64(EncryptedInput memory self, uint64 value) internal {
+        vm.pauseGasMetering();
         self._list.add64(value, bytes32(IRandomGenerator(self._randomGeneratorAddress).randomUint()));
+        vm.resumeGasMetering();
     }
 
-    function add64(EncryptedInput memory self, uint64 value, bytes32 random) internal pure {
+    function add64(EncryptedInput memory self, uint64 value, bytes32 random) internal {
+        vm.pauseGasMetering();
         self._list.add64(value, random);
+        vm.resumeGasMetering();
     }
 
     function add128(EncryptedInput memory self, uint128 value) internal {
+        vm.pauseGasMetering();
         self._list.add128(value, bytes32(IRandomGenerator(self._randomGeneratorAddress).randomUint()));
+        vm.resumeGasMetering();
     }
 
-    function add128(EncryptedInput memory self, uint128 value, bytes32 random) internal pure {
+    function add128(EncryptedInput memory self, uint128 value, bytes32 random) internal {
+        vm.pauseGasMetering();
         self._list.add128(value, random);
+        vm.resumeGasMetering();
     }
 
     function add256(EncryptedInput memory self, uint256 value) internal {
+        vm.pauseGasMetering();
         self._list.add256(value, bytes32(IRandomGenerator(self._randomGeneratorAddress).randomUint()));
+        vm.resumeGasMetering();
     }
 
-    function add256(EncryptedInput memory self, uint256 value, bytes32 random) internal pure {
+    function add256(EncryptedInput memory self, uint256 value, bytes32 random) internal {
+        vm.pauseGasMetering();
         self._list.add256(value, random);
+        vm.resumeGasMetering();
     }
 
     function addBytes64(EncryptedInput memory self, bytes memory value) internal {
+        vm.pauseGasMetering();
         self._list.addBytes64(value, bytes32(IRandomGenerator(self._randomGeneratorAddress).randomUint()));
+        vm.resumeGasMetering();
     }
 
-    function addBytes64(EncryptedInput memory self, bytes memory value, bytes32 random) internal pure {
+    function addBytes64(EncryptedInput memory self, bytes memory value, bytes32 random) internal {
+        vm.pauseGasMetering();
         self._list.addBytes64(value, random);
+        vm.resumeGasMetering();
     }
 
     function addBytes128(EncryptedInput memory self, bytes memory value) internal {
+        vm.pauseGasMetering();
         self._list.addBytes128(value, bytes32(IRandomGenerator(self._randomGeneratorAddress).randomUint()));
+        vm.resumeGasMetering();
     }
 
-    function addBytes128(EncryptedInput memory self, bytes memory value, bytes32 random) internal pure {
+    function addBytes128(EncryptedInput memory self, bytes memory value, bytes32 random) internal {
+        vm.pauseGasMetering();
         self._list.addBytes128(value, random);
+        vm.resumeGasMetering();
     }
 
     function addBytes256(EncryptedInput memory self, bytes memory value) internal {
+        vm.pauseGasMetering();
         self._list.addBytes256(value, bytes32(IRandomGenerator(self._randomGeneratorAddress).randomUint()));
+        vm.resumeGasMetering();
     }
 
-    function addBytes256(EncryptedInput memory self, bytes memory value, bytes32 random) internal pure {
+    function addBytes256(EncryptedInput memory self, bytes memory value, bytes32 random) internal {
+        vm.pauseGasMetering();
         self._list.addBytes256(value, random);
+        vm.resumeGasMetering();
     }
 
-    function encrypt(EncryptedInput memory self) public returns (einput[] memory handles, bytes memory inputProof) {
+    function encrypt(EncryptedInput memory self) internal returns (einput[] memory handles, bytes memory inputProof) {
+        vm.pauseGasMetering();
         uint256[] memory _handles;
         (_handles, inputProof) = self._list.encrypt(self._signer, self._contractAddress, self._userAddress);
 
@@ -130,9 +180,11 @@ library EncryptedInputLib {
 
             handles[i] = einput.wrap(bytes32(_handles[i]));
         }
+        vm.resumeGasMetering();
     }
 
-    function encryptSingleton(EncryptedInput memory self) public returns (einput handle, bytes memory inputProof) {
+    function encryptSingleton(EncryptedInput memory self) internal returns (einput handle, bytes memory inputProof) {
+        vm.pauseGasMetering();
         require(self._list._length == 1, "encryptSingle only supports list with only one element");
 
         uint256[] memory _handles;
@@ -154,6 +206,7 @@ library EncryptedInputLib {
         }
 
         handle = einput.wrap(bytes32(h));
+        vm.resumeGasMetering();
     }
 }
 

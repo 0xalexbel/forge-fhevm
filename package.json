@@ -15,7 +15,6 @@
     },
     "devDependencies": {
         "@openzeppelin/contracts": "^5.0.2",
-        "@openzeppelin/contracts-upgradeable": "^5.0.2",
-        "fhevm": "git://github.com/zama-ai/fhevm.git"
+        "@openzeppelin/contracts-upgradeable": "^5.0.2"
     }
   }

@@ -35,4 +35,9 @@ interface IForgeStdVmSafe {
     function assertFalse(bool condition, string calldata error) external pure;
     function assertNotEq(uint256 left, uint256 right, string calldata error) external pure;
     function assertEq(address left, address right, string calldata error) external pure;
+
+    // ======== Gas metering ========
+
+    function pauseGasMetering() external;
+    function resumeGasMetering() external;
 }

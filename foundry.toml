@@ -1,19 +1,17 @@
 [profile.default]
-libs = ["node_modules"]
+libs = ["dependencies"]
 solc = "0.8.24"
 evm_version = 'cancun'
-remappings = [
-  "forge-std/=dependencies/forge-std-1.9.3/",
-  "forge-std-1.9.3/=dependencies/forge-std-1.9.3/"
-]
 
 [dependencies]
 forge-std = "1.9.3"
+"@openzeppelin-contracts" = { version = "5.0.2" }
+"@openzeppelin-contracts-upgradeable" = { version = "5.0.2" }
 
 [soldeer]
+remappings_version = false
 remappings_generate = false
 remappings_regenerate = false
-remappings_version = false
 remappings_prefix = ""
 remappings_location = "config"
 

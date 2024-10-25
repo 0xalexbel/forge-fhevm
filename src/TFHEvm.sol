@@ -56,17 +56,14 @@ import {DBLib} from "./db/DB.sol";
 //     }
 // }
 
-//ln -s ./node_modules/fhevm/lib/ACL.sol ./src/fhevm/lib/.
-//ln -s ./node_modules/fhevm/lib/ACLAddress.sol ./src/fhevm/lib/.
-
-//"forge-std/=dependencies/forge-std-1.9.3/",
-//"fhevm/lib/=dependencies/forge-fhevm/src/fhevm/lib",
 enum ArithmeticCheckingMode {
     Operands,
     OperandsAndResult
 }
 
 library TFHEvm {
+    IVmSafe private constant vm = IVmSafe(forgeStdVmSafeAdd);
+
     // keccak256(abi.encode(uint256(keccak256("forge-fhevm.storage.TFHEvm")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant TFHEvmStorageLocation = 0x43727d8b11d0755cbc84c6fab7d46a0b3153c4c95e15288858b7ea51d9adcd00;
 
@@ -79,8 +76,6 @@ library TFHEvm {
     function __db() internal view returns (TFHEExecutorDB) {
         return TFHEExecutorDB(__get().TFHEExecutorDBAddress);
     }
-
-    IVmSafe private constant vm = IVmSafe(forgeStdVmSafeAdd);
 
     function setUp() internal {
         FhevmDeployConfig memory deployConfig;
@@ -151,12 +146,12 @@ library TFHEvm {
         return $.deployConfig.fhevmDeployer.addr;
     }
 
-    function acl() private view returns (ACL) {
+    function __acl() private view returns (ACL) {
         TFHEvmStorage storage $ = __get();
         return ACL($.fhevmConfig.ACLAddress);
     }
 
-    function isCoprocessor() public view returns (bool) {
+    function isCoprocessor() internal view returns (bool) {
         TFHEvmStorage storage $ = __get();
         return $.deployConfig.isCoprocessor;
     }
@@ -169,11 +164,12 @@ library TFHEvm {
 
     function createEncryptedInput(address contractAddress, address userAddress)
         internal
-        view
         returns (EncryptedInput memory input)
     {
+        vm.pauseGasMetering();
         TFHEvmStorage storage $ = __get();
-        return $.createEncryptedInput(contractAddress, userAddress);
+        input = $.createEncryptedInput(contractAddress, userAddress);
+        vm.resumeGasMetering();
     }
 
     /// Helper: encrypts a single bool value and returns the handle+inputProof pair
@@ -477,16 +473,16 @@ library TFHEvm {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      */
-    function decryptBool(ebool value, address contractAddress, address userAddress)
-        internal
-        view
-        returns (bool result)
-    {
-        uint256 handle = ebool.unwrap(value);
+    function decryptBool(ebool value, address contractAddress, address userAddress) internal returns (bool result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = ebool.unwrap(value);
 
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getBool(handle);
+            result = __db().getBool(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -501,15 +497,18 @@ library TFHEvm {
      */
     function decryptBoolStrict(ebool value, address contractAddress, address userAddress)
         internal
-        view
         returns (bool result)
     {
-        uint256 handle = ebool.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = ebool.unwrap(value);
 
-        __assertArithmeticallyValidHandle(handle);
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertArithmeticallyValidHandle(handle);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getBool(handle);
+            result = __db().getBool(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -521,12 +520,16 @@ library TFHEvm {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      */
-    function decryptU4(euint4 value, address contractAddress, address userAddress) public view returns (uint8 result) {
-        uint256 handle = euint4.unwrap(value);
+    function decryptU4(euint4 value, address contractAddress, address userAddress) internal returns (uint8 result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint4.unwrap(value);
 
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU4(handle);
+            result = __db().getU4(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -541,15 +544,18 @@ library TFHEvm {
      */
     function decryptU4Strict(euint4 value, address contractAddress, address userAddress)
         internal
-        view
         returns (uint8 result)
     {
-        uint256 handle = euint4.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint4.unwrap(value);
 
-        __assertArithmeticallyValidHandle(handle);
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertArithmeticallyValidHandle(handle);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU4(handle);
+            result = __db().getU4(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -561,12 +567,16 @@ library TFHEvm {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      */
-    function decryptU8(euint8 value, address contractAddress, address userAddress) public view returns (uint8 result) {
-        uint256 handle = euint8.unwrap(value);
+    function decryptU8(euint8 value, address contractAddress, address userAddress) internal returns (uint8 result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint8.unwrap(value);
 
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU8(handle);
+            result = __db().getU8(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -581,15 +591,18 @@ library TFHEvm {
      */
     function decryptU8Strict(euint8 value, address contractAddress, address userAddress)
         internal
-        view
         returns (uint8 result)
     {
-        uint256 handle = euint8.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint8.unwrap(value);
 
-        __assertArithmeticallyValidHandle(handle);
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertArithmeticallyValidHandle(handle);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU8(handle);
+            result = __db().getU8(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -601,16 +614,16 @@ library TFHEvm {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      */
-    function decryptU16(euint16 value, address contractAddress, address userAddress)
-        public
-        view
-        returns (uint16 result)
-    {
-        uint256 handle = euint16.unwrap(value);
+    function decryptU16(euint16 value, address contractAddress, address userAddress) internal returns (uint16 result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint16.unwrap(value);
 
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU16(handle);
+            result = __db().getU16(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -625,15 +638,18 @@ library TFHEvm {
      */
     function decryptU16Strict(euint16 value, address contractAddress, address userAddress)
         internal
-        view
         returns (uint16 result)
     {
-        uint256 handle = euint16.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint16.unwrap(value);
 
-        __assertArithmeticallyValidHandle(handle);
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertArithmeticallyValidHandle(handle);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU16(handle);
+            result = __db().getU16(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -645,16 +661,16 @@ library TFHEvm {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      */
-    function decryptU32(euint32 value, address contractAddress, address userAddress)
-        public
-        view
-        returns (uint32 result)
-    {
-        uint256 handle = euint32.unwrap(value);
+    function decryptU32(euint32 value, address contractAddress, address userAddress) internal returns (uint32 result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint32.unwrap(value);
 
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU32(handle);
+            result = __db().getU32(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -669,15 +685,18 @@ library TFHEvm {
      */
     function decryptU32Strict(euint32 value, address contractAddress, address userAddress)
         internal
-        view
         returns (uint32 result)
     {
-        uint256 handle = euint32.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint32.unwrap(value);
 
-        __assertArithmeticallyValidHandle(handle);
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertArithmeticallyValidHandle(handle);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU32(handle);
+            result = __db().getU32(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -689,16 +708,16 @@ library TFHEvm {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      */
-    function decryptU64(euint64 value, address contractAddress, address userAddress)
-        public
-        view
-        returns (uint64 result)
-    {
-        uint256 handle = euint64.unwrap(value);
+    function decryptU64(euint64 value, address contractAddress, address userAddress) internal returns (uint64 result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint64.unwrap(value);
 
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU64(handle);
+            result = __db().getU64(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -712,16 +731,19 @@ library TFHEvm {
      * - If the handle is the result of any prior arithmetically invalid operation (division by zero, overfow, underflow).
      */
     function decryptU64Strict(euint64 value, address contractAddress, address userAddress)
-        public
-        view
+        internal
         returns (uint64 result)
     {
-        uint256 handle = euint64.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint64.unwrap(value);
 
-        __assertArithmeticallyValidHandle(handle);
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertArithmeticallyValidHandle(handle);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU64(handle);
+            result = __db().getU64(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -734,15 +756,18 @@ library TFHEvm {
      * - If the user address does not have the permission to decrypt the value
      */
     function decryptU128(euint128 value, address contractAddress, address userAddress)
-        public
-        view
+        internal
         returns (uint128 result)
     {
-        uint256 handle = euint128.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint128.unwrap(value);
 
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU128(handle);
+            result = __db().getU128(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -756,16 +781,19 @@ library TFHEvm {
      * - If the handle is the result of any prior arithmetically invalid operation (division by zero, overfow, underflow).
      */
     function decryptU128Strict(euint128 value, address contractAddress, address userAddress)
-        public
-        view
+        internal
         returns (uint128 result)
     {
-        uint256 handle = euint128.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint128.unwrap(value);
 
-        __assertArithmeticallyValidHandle(handle);
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertArithmeticallyValidHandle(handle);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU128(handle);
+            result = __db().getU128(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -778,15 +806,18 @@ library TFHEvm {
      * - If the user address does not have the permission to decrypt the value
      */
     function decryptU256(euint256 value, address contractAddress, address userAddress)
-        public
-        view
+        internal
         returns (uint256 result)
     {
-        uint256 handle = euint256.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint256.unwrap(value);
 
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU256(handle);
+            result = __db().getU256(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -800,16 +831,19 @@ library TFHEvm {
      * - If the handle is the result of any prior arithmetically invalid operation (division by zero, overfow, underflow).
      */
     function decryptU256Strict(euint256 value, address contractAddress, address userAddress)
-        public
-        view
+        internal
         returns (uint256 result)
     {
-        uint256 handle = euint256.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint256.unwrap(value);
 
-        __assertArithmeticallyValidHandle(handle);
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertArithmeticallyValidHandle(handle);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getU256(handle);
+            result = __db().getU256(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -822,15 +856,18 @@ library TFHEvm {
      * - If the user address does not have the permission to decrypt the value
      */
     function decryptBytes64(ebytes64 value, address contractAddress, address userAddress)
-        public
-        view
+        internal
         returns (bytes memory result)
     {
-        uint256 handle = ebytes64.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = ebytes64.unwrap(value);
 
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getBytes64(handle);
+            result = __db().getBytes64(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -843,15 +880,18 @@ library TFHEvm {
      * - If the user address does not have the permission to decrypt the value
      */
     function decryptBytes128(ebytes128 value, address contractAddress, address userAddress)
-        public
-        view
+        internal
         returns (bytes memory result)
     {
-        uint256 handle = ebytes128.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = ebytes128.unwrap(value);
 
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getBytes128(handle);
+            result = __db().getBytes128(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     /**
@@ -864,15 +904,18 @@ library TFHEvm {
      * - If the user address does not have the permission to decrypt the value
      */
     function decryptBytes256(ebytes256 value, address contractAddress, address userAddress)
-        public
-        view
+        internal
         returns (bytes memory result)
     {
-        uint256 handle = ebytes256.unwrap(value);
+        vm.pauseGasMetering();
+        {
+            uint256 handle = ebytes256.unwrap(value);
 
-        __assertDecryptAllowed(handle, contractAddress, userAddress);
+            __assertDecryptAllowed(handle, contractAddress, userAddress);
 
-        return __db().getBytes256(handle);
+            result = __db().getBytes256(handle);
+        }
+        vm.resumeGasMetering();
     }
 
     // ====================================================================== //
@@ -900,13 +943,19 @@ library TFHEvm {
         bytes memory signature,
         address contractAddress,
         address userAddress
-    ) internal view returns (bool) {
-        uint256 handle = ebool.unwrap(value);
-        vm.assertNotEq(handle, 0, "Handle is null");
+    ) internal returns (bool result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = ebool.unwrap(value);
+            vm.assertNotEq(handle, 0, "Handle is null");
 
-        ReencryptLib.assertValidEIP712Sig(privateKey, publicKey, signature, block.chainid, contractAddress, userAddress);
+            ReencryptLib.assertValidEIP712Sig(
+                privateKey, publicKey, signature, block.chainid, contractAddress, userAddress
+            );
 
-        return decryptBool(value, contractAddress, userAddress);
+            result = decryptBool(value, contractAddress, userAddress);
+        }
+        vm.resumeGasMetering();
     }
 
     function reencryptU4(
@@ -916,13 +965,19 @@ library TFHEvm {
         bytes memory signature,
         address contractAddress,
         address userAddress
-    ) internal view returns (uint8) {
-        uint256 handle = euint4.unwrap(value);
-        vm.assertNotEq(handle, 0, "Handle is null");
+    ) internal returns (uint8 result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint4.unwrap(value);
+            vm.assertNotEq(handle, 0, "Handle is null");
 
-        ReencryptLib.assertValidEIP712Sig(privateKey, publicKey, signature, block.chainid, contractAddress, userAddress);
+            ReencryptLib.assertValidEIP712Sig(
+                privateKey, publicKey, signature, block.chainid, contractAddress, userAddress
+            );
 
-        return decryptU4(value, contractAddress, userAddress);
+            result = decryptU4(value, contractAddress, userAddress);
+        }
+        vm.resumeGasMetering();
     }
 
     function reencryptU8(
@@ -932,13 +987,19 @@ library TFHEvm {
         bytes memory signature,
         address contractAddress,
         address userAddress
-    ) internal view returns (uint8) {
-        uint256 handle = euint8.unwrap(value);
-        vm.assertNotEq(handle, 0, "Handle is null");
+    ) internal returns (uint8 result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint8.unwrap(value);
+            vm.assertNotEq(handle, 0, "Handle is null");
 
-        ReencryptLib.assertValidEIP712Sig(privateKey, publicKey, signature, block.chainid, contractAddress, userAddress);
+            ReencryptLib.assertValidEIP712Sig(
+                privateKey, publicKey, signature, block.chainid, contractAddress, userAddress
+            );
 
-        return decryptU8(value, contractAddress, userAddress);
+            result = decryptU8(value, contractAddress, userAddress);
+        }
+        vm.resumeGasMetering();
     }
 
     function reencryptU16(
@@ -948,13 +1009,19 @@ library TFHEvm {
         bytes memory signature,
         address contractAddress,
         address userAddress
-    ) internal view returns (uint16) {
-        uint256 handle = euint16.unwrap(value);
-        vm.assertNotEq(handle, 0, "Handle is null");
+    ) internal returns (uint16 result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint16.unwrap(value);
+            vm.assertNotEq(handle, 0, "Handle is null");
 
-        ReencryptLib.assertValidEIP712Sig(privateKey, publicKey, signature, block.chainid, contractAddress, userAddress);
+            ReencryptLib.assertValidEIP712Sig(
+                privateKey, publicKey, signature, block.chainid, contractAddress, userAddress
+            );
 
-        return decryptU16(value, contractAddress, userAddress);
+            result = decryptU16(value, contractAddress, userAddress);
+        }
+        vm.resumeGasMetering();
     }
 
     function reencryptU32(
@@ -964,13 +1031,19 @@ library TFHEvm {
         bytes memory signature,
         address contractAddress,
         address userAddress
-    ) internal view returns (uint32) {
-        uint256 handle = euint32.unwrap(value);
-        vm.assertNotEq(handle, 0, "Handle is null");
+    ) internal returns (uint32 result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint32.unwrap(value);
+            vm.assertNotEq(handle, 0, "Handle is null");
 
-        ReencryptLib.assertValidEIP712Sig(privateKey, publicKey, signature, block.chainid, contractAddress, userAddress);
+            ReencryptLib.assertValidEIP712Sig(
+                privateKey, publicKey, signature, block.chainid, contractAddress, userAddress
+            );
 
-        return decryptU32(value, contractAddress, userAddress);
+            result = decryptU32(value, contractAddress, userAddress);
+        }
+        vm.resumeGasMetering();
     }
 
     function reencryptU64(
@@ -980,13 +1053,19 @@ library TFHEvm {
         bytes memory signature,
         address contractAddress,
         address userAddress
-    ) internal view returns (uint64) {
-        uint256 handle = euint64.unwrap(value);
-        vm.assertNotEq(handle, 0, "Handle is null");
+    ) internal returns (uint64 result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint64.unwrap(value);
+            vm.assertNotEq(handle, 0, "Handle is null");
 
-        ReencryptLib.assertValidEIP712Sig(privateKey, publicKey, signature, block.chainid, contractAddress, userAddress);
+            ReencryptLib.assertValidEIP712Sig(
+                privateKey, publicKey, signature, block.chainid, contractAddress, userAddress
+            );
 
-        return decryptU64(value, contractAddress, userAddress);
+            result = decryptU64(value, contractAddress, userAddress);
+        }
+        vm.resumeGasMetering();
     }
 
     function reencryptU128(
@@ -996,13 +1075,19 @@ library TFHEvm {
         bytes memory signature,
         address contractAddress,
         address userAddress
-    ) internal view returns (uint128) {
-        uint256 handle = euint128.unwrap(value);
-        vm.assertNotEq(handle, 0, "Handle is null");
+    ) internal returns (uint128 result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint128.unwrap(value);
+            vm.assertNotEq(handle, 0, "Handle is null");
 
-        ReencryptLib.assertValidEIP712Sig(privateKey, publicKey, signature, block.chainid, contractAddress, userAddress);
+            ReencryptLib.assertValidEIP712Sig(
+                privateKey, publicKey, signature, block.chainid, contractAddress, userAddress
+            );
 
-        return decryptU128(value, contractAddress, userAddress);
+            result = decryptU128(value, contractAddress, userAddress);
+        }
+        vm.resumeGasMetering();
     }
 
     function reencryptU256(
@@ -1012,13 +1097,19 @@ library TFHEvm {
         bytes memory signature,
         address contractAddress,
         address userAddress
-    ) internal view returns (uint256) {
-        uint256 handle = euint256.unwrap(value);
-        vm.assertNotEq(handle, 0, "Handle is null");
+    ) internal returns (uint256 result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = euint256.unwrap(value);
+            vm.assertNotEq(handle, 0, "Handle is null");
 
-        ReencryptLib.assertValidEIP712Sig(privateKey, publicKey, signature, block.chainid, contractAddress, userAddress);
+            ReencryptLib.assertValidEIP712Sig(
+                privateKey, publicKey, signature, block.chainid, contractAddress, userAddress
+            );
 
-        return decryptU256(value, contractAddress, userAddress);
+            result = decryptU256(value, contractAddress, userAddress);
+        }
+        vm.resumeGasMetering();
     }
 
     function reencryptBytes64(
@@ -1028,13 +1119,19 @@ library TFHEvm {
         bytes memory signature,
         address contractAddress,
         address userAddress
-    ) internal view returns (bytes memory) {
-        uint256 handle = ebytes64.unwrap(value);
-        vm.assertNotEq(handle, 0, "Handle is null");
+    ) internal returns (bytes memory result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = ebytes64.unwrap(value);
+            vm.assertNotEq(handle, 0, "Handle is null");
 
-        ReencryptLib.assertValidEIP712Sig(privateKey, publicKey, signature, block.chainid, contractAddress, userAddress);
+            ReencryptLib.assertValidEIP712Sig(
+                privateKey, publicKey, signature, block.chainid, contractAddress, userAddress
+            );
 
-        return decryptBytes64(value, contractAddress, userAddress);
+            result = decryptBytes64(value, contractAddress, userAddress);
+        }
+        vm.resumeGasMetering();
     }
 
     function reencryptBytes128(
@@ -1044,13 +1141,19 @@ library TFHEvm {
         bytes memory signature,
         address contractAddress,
         address userAddress
-    ) internal view returns (bytes memory) {
-        uint256 handle = ebytes128.unwrap(value);
-        vm.assertNotEq(handle, 0, "Handle is null");
+    ) internal returns (bytes memory result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = ebytes128.unwrap(value);
+            vm.assertNotEq(handle, 0, "Handle is null");
 
-        ReencryptLib.assertValidEIP712Sig(privateKey, publicKey, signature, block.chainid, contractAddress, userAddress);
+            ReencryptLib.assertValidEIP712Sig(
+                privateKey, publicKey, signature, block.chainid, contractAddress, userAddress
+            );
 
-        return decryptBytes128(value, contractAddress, userAddress);
+            result = decryptBytes128(value, contractAddress, userAddress);
+        }
+        vm.resumeGasMetering();
     }
 
     function reencryptBytes256(
@@ -1060,13 +1163,19 @@ library TFHEvm {
         bytes memory signature,
         address contractAddress,
         address userAddress
-    ) internal view returns (bytes memory) {
-        uint256 handle = ebytes256.unwrap(value);
-        vm.assertNotEq(handle, 0, "Handle is null");
+    ) internal returns (bytes memory result) {
+        vm.pauseGasMetering();
+        {
+            uint256 handle = ebytes256.unwrap(value);
+            vm.assertNotEq(handle, 0, "Handle is null");
 
-        ReencryptLib.assertValidEIP712Sig(privateKey, publicKey, signature, block.chainid, contractAddress, userAddress);
+            ReencryptLib.assertValidEIP712Sig(
+                privateKey, publicKey, signature, block.chainid, contractAddress, userAddress
+            );
 
-        return decryptBytes256(value, contractAddress, userAddress);
+            result = decryptBytes256(value, contractAddress, userAddress);
+        }
+        vm.resumeGasMetering();
     }
 
     // ====================================================================== //
@@ -1210,7 +1319,7 @@ library TFHEvm {
 
     /// Check any arithmetic error in all subsequent fhevm operations with
     /// mode equal to 'ArithmeticCheckingMode.Operands'
-    function startCheckArithmetic() public {
+    function startCheckArithmetic() internal {
         __db().startCheckArithmetic();
     }
 
@@ -1219,24 +1328,24 @@ library TFHEvm {
     /// both a and b are checked, c is ignored.
     /// if mode = 'ArithmeticCheckingMode.OperandsAndResult', test applies to both operands and result, for example c = a + b,
     /// a, b and c are all checked.
-    function startCheckArithmetic(ArithmeticCheckingMode mode) public {
+    function startCheckArithmetic(ArithmeticCheckingMode mode) internal {
         __db().startCheckArithmetic(uint8(mode));
     }
 
     /// Stops checking fhevm arithmetic errors.
-    function stopCheckArithmetic() public {
+    function stopCheckArithmetic() internal {
         __db().stopCheckArithmetic();
     }
 
     /// Check any arithmetic error in the next fhevm operation with
     /// mode equal to 'ArithmeticCheckingMode.Operands'
-    function checkArithmetic() public {
+    function checkArithmetic() internal {
         __db().checkArithmetic();
     }
 
     /// Check any arithmetic error in the next fhevm operation
     /// using specified mode.
-    function checkArithmetic(ArithmeticCheckingMode mode) public {
+    function checkArithmetic(ArithmeticCheckingMode mode) internal {
         __db().checkArithmetic(uint8(mode));
     }
 
@@ -1253,10 +1362,11 @@ library TFHEvm {
     function __assertDecryptAllowed(uint256 handle, address contractAddress, address userAddress) private view {
         vm.assertNotEq(handle, 0, "Handle is null");
         vm.assertTrue(
-            acl().persistAllowed(handle, contractAddress), "contractAddress does not have permission to decrypt handle"
+            __acl().persistAllowed(handle, contractAddress),
+            "contractAddress does not have permission to decrypt handle"
         );
         vm.assertTrue(
-            acl().persistAllowed(handle, userAddress), "userAddress does not have permission to decrypt handle"
+            __acl().persistAllowed(handle, userAddress), "userAddress does not have permission to decrypt handle"
         );
         vm.assertNotEq(
             uint160(userAddress),
