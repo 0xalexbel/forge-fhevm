@@ -67,19 +67,31 @@ library Impl {
     IVmSafe private constant vm = IVmSafe(forgeStdVmSafeAdd);
     /// End forge-fhevm patch
 
-    function getFHEVMConfig() internal pure returns (FHEVMConfig.FHEVMConfigStruct storage $) {
+    /// Begin forge-fhevm patch
+    function getFHEVMConfig() internal view returns (FHEVMConfig.FHEVMConfigStruct storage $) {
         assembly {
             $.slot := FHEVMConfigLocation
         }
+        /// This is crucial to help debugging any contract setup
+        /// The problem is even trickier when contract A creates contract B which creates contract C
+        /// with C using TFHE. It can be painfull to find out why nothing is running... 
+        require($.TFHEExecutorAddress != address(0), "Null TFHEExecutor address. A contract calls a function from the TFHE library without having initialized it beforehand. Call 'TFHE.setFHEVM(FHEVMConfig.defaultConfig())' first!");
+        require($.ACLAddress != address(0), "Null ACLAddress address. A contract calls a function from the TFHE library without having initialized it beforehand. Call 'TFHE.setFHEVM(FHEVMConfig.defaultConfig())' first!");
+        require($.FHEPaymentAddress != address(0), "Null FHEPaymentAddress address. A contract calls a function from the TFHE library without having initialized it beforehand. Call 'TFHE.setFHEVM(FHEVMConfig.defaultConfig())' first!");
+        require($.KMSVerifierAddress != address(0), "Null KMSVerifierAddress address. A contract calls a function from the TFHE library without having initialized it beforehand. Call 'TFHE.setFHEVM(FHEVMConfig.defaultConfig())' first!");
     }
 
     function setFHEVM(FHEVMConfig.FHEVMConfigStruct memory fhevmConfig) internal {
-        FHEVMConfig.FHEVMConfigStruct storage $ = getFHEVMConfig();
+        FHEVMConfig.FHEVMConfigStruct storage $;
+        assembly {
+            $.slot := FHEVMConfigLocation
+        }
         $.ACLAddress = fhevmConfig.ACLAddress;
         $.TFHEExecutorAddress = fhevmConfig.TFHEExecutorAddress;
         $.FHEPaymentAddress = fhevmConfig.FHEPaymentAddress;
         $.KMSVerifierAddress = fhevmConfig.KMSVerifierAddress;
     }
+    /// End forge-fhevm patch
 
     function add(uint256 lhs, uint256 rhs, bool scalar) internal returns (uint256 result) {
         bytes1 scalarByte;
