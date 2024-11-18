@@ -8,7 +8,7 @@ import "../../debugger/interfaces/ITFHEDebugger.sol";
 import "./TFHE.sol";
 import "./FHEVMConfig.sol";
 
-import {console} from "forge-std/src/console.sol";
+//import {console} from "forge-std/src/console.sol";
 
 interface ITFHEExecutor {
     function fheAdd(uint256 lhs, uint256 rhs, bytes1 scalarByte) external returns (uint256 result);

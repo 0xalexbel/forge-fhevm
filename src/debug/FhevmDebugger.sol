@@ -25,7 +25,7 @@ import {GasMetering} from "../common/GasMetering.sol";
 import {TFHEDebugger, ArithmeticCheckingMode} from "./debugger/TFHEDebugger.sol";
 
 import {ACL} from "fhevm-core-contracts/contracts/ACL.sol";
-import {console} from "forge-std/src/console.sol";
+//import {console} from "forge-std/src/console.sol";
 
 library FhevmDebugger {
     modifier noGasMetering() {
