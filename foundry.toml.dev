@@ -1,12 +1,10 @@
 [profile.default]
-libs = ["dependencies"]
+libs = ["dependencies", "node_modules"]
 solc = "0.8.24"
 evm_version = 'cancun'
 
 [dependencies]
 forge-std = "1.9.3"
-"@openzeppelin-contracts" = { version = "5.0.2" }
-"@openzeppelin-contracts-upgradeable" = { version = "5.0.2" }
 
 [soldeer]
 remappings_version = false

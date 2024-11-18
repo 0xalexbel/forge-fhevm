@@ -4,13 +4,15 @@ pragma solidity ^0.8.24;
 import {Vm} from "forge-std/src/Vm.sol";
 import {Test} from "forge-std/src/Test.sol";
 import {console} from "forge-std/src/Console.sol";
-import {BytesLib} from "../src/utils/BytesLib.sol";
-import {TFHEvm} from "../src/TFHEvm.sol";
-import {ReencryptLib} from "../src/reencrypt/Reencrypt.sol";
+
+import {ForgeFhevm} from "../src/forge/ForgeFhevm.sol";
+import {BytesLib} from "../src/forge/utils/BytesLib.sol";
+import {ReencryptLib} from "../src/forge/reencrypt/Reencrypt.sol";
+import {FhevmInput} from "../src/forge/FhevmInput.sol";
 
 contract ReencryptTest is Test {
     function setUp() public {
-        TFHEvm.setUp();
+        ForgeFhevm.setUp();
     }
 
     function test_sign() public pure {
@@ -32,7 +34,7 @@ contract ReencryptTest is Test {
     }
 
     function test_generateKeyPair() public {
-        (bytes memory publicKey, bytes memory privateKey) = ReencryptLib.generateKeyPair();
+        (bytes memory publicKey, bytes memory privateKey) = FhevmInput.generateKeyPair();
         vm.assertEq(publicKey.length, 40);
         vm.assertEq(privateKey.length, 40);
         bytes8 b1 = BytesLib.bytesToBytes8(publicKey, 0);

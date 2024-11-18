@@ -3,10 +3,13 @@ pragma solidity ^0.8.24;
 
 import {console} from "forge-std/src/console.sol";
 import {Test} from "forge-std/src/Test.sol";
-import {TFHEvm, ArithmeticCheckingMode} from "../../src/TFHEvm.sol";
-import {EncryptedInput} from "../../src/encrypted-input/EncryptedInput.sol";
 
-import {TFHE, euint64, einput, Common} from "../../lib/TFHE.sol";
+import {TFHE, euint64, einput, Common} from "../../src/debug/fhevm/lib/TFHE.sol";
+import {FhevmDebugger, ArithmeticCheckingMode} from "../../src/debug/FhevmDebugger.sol";
+
+import {ForgeFhevm} from "../../src/forge/ForgeFhevm.sol";
+import {EncryptedInput} from "../../src/forge/EncryptedInput.sol";
+import {FhevmInput} from "../../src/forge/FhevmInput.sol";
 
 import {Signers} from "./Signers.sol";
 import {EncryptedERC20} from "./EncryptedERC20.sol";
@@ -16,7 +19,7 @@ contract EncryptedERC20Test is Test {
     Signers signers;
 
     function setUp() public {
-        TFHEvm.setUp();
+        ForgeFhevm.setUp();
 
         signers = new Signers();
         signers.setUpWallets();
@@ -32,7 +35,7 @@ contract EncryptedERC20Test is Test {
         erc20.mint(1000);
 
         euint64 balanceHandle = erc20.balanceOf(signers.aliceAddr());
-        uint64 balance = TFHEvm.decryptU64(balanceHandle, address(erc20), signers.aliceAddr());
+        uint64 balance = FhevmDebugger.decryptU64(balanceHandle, address(erc20), signers.aliceAddr());
         vm.assertEq(balance, 1000);
 
         uint64 totalSupply = erc20.totalSupply();
@@ -49,23 +52,23 @@ contract EncryptedERC20Test is Test {
         erc20.mint(10000);
 
         euint64 balanceHandleAlice = erc20.balanceOf(aliceAddr);
-        TFHEvm.assertArithmeticallyValid(balanceHandleAlice);
+        FhevmDebugger.assertArithmeticallyValid(balanceHandleAlice);
 
-        (einput inputHandle, bytes memory inputProof) = TFHEvm.encryptU64(1337, address(erc20), aliceAddr);
+        (einput inputHandle, bytes memory inputProof) = FhevmInput.encryptU64(1337, address(erc20), aliceAddr);
 
         vm.broadcast(signers.alice());
         erc20.transfer(bobAddr, inputHandle, inputProof);
 
         // Decrypt Alice's balance
         balanceHandleAlice = erc20.balanceOf(aliceAddr);
-        TFHEvm.assertArithmeticallyValid(balanceHandleAlice);
+        FhevmDebugger.assertArithmeticallyValid(balanceHandleAlice);
 
-        uint64 balanceAlice = TFHEvm.decryptU64(balanceHandleAlice, address(erc20), aliceAddr);
+        uint64 balanceAlice = FhevmDebugger.decryptU64(balanceHandleAlice, address(erc20), aliceAddr);
         vm.assertEq(balanceAlice, 10000 - 1337);
 
         // Decrypt Bob's balance
         euint64 balanceHandleBob = erc20.balanceOf(bobAddr);
-        uint64 balanceBob = TFHEvm.decryptU64(balanceHandleBob, address(erc20), bobAddr);
+        uint64 balanceBob = FhevmDebugger.decryptU64(balanceHandleBob, address(erc20), bobAddr);
         vm.assertEq(balanceBob, 1337);
     }
 
@@ -78,19 +81,19 @@ contract EncryptedERC20Test is Test {
         vm.broadcast(signers.alice());
         erc20.mint(1000);
 
-        (einput inputHandle, bytes memory inputProof) = TFHEvm.encryptU64(1337, address(erc20), aliceAddr);
+        (einput inputHandle, bytes memory inputProof) = FhevmInput.encryptU64(1337, address(erc20), aliceAddr);
 
         vm.broadcast(signers.alice());
         erc20.transfer(bobAddr, inputHandle, inputProof);
 
         // Decrypt Alice's balance
         euint64 balanceHandleAlice = erc20.balanceOf(aliceAddr);
-        uint64 balanceAlice = TFHEvm.decryptU64(balanceHandleAlice, address(erc20), aliceAddr);
+        uint64 balanceAlice = FhevmDebugger.decryptU64(balanceHandleAlice, address(erc20), aliceAddr);
         vm.assertEq(balanceAlice, 1000);
 
         // Decrypt Bob's balance
         euint64 balanceHandleBob = erc20.balanceOf(bobAddr);
-        uint64 balanceBob = TFHEvm.decryptU64(balanceHandleBob, address(erc20), bobAddr);
+        uint64 balanceBob = FhevmDebugger.decryptU64(balanceHandleBob, address(erc20), bobAddr);
         vm.assertEq(balanceBob, 0);
     }
 
@@ -98,10 +101,10 @@ contract EncryptedERC20Test is Test {
         private
         returns (uint64 clearValue)
     {
-        (bytes memory publicKey, bytes memory privateKey) = TFHEvm.generateKeyPair();
-        bytes32 eip712 = TFHEvm.createEIP712Digest(publicKey, contractAddress);
-        bytes memory signature = TFHEvm.sign(eip712, userPk);
-        clearValue = TFHEvm.reencryptU64(handle, privateKey, publicKey, signature, contractAddress, userAddress);
+        (bytes memory publicKey, bytes memory privateKey) = FhevmInput.generateKeyPair();
+        bytes32 eip712 = FhevmInput.createEIP712Digest(publicKey, contractAddress);
+        bytes memory signature = FhevmInput.sign(eip712, userPk);
+        clearValue = FhevmInput.reencryptU64(handle, privateKey, publicKey, signature, contractAddress, userAddress);
     }
 
     function test_should_be_able_to_transferFrom_only_if_allowance_is_sufficient() public {
@@ -117,44 +120,44 @@ contract EncryptedERC20Test is Test {
         einput encAmount;
 
         // Alice approves Bob, amount: 1337
-        (encAmount, proof) = TFHEvm.encryptU64(1337, address(erc20), aliceAddr);
+        (encAmount, proof) = FhevmInput.encryptU64(1337, address(erc20), aliceAddr);
 
         vm.broadcast(signers.alice());
         erc20.approve(bobAddr, encAmount, proof);
 
         // Bob transfers from Alice, amount: 1338
-        (encAmount, proof) = TFHEvm.encryptU64(1338, address(erc20), bobAddr);
+        (encAmount, proof) = FhevmInput.encryptU64(1338, address(erc20), bobAddr);
 
         vm.broadcast(signers.bob());
         erc20.transferFrom(aliceAddr, bobAddr, encAmount, proof);
 
         // Decrypt Alice's balance
         euint64 balanceHandleAlice = erc20.balanceOf(aliceAddr);
-        uint64 balanceAlice = TFHEvm.decryptU64(balanceHandleAlice, address(erc20), aliceAddr);
+        uint64 balanceAlice = FhevmDebugger.decryptU64(balanceHandleAlice, address(erc20), aliceAddr);
         // check that transfer did not happen, as expected
         vm.assertEq(balanceAlice, 10000);
 
         // Decrypt Bob's balance
         euint64 balanceHandleBob = erc20.balanceOf(bobAddr);
-        uint64 balanceBob = TFHEvm.decryptU64(balanceHandleBob, address(erc20), bobAddr);
+        uint64 balanceBob = FhevmDebugger.decryptU64(balanceHandleBob, address(erc20), bobAddr);
         // check that transfer did not happen, as expected
         vm.assertEq(balanceBob, 0);
 
         // Bob transfers from Alice, amount: 1337
-        (encAmount, proof) = TFHEvm.encryptU64(1337, address(erc20), bobAddr);
+        (encAmount, proof) = FhevmInput.encryptU64(1337, address(erc20), bobAddr);
 
         vm.broadcast(signers.bob());
         erc20.transferFrom(aliceAddr, bobAddr, encAmount, proof);
 
         // Decrypt Alice's balance
         balanceHandleAlice = erc20.balanceOf(aliceAddr);
-        balanceAlice = TFHEvm.decryptU64(balanceHandleAlice, address(erc20), aliceAddr);
+        balanceAlice = FhevmDebugger.decryptU64(balanceHandleAlice, address(erc20), aliceAddr);
         // check that transfer did actually happen, as expected
         vm.assertEq(balanceAlice, 10000 - 1337);
 
         // Decrypt Bob's balance
         balanceHandleBob = erc20.balanceOf(bobAddr);
-        balanceBob = TFHEvm.decryptU64(balanceHandleBob, address(erc20), bobAddr);
+        balanceBob = FhevmDebugger.decryptU64(balanceHandleBob, address(erc20), bobAddr);
         // check that transfer did actually happen, as expected
         vm.assertEq(balanceBob, 1337);
 

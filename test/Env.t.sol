@@ -4,9 +4,10 @@ pragma solidity ^0.8.24;
 import {Vm} from "forge-std/src/Vm.sol";
 import {console} from "forge-std/src/Console.sol";
 import {Test} from "forge-std/src/Test.sol";
-import "../src/env.default.sol";
-import {FhevmDeployConfig} from "../src/vm/FhevmDeployConfig.sol";
-import {BytesLib} from "../src/utils/BytesLib.sol";
+
+import "../src/forge/env.default.sol";
+import {ForgeFhevmConfig} from "../src/forge/deploy/ForgeFhevmConfig.sol";
+import {BytesLib} from "../src/forge/utils/BytesLib.sol";
 
 contract EnvTest is Test {
     function setUp() public {}
@@ -44,7 +45,7 @@ contract EnvTest is Test {
     }
 
     function test_FhevmEnvConfig() public view {
-        FhevmDeployConfig memory cfg;
+        ForgeFhevmConfig memory cfg;
         cfg.initializeWithEnv();
         vm.assertEq(cfg.fhevmDeployer.privateKey, PRIVATE_KEY_FHEVM_DEPLOYER);
         vm.assertEq(cfg.gatewayDeployer.privateKey, PRIVATE_KEY_GATEWAY_DEPLOYER);
