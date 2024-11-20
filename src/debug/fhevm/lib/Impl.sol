@@ -212,7 +212,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheBitOr(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -231,7 +230,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheBitXor(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -250,7 +248,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheShl(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -269,7 +266,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheShr(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -288,7 +284,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheRotl(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -307,7 +302,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheRotr(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -326,7 +320,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheEq(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -345,7 +338,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheNe(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -364,7 +356,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheGe(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -383,7 +374,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheGt(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -402,7 +392,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheLe(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -421,7 +410,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheLt(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -440,7 +428,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheMin(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -459,7 +446,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheMax(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -472,7 +458,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheNeg(result, ct);
         GasMetering.resume($.forgeVmAddress);
@@ -485,7 +470,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheNot(result, ct);
         GasMetering.resume($.forgeVmAddress);
@@ -500,7 +484,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheIfThenElse(result, control, ifTrue, ifFalse);
         GasMetering.resume($.forgeVmAddress);
@@ -515,7 +498,6 @@ library Impl {
             ///
             /// Begin forge-fhevm patch
             ///
-
             GasMetering.pause($.forgeVmAddress);
             ITFHEDebugger($.TFHEDebuggerAddress).verifyCiphertext(
                 result, inputHandle, msg.sender, inputProof, bytes1(toType)
@@ -527,7 +509,6 @@ library Impl {
             ///
             /// Begin forge-fhevm patch
             ///
-
             GasMetering.pause($.forgeVmAddress);
             ITFHEDebugger($.TFHEDebuggerAddress).verifyCiphertext(
                 0, inputHandle, msg.sender, inputProof, bytes1(toType)
@@ -544,7 +525,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).cast(result, ciphertext, bytes1(toType));
         GasMetering.resume($.forgeVmAddress);
@@ -557,7 +537,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).trivialEncrypt(result, value, bytes1(toType));
         GasMetering.resume($.forgeVmAddress);
@@ -570,7 +549,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).trivialEncrypt(result, value, bytes1(toType));
         GasMetering.resume($.forgeVmAddress);
@@ -589,7 +567,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheEq(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -608,7 +585,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheNe(result, lhs, rhs, scalarByte);
         GasMetering.resume($.forgeVmAddress);
@@ -621,7 +597,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheRand(result, bytes1(randType));
         GasMetering.resume($.forgeVmAddress);
@@ -634,7 +609,6 @@ library Impl {
         ///
         /// Begin forge-fhevm patch
         ///
-
         GasMetering.pause($.forgeVmAddress);
         ITFHEDebugger($.TFHEDebuggerAddress).fheRandBounded(result, upperBound, bytes1(randType));
         GasMetering.resume($.forgeVmAddress);
