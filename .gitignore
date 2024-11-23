@@ -2,6 +2,9 @@ cache/
 out/
 dependencies/
 external/
+foundry.toml
+remappings.txt
+
 
 # Logs
 logs
