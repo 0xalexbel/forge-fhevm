@@ -1,10 +1,13 @@
+trash/
 cache/
+cache*/
 out/
 dependencies/
 external/
 foundry.toml
 remappings.txt
-
+broadcast/
+*.solcx-lock*.*
 
 # Logs
 logs
@@ -136,3 +139,5 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+TODO.txt

@@ -5,15 +5,14 @@ import {Vm} from "forge-std/src/Vm.sol";
 import {Test} from "forge-std/src/Test.sol";
 import {console} from "forge-std/src/Console.sol";
 
-import {TFHE, euint4, euint8, euint64, einput, ebool, ebytes256} from "../src/debug/fhevm/lib/TFHE.sol";
-import {FhevmDebugger} from "../src/debug/FhevmDebugger.sol";
+import {TFHE, euint4, euint8, euint64, einput, ebool, ebytes256} from "../src/libs/fhevm-debug/lib/TFHE.sol";
 
-import {EncryptedInput} from "../src/forge/EncryptedInput.sol";
-import {ForgeFhevm} from "../src/forge/ForgeFhevm.sol";
+import {FhevmDebug} from "../src/FhevmDebug.sol";
+import {FFhevm} from "../src/FFhevm.sol";
 
 contract EUint8Test is Test {
     function setUp() public {
-        ForgeFhevm.setUp();
+        FFhevm.setUp();
     }
 
     function test_AsEUint8() public {
@@ -37,8 +36,29 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 128 + 2);
+    }
+
+    function testFuzz_Add(uint8 v1, uint8 v2) public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(v1);
+        euint8 ei2 = TFHE.asEuint8(v2);
+        euint8 ei3 = TFHE.add(ei1, ei2);
+
+        TFHE.allow(ei3, contractAddress);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
+
+        uint8 v;
+        unchecked {
+            v = v1 + v2;
+        }
+
+        vm.assertEq(i3, v);
     }
 
     function testFail_revert_Add_no_user_permission() public {
@@ -55,7 +75,7 @@ contract EUint8Test is Test {
         // Note cannot use vm.expectRevert().
         // forge does not detect it
         // use testFail_xxx instead
-        FhevmDebugger.decryptU8(ei3, contractAddress, userAddress);
+        FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
     }
 
     function testFail_revert_Add_no_contract_permission() public {
@@ -72,7 +92,7 @@ contract EUint8Test is Test {
         // Note cannot use vm.expectRevert().
         // forge does not detect it
         // use testFail_xxx instead
-        FhevmDebugger.decryptU8(ei3, contractAddress, userAddress);
+        FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
     }
 
     function test_Add_overflow() public {
@@ -86,7 +106,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
         vm.assertEq(i3, uint8(uint16(128 + 129)));
     }
 
@@ -104,7 +124,7 @@ contract EUint8Test is Test {
         // Note cannot use vm.expectRevert().
         // forge does not detect it
         // use testFail_xxx instead
-        FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
     }
 
     // ===== Sub =====
@@ -120,8 +140,27 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 128 - 2);
+    }
+
+    function testFuzz_Sub(uint8 v1, uint8 v2) public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(v1);
+        euint8 ei2 = TFHE.asEuint8(v2);
+        euint8 ei3 = TFHE.sub(ei1, ei2);
+
+        TFHE.allow(ei3, contractAddress);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
+        uint8 v;
+        unchecked {
+            v = v1 - v2;
+        }
+        vm.assertEq(i3, v);
     }
 
     function test_Sub_underflow() public {
@@ -135,7 +174,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
         vm.assertEq(i3, uint8(int8(2 - 128)));
     }
 
@@ -153,7 +192,7 @@ contract EUint8Test is Test {
         // Note in strict mode, cannot use vm.expectRevert().
         // forge does not detect it
         // use testFail_xxx instead
-        FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
     }
 
     function testFail_revert_Sub_no_user_permission() public {
@@ -170,7 +209,7 @@ contract EUint8Test is Test {
         // Note cannot use vm.expectRevert().
         // forge does not detect it
         // use testFail_xxx instead
-        FhevmDebugger.decryptU8(ei3, contractAddress, userAddress);
+        FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
     }
 
     function testFail_revert_Sub_no_contract_permission() public {
@@ -187,7 +226,7 @@ contract EUint8Test is Test {
         // Note cannot use vm.expectRevert().
         // forge does not detect it
         // use testFail_xxx instead
-        FhevmDebugger.decryptU8(ei3, contractAddress, userAddress);
+        FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
     }
 
     // ===== Mul =====
@@ -203,7 +242,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 8 * 12);
     }
 
@@ -218,7 +257,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 168);
     }
 
@@ -233,8 +272,23 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 196);
+    }
+
+    function testFuzz_Mul(uint8 v1, uint8 v2) public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(v1);
+        euint8 ei2 = TFHE.asEuint8(v2);
+        euint8 ei3 = TFHE.mul(ei1, ei2);
+
+        TFHE.allow(ei3, contractAddress);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
+        vm.assertEq(uint256(i3), (uint256(v1) * uint256(v2)) % (uint256(0xff) + 1));
     }
 
     // ===== Div =====
@@ -249,7 +303,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = FhevmDebugger.decryptU8(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 0);
     }
 
@@ -263,7 +317,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = FhevmDebugger.decryptU8(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 0);
     }
 
@@ -277,7 +331,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = FhevmDebugger.decryptU8(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 1);
     }
 
@@ -291,8 +345,24 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = FhevmDebugger.decryptU8(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 1);
+    }
+
+    function testFuzz_Div(uint8 v1, uint8 v2) public {
+        vm.assume(v2 != 0);
+
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(v1);
+        euint8 ei2 = TFHE.div(ei1, v2);
+
+        TFHE.allow(ei2, contractAddress);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = FhevmDebug.decryptU8(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, v1 / v2);
     }
 
     // ===== Rem =====
@@ -307,7 +377,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = FhevmDebugger.decryptU8(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 85);
     }
 
@@ -321,7 +391,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = FhevmDebugger.decryptU8(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 38);
     }
 
@@ -335,7 +405,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = FhevmDebugger.decryptU8(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 0);
     }
 
@@ -349,8 +419,27 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = FhevmDebugger.decryptU8(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 4);
+    }
+
+    function testFuzz_Rem(uint8 v1, uint8 v2) public {
+        vm.assume(v2 != 0);
+
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        uint8 q = v1 / v2;
+        uint8 r = v1 - v2 * q;
+
+        euint8 ei1 = TFHE.asEuint8(v1);
+        euint8 ei2 = TFHE.rem(ei1, v2);
+
+        TFHE.allow(ei2, contractAddress);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = FhevmDebug.decryptU8(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, r);
     }
 
     // ===== Not =====
@@ -365,8 +454,22 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = FhevmDebugger.decryptU8Strict(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, uint8(0xfe));
+    }
+
+    function testFuzz_Not(uint8 v) public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(v);
+        euint8 ei2 = TFHE.not(ei1);
+
+        TFHE.allow(ei2, contractAddress);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = FhevmDebug.decryptU8Strict(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, ~(v));
     }
 
     // ===== Neg =====
@@ -381,7 +484,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = FhevmDebugger.decryptU8Strict(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 255);
     }
 
@@ -395,7 +498,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = FhevmDebugger.decryptU8Strict(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 70);
     }
 
@@ -412,7 +515,7 @@ contract EUint8Test is Test {
         TFHE.allow(eb, contractAddress);
         TFHE.allow(eb, userAddress);
 
-        bool b = FhevmDebugger.decryptBoolStrict(eb, contractAddress, userAddress);
+        bool b = FhevmDebug.decryptBoolStrict(eb, contractAddress, userAddress);
         vm.assertEq(b, true);
     }
 
@@ -427,7 +530,7 @@ contract EUint8Test is Test {
         TFHE.allow(eb, contractAddress);
         TFHE.allow(eb, userAddress);
 
-        bool b = FhevmDebugger.decryptBoolStrict(eb, contractAddress, userAddress);
+        bool b = FhevmDebug.decryptBoolStrict(eb, contractAddress, userAddress);
         vm.assertEq(b, false);
     }
 
@@ -444,7 +547,7 @@ contract EUint8Test is Test {
         TFHE.allow(eb, contractAddress);
         TFHE.allow(eb, userAddress);
 
-        bool b = FhevmDebugger.decryptBoolStrict(eb, contractAddress, userAddress);
+        bool b = FhevmDebug.decryptBoolStrict(eb, contractAddress, userAddress);
         vm.assertEq(b, false);
     }
 
@@ -459,7 +562,7 @@ contract EUint8Test is Test {
         TFHE.allow(eb, contractAddress);
         TFHE.allow(eb, userAddress);
 
-        bool b = FhevmDebugger.decryptBoolStrict(eb, contractAddress, userAddress);
+        bool b = FhevmDebug.decryptBoolStrict(eb, contractAddress, userAddress);
         vm.assertEq(b, true);
     }
 
@@ -476,7 +579,7 @@ contract EUint8Test is Test {
         TFHE.allow(eb, contractAddress);
         TFHE.allow(eb, userAddress);
 
-        bool b = FhevmDebugger.decryptBoolStrict(eb, contractAddress, userAddress);
+        bool b = FhevmDebug.decryptBoolStrict(eb, contractAddress, userAddress);
         vm.assertEq(b, true);
     }
 
@@ -491,7 +594,7 @@ contract EUint8Test is Test {
         TFHE.allow(eb, contractAddress);
         TFHE.allow(eb, userAddress);
 
-        bool b = FhevmDebugger.decryptBoolStrict(eb, contractAddress, userAddress);
+        bool b = FhevmDebug.decryptBoolStrict(eb, contractAddress, userAddress);
         vm.assertEq(b, false);
     }
 
@@ -506,8 +609,23 @@ contract EUint8Test is Test {
         TFHE.allow(eb, contractAddress);
         TFHE.allow(eb, userAddress);
 
-        bool b = FhevmDebugger.decryptBoolStrict(eb, contractAddress, userAddress);
+        bool b = FhevmDebug.decryptBoolStrict(eb, contractAddress, userAddress);
         vm.assertEq(b, false);
+    }
+
+    function testFuzz_Gt(uint8 v1, uint8 v2) public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(v1);
+        euint8 ei2 = TFHE.asEuint8(v2);
+        ebool eb = TFHE.gt(ei1, ei2);
+
+        TFHE.allow(eb, contractAddress);
+        TFHE.allow(eb, userAddress);
+
+        bool b = FhevmDebug.decryptBoolStrict(eb, contractAddress, userAddress);
+        vm.assertEq(b, v1 > v2);
     }
 
     // ===== Lt =====
@@ -523,7 +641,7 @@ contract EUint8Test is Test {
         TFHE.allow(eb, contractAddress);
         TFHE.allow(eb, userAddress);
 
-        bool b = FhevmDebugger.decryptBoolStrict(eb, contractAddress, userAddress);
+        bool b = FhevmDebug.decryptBoolStrict(eb, contractAddress, userAddress);
         vm.assertEq(b, false);
     }
 
@@ -538,7 +656,7 @@ contract EUint8Test is Test {
         TFHE.allow(eb, contractAddress);
         TFHE.allow(eb, userAddress);
 
-        bool b = FhevmDebugger.decryptBoolStrict(eb, contractAddress, userAddress);
+        bool b = FhevmDebug.decryptBoolStrict(eb, contractAddress, userAddress);
         vm.assertEq(b, false);
     }
 
@@ -553,8 +671,23 @@ contract EUint8Test is Test {
         TFHE.allow(eb, contractAddress);
         TFHE.allow(eb, userAddress);
 
-        bool b = FhevmDebugger.decryptBoolStrict(eb, contractAddress, userAddress);
+        bool b = FhevmDebug.decryptBoolStrict(eb, contractAddress, userAddress);
         vm.assertEq(b, true);
+    }
+
+    function testFuzz_Lt(uint8 v1, uint8 v2) public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(v1);
+        euint8 ei2 = TFHE.asEuint8(v2);
+        ebool eb = TFHE.lt(ei1, ei2);
+
+        TFHE.allow(eb, contractAddress);
+        TFHE.allow(eb, userAddress);
+
+        bool b = FhevmDebug.decryptBoolStrict(eb, contractAddress, userAddress);
+        vm.assertEq(b, v1 < v2);
     }
 
     // ===== Min =====
@@ -570,8 +703,25 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 2);
+    }
+
+    function testFuzz_Min(uint8 v1, uint8 v2) public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(v1);
+        euint8 ei2 = TFHE.asEuint8(v2);
+        euint8 ei3 = TFHE.min(ei1, ei2);
+
+        TFHE.allow(ei3, contractAddress);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
+
+        uint8 min = (v1 < v2) ? v1 : v2;
+        vm.assertEq(i3, min);
     }
 
     // ===== Max =====
@@ -587,8 +737,25 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 128);
+    }
+
+    function testFuzz_Max(uint8 v1, uint8 v2) public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(v1);
+        euint8 ei2 = TFHE.asEuint8(v2);
+        euint8 ei3 = TFHE.max(ei1, ei2);
+
+        TFHE.allow(ei3, contractAddress);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
+
+        uint8 mx = (v1 > v2) ? v1 : v2;
+        vm.assertEq(i3, mx);
     }
 
     // ===== IsTrivial =====
@@ -604,7 +771,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        vm.assertEq(FhevmDebugger.isTrivial(ei3), true);
+        vm.assertEq(FhevmDebug.isTrivial(ei3), true);
     }
 
     // ===== Cast =====
@@ -619,7 +786,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint8 i2 = FhevmDebugger.decryptU8Strict(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 128);
     }
 
@@ -632,9 +799,9 @@ contract EUint8Test is Test {
 
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
-        /// FhevmDebugger.
+        /// FhevmDebug.
         /// fhevmDebug.
-        uint8 i2 = FhevmDebugger.decryptU8Strict(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU8Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, uint8(uint16(9128)));
     }
 
@@ -648,7 +815,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint64 i2 = FhevmDebugger.decryptU64Strict(ei2, contractAddress, userAddress);
+        uint64 i2 = FhevmDebug.decryptU64Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 128);
     }
 
@@ -662,8 +829,22 @@ contract EUint8Test is Test {
         TFHE.allow(ei2, contractAddress);
         TFHE.allow(ei2, userAddress);
 
-        uint64 i2 = FhevmDebugger.decryptU4Strict(ei2, contractAddress, userAddress);
+        uint8 i2 = FhevmDebug.decryptU4Strict(ei2, contractAddress, userAddress);
         vm.assertEq(i2, 0xa);
+    }
+
+    function testFuzz_Cast_u8_to_u4(uint8 value) public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(value);
+        euint4 ei2 = TFHE.asEuint4(ei1);
+
+        TFHE.allow(ei2, contractAddress);
+        TFHE.allow(ei2, userAddress);
+
+        uint8 i2 = FhevmDebug.decryptU4Strict(ei2, contractAddress, userAddress);
+        vm.assertEq(i2, value % (uint8(0xf) + 1));
     }
 
     // ===== Rotl =====
@@ -680,7 +861,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 104);
     }
 
@@ -696,7 +877,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 4);
     }
 
@@ -712,7 +893,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 8);
     }
 
@@ -728,7 +909,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 128);
     }
 
@@ -746,7 +927,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 35);
     }
 
@@ -762,7 +943,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 4);
     }
 
@@ -778,7 +959,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 8);
     }
 
@@ -794,7 +975,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 128);
     }
 
@@ -812,7 +993,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 128);
     }
 
@@ -828,7 +1009,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 4);
     }
 
@@ -844,7 +1025,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 8);
     }
 
@@ -860,7 +1041,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 128);
     }
 
@@ -878,7 +1059,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 0);
     }
 
@@ -894,7 +1075,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 4);
     }
 
@@ -910,7 +1091,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 8);
     }
 
@@ -926,7 +1107,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 0);
     }
 
@@ -944,7 +1125,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 6);
     }
 
@@ -960,7 +1141,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 131);
     }
 
@@ -976,7 +1157,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 135);
     }
 
@@ -992,8 +1173,23 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 2);
+    }
+
+    function testFuzz_And(uint8 v1, uint8 v2) public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(v1);
+        euint8 ei2 = TFHE.asEuint8(v2);
+        euint8 ei3 = TFHE.and(ei1, ei2);
+
+        TFHE.allow(ei3, contractAddress);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, uint8(v1 & v2));
     }
 
     // ===== Or =====
@@ -1010,7 +1206,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 189);
     }
 
@@ -1026,8 +1222,23 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 143);
+    }
+
+    function testFuzz_Or(uint8 v1, uint8 v2) public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(v1);
+        euint8 ei2 = TFHE.asEuint8(v2);
+        euint8 ei3 = TFHE.or(ei1, ei2);
+
+        TFHE.allow(ei3, contractAddress);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, uint8(v1 | v2));
     }
 
     // ===== Xor =====
@@ -1044,7 +1255,7 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 4);
     }
 
@@ -1060,7 +1271,22 @@ contract EUint8Test is Test {
         TFHE.allow(ei3, contractAddress);
         TFHE.allow(ei3, userAddress);
 
-        uint8 i3 = FhevmDebugger.decryptU8Strict(ei3, contractAddress, userAddress);
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
         vm.assertEq(i3, 0);
+    }
+
+    function testFuzz_Xor(uint8 v1, uint8 v2) public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(v1);
+        euint8 ei2 = TFHE.asEuint8(v2);
+        euint8 ei3 = TFHE.xor(ei1, ei2);
+
+        TFHE.allow(ei3, contractAddress);
+        TFHE.allow(ei3, userAddress);
+
+        uint8 i3 = FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
+        vm.assertEq(i3, uint8(v1 ^ v2));
     }
 }

@@ -5,14 +5,14 @@ import {Vm} from "forge-std/src/Vm.sol";
 import {Test} from "forge-std/src/Test.sol";
 import {console} from "forge-std/src/Console.sol";
 
-import {ForgeFhevm} from "../src/forge/ForgeFhevm.sol";
-import {BytesLib} from "../src/forge/utils/BytesLib.sol";
-import {ReencryptLib} from "../src/forge/reencrypt/Reencrypt.sol";
-import {FhevmInput} from "../src/forge/FhevmInput.sol";
+import {BytesLib} from "../src/libs/common/BytesLib.sol";
+import {ReencryptLib} from "../src/libs/forge/reencrypt/ReencryptLib.sol";
+
+import {FFhevm} from "../src/FFhevm.sol";
 
 contract ReencryptTest is Test {
     function setUp() public {
-        ForgeFhevm.setUp();
+        FFhevm.setUp();
     }
 
     function test_sign() public pure {
@@ -34,7 +34,7 @@ contract ReencryptTest is Test {
     }
 
     function test_generateKeyPair() public {
-        (bytes memory publicKey, bytes memory privateKey) = FhevmInput.generateKeyPair();
+        (bytes memory publicKey, bytes memory privateKey) = FFhevm.generateKeyPair();
         vm.assertEq(publicKey.length, 40);
         vm.assertEq(privateKey.length, 40);
         bytes8 b1 = BytesLib.bytesToBytes8(publicKey, 0);

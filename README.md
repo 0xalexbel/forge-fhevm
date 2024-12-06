@@ -52,3 +52,19 @@ npm install
 forge test
 ```
 
+## Tests
+
+Tests are failing in the following situations:
+
+```bash
+# Transient storage is cleared between two consecutive calls therefore ACL permissions are always reset.
+forge test --isolate
+```
+
+```bash
+# Transient storage is cleared between two consecutive calls therefore ACL permissions are always reset.
+forge test --gas-report
+```
+
+See https://github.com/foundry-rs/foundry/issues/7499#issuecomment-2021163562 for more information.
+

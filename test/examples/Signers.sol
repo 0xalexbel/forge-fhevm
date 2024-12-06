@@ -3,6 +3,8 @@ pragma solidity ^0.8.24;
 
 import {Vm} from "forge-std/src/Vm.sol";
 
+import {FFhevm} from "../../src/FFhevm.sol";
+
 contract Signers {
     uint256 public alice;
     address public aliceAddr;
@@ -10,6 +12,13 @@ contract Signers {
     uint256 public bob;
     address public bobAddr;
 
+    uint256 public carol;
+    address public carolAddr;
+
+    uint256 public relayer;
+    address public relayerAddr;
+
+    // solhint-disable const-name-snakecase
     Vm private constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
     function getMnemonic() public view returns (string memory mnemonic) {
@@ -33,5 +42,14 @@ contract Signers {
         w = vm.createWallet(bobPk, "bob");
         bob = w.privateKey;
         bobAddr = w.addr;
+
+        uint256 carolPk = vm.deriveKey(m, 2);
+        w = vm.createWallet(carolPk, "carol");
+        carol = w.privateKey;
+        carolAddr = w.addr;
+
+        FFhevm.Signer memory relayerWallet = FFhevm.getConfig().deployConfig.gatewayRelayer;
+        relayer = relayerWallet.privateKey;
+        relayerAddr = relayerWallet.addr;
     }
 }

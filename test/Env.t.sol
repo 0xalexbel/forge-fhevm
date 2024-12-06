@@ -5,53 +5,58 @@ import {Vm} from "forge-std/src/Vm.sol";
 import {console} from "forge-std/src/Console.sol";
 import {Test} from "forge-std/src/Test.sol";
 
-import "../src/forge/env.default.sol";
-import {ForgeFhevmConfig} from "../src/forge/deploy/ForgeFhevmConfig.sol";
-import {BytesLib} from "../src/forge/utils/BytesLib.sol";
+import {BytesLib} from "../src/libs/common/BytesLib.sol";
+import {FFhevmDeployConfigLib} from "../src/libs/forge/config/FFhevmDeployConfigLib.sol";
+import {EnvLib} from "../src/libs/forge/utils/EnvLib.sol";
+import {NUM_KMS_SIGNERS, IS_COPROCESSOR} from "../src/libs/forge/config/env.default.sol";
+
+import {FFhevm} from "../src/FFhevm.sol";
+
+import {CORE_DEPLOYER_PK, COPROCESSOR_PK, GATEWAY_DEPLOYER_PK} from "forge-fhevm-config/addresses.sol";
 
 contract EnvTest is Test {
     function setUp() public {}
 
-    function test_EnvDefault() public pure {
-        uint256[] memory arr = new uint256[](4);
-        arr[0] = PRIVATE_KEY_KMS_SIGNER_0;
-        arr[1] = PRIVATE_KEY_KMS_SIGNER_1;
-        arr[2] = PRIVATE_KEY_KMS_SIGNER_2;
-        arr[3] = PRIVATE_KEY_KMS_SIGNER_3;
-        bytes memory b1 = abi.encode(arr);
-        bytes memory b2 = abi.encode(
-            bytes32(uint256(32)),
-            bytes32(uint256(4)),
-            PRIVATE_KEY_KMS_SIGNER_0,
-            PRIVATE_KEY_KMS_SIGNER_1,
-            PRIVATE_KEY_KMS_SIGNER_2,
-            PRIVATE_KEY_KMS_SIGNER_3
-        );
-
-        uint256[] memory arr2 = new uint256[](4);
-        arr2 = abi.decode(b2, (uint256[]));
-
-        vm.assertEq(b1, b2);
-        vm.assertEq(arr, arr2);
-    }
-
-    function test_Wallet() public {
-        uint256 privateKey = uint256(keccak256("forge-fhevm cheat code"));
-        //0xB6998ffdC1D00d8F2493B13326c65CcB32b19c14
-        console.logBytes32(bytes32(vm.createWallet("forge-fhevm cheat code").privateKey));
-        console.logBytes32(bytes32(privateKey));
-        console.logAddress(vm.addr(privateKey));
-        console.logAddress(address(uint160(uint256(keccak256("forge-fhevm cheat code")))));
-    }
-
-    function test_FhevmEnvConfig() public view {
-        ForgeFhevmConfig memory cfg;
-        cfg.initializeWithEnv();
-        vm.assertEq(cfg.fhevmDeployer.privateKey, PRIVATE_KEY_FHEVM_DEPLOYER);
-        vm.assertEq(cfg.gatewayDeployer.privateKey, PRIVATE_KEY_GATEWAY_DEPLOYER);
-        vm.assertEq(cfg.gatewayRelayer.privateKey, PRIVATE_KEY_GATEWAY_RELAYER);
+    function test_FhevmEnvConfig() public {
+        FFhevm.DeployConfig memory cfg = FFhevmDeployConfigLib.initializeWithEnv();
+        vm.assertEq(cfg.fhevmDeployer.privateKey, CORE_DEPLOYER_PK, "CORE_DEPLOYER_PK");
+        vm.assertEq(cfg.gatewayDeployer.privateKey, GATEWAY_DEPLOYER_PK, "GATEWAY_DEPLOYER_PK");
         vm.assertEq(cfg.numKmsSigners, NUM_KMS_SIGNERS);
         vm.assertEq(cfg.isCoprocessor, IS_COPROCESSOR);
-        vm.assertEq(cfg.coprocessorAccount.privateKey, PRIVATE_KEY_COPROCESSOR_ACCOUNT);
+        vm.assertEq(cfg.coprocessorAccount.privateKey, COPROCESSOR_PK, "COPROCESSOR_PK");
+    }
+
+    function testFail_missing_kms_signer_pk() public {
+        uint256[] memory defaultPks = new uint256[](10);
+        for (uint256 i = 0; i < defaultPks.length; ++i) {
+            defaultPks[i] =
+                uint256(keccak256(bytes(string.concat("ffhevm.default_kms_signer.wallet.", vm.toString(i)))));
+        }
+        FFhevm.Signer[] memory signers = EnvLib.envSignersArray("PRIVATE_KEY_KMS_SIGNER_", defaultPks);
+        for (uint256 i = 0; i < signers.length; ++i) {
+            console.log("signers[%s] = %s", i, signers[i].privateKey);
+        }
+    }
+
+    function test_env_kms_signer_pk() public {
+        uint256[] memory defaultPks = new uint256[](NUM_KMS_SIGNERS);
+        for (uint256 i = 0; i < defaultPks.length; ++i) {
+            defaultPks[i] =
+                uint256(keccak256(bytes(string.concat("ffhevm.default_kms_signer.wallet.", vm.toString(i)))));
+        }
+        EnvLib.envSignersArray("PRIVATE_KEY_KMS_SIGNER_", defaultPks);
+    }
+
+    function test_default_kms_signer_pk() public {
+        uint256[] memory defaultPks = new uint256[](NUM_KMS_SIGNERS);
+        for (uint256 i = 0; i < defaultPks.length; ++i) {
+            defaultPks[i] =
+                uint256(keccak256(bytes(string.concat("ffhevm.default_kms_signer.wallet.", vm.toString(i)))));
+        }
+        FFhevm.Signer[] memory signers = EnvLib.envSignersArray("DEADBEEF_VAR_NAME_", defaultPks);
+        vm.assertEq(signers.length, defaultPks.length);
+        for (uint256 i = 0; i < defaultPks.length; ++i) {
+            vm.assertEq(defaultPks[i], signers[i].privateKey);
+        }
     }
 }

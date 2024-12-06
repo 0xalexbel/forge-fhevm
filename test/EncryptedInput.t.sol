@@ -5,17 +5,14 @@ import {Vm} from "forge-std/src/Vm.sol";
 import {Test} from "forge-std/src/Test.sol";
 import {console} from "forge-std/src/Console.sol";
 
-import {TFHE, einput, ebool, ebytes256} from "../src/debug/fhevm/lib/TFHE.sol";
-import {FhevmDebugger, ArithmeticCheckingMode} from "../src/debug/FhevmDebugger.sol";
+import {TFHE, einput, ebool, ebytes256} from "../src/libs/fhevm-debug/lib/TFHE.sol";
 
-import {BytesLib} from "../src/forge/utils/BytesLib.sol";
-import {FhevmInput} from "../src/forge/FhevmInput.sol";
-import {EncryptedInput} from "../src/forge/EncryptedInput.sol";
-import {ForgeFhevm} from "../src/forge/ForgeFhevm.sol";
+import {FhevmDebug} from "../src/FhevmDebug.sol";
+import {FFhevm, EncryptedInput} from "../src/FFhevm.sol";
 
 contract EncryptedInputTest is Test {
     function setUp() public {
-        ForgeFhevm.setUp();
+        FFhevm.setUp();
     }
 
     function test_AsBoolAnd() public {
@@ -24,18 +21,18 @@ contract EncryptedInputTest is Test {
         address userAddress = msg.sender;
         address contractAddress = address(this);
 
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         input.addBool(true, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         (einput[] memory handles, bytes memory inputProof) = input.encrypt();
 
         ebool b2 = TFHE.asEbool(handles[0], inputProof);
         ebool b3 = TFHE.and(b1, b2);
 
-        bool b2_ct = FhevmDebugger.getClear(b2);
-        bool b3_ct = FhevmDebugger.getClear(b3);
+        bool b2Ct = FhevmDebug.getClear(b2);
+        bool b3Ct = FhevmDebug.getClear(b3);
 
-        vm.assertEq(b2_ct, true);
-        vm.assertEq(b3_ct, true);
+        vm.assertEq(b2Ct, true);
+        vm.assertEq(b3Ct, true);
     }
 
     function test_helper_AsBoolAnd() public {
@@ -44,9 +41,7 @@ contract EncryptedInputTest is Test {
         address userAddress = msg.sender;
         address contractAddress = address(this);
 
-        (einput inputHandle, bytes memory inputProof) = FhevmInput.encryptBool(
-            true, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209, contractAddress, userAddress
-        );
+        (einput inputHandle, bytes memory inputProof) = FFhevm.encryptBool(true, contractAddress, userAddress);
 
         ebool b2 = TFHE.asEbool(inputHandle, inputProof);
         ebool b3 = TFHE.and(b1, b2);
@@ -57,11 +52,11 @@ contract EncryptedInputTest is Test {
         TFHE.allow(b3, contractAddress);
         TFHE.allow(b3, userAddress);
 
-        bool b2_ct = FhevmDebugger.decryptBool(b2, contractAddress, userAddress);
-        bool b3_ct = FhevmDebugger.decryptBool(b3, contractAddress, userAddress);
+        bool b2Ct = FhevmDebug.decryptBool(b2, contractAddress, userAddress);
+        bool b3Ct = FhevmDebug.decryptBool(b3, contractAddress, userAddress);
 
-        vm.assertEq(b2_ct, true);
-        vm.assertEq(b3_ct, true);
+        vm.assertEq(b2Ct, true);
+        vm.assertEq(b3Ct, true);
     }
 
     function test_helper_AsBytes() public {
@@ -72,18 +67,16 @@ contract EncryptedInputTest is Test {
         address userAddress = msg.sender;
         address contractAddress = address(this);
 
-        (einput inputHandle, bytes memory inputProof) = FhevmInput.encryptBytes256(
-            b128, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209, contractAddress, userAddress
-        );
+        (einput inputHandle, bytes memory inputProof) = FFhevm.encryptBytes256(b128, contractAddress, userAddress);
 
-        ebytes256 b_enc = TFHE.asEbytes256(inputHandle, inputProof);
+        ebytes256 bEnc = TFHE.asEbytes256(inputHandle, inputProof);
 
-        TFHE.allow(b_enc, contractAddress);
-        TFHE.allow(b_enc, userAddress);
+        TFHE.allow(bEnc, contractAddress);
+        TFHE.allow(bEnc, userAddress);
 
-        bytes memory b_ct = FhevmDebugger.decryptBytes256(b_enc, contractAddress, userAddress);
+        bytes memory bCt = FhevmDebug.decryptBytes256(bEnc, contractAddress, userAddress);
 
-        vm.assertEq(b_ct, b128);
+        vm.assertEq(bCt, b128);
     }
 
     function test_helper_AsBytesEq() public {
@@ -94,32 +87,28 @@ contract EncryptedInputTest is Test {
         address userAddress = msg.sender;
         address contractAddress = address(this);
 
-        (einput inputHandle1, bytes memory inputProof1) = FhevmInput.encryptBytes256(
-            b128, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209, contractAddress, userAddress
-        );
+        (einput inputHandle1, bytes memory inputProof1) = FFhevm.encryptBytes256(b128, contractAddress, userAddress);
 
-        (einput inputHandle2, bytes memory inputProof2) = FhevmInput.encryptBytes256(
-            b128, 0x0201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c4376, contractAddress, userAddress
-        );
+        (einput inputHandle2, bytes memory inputProof2) = FFhevm.encryptBytes256(b128, contractAddress, userAddress);
 
-        ebytes256 b_enc1 = TFHE.asEbytes256(inputHandle1, inputProof1);
-        ebytes256 b_enc2 = TFHE.asEbytes256(inputHandle2, inputProof2);
+        ebytes256 bEnc1 = TFHE.asEbytes256(inputHandle1, inputProof1);
+        ebytes256 bEnc2 = TFHE.asEbytes256(inputHandle2, inputProof2);
 
-        ebool eq_enc = TFHE.eq(b_enc1, b_enc2);
+        ebool eqEnc = TFHE.eq(bEnc1, bEnc2);
 
-        TFHE.allow(eq_enc, contractAddress);
-        TFHE.allow(eq_enc, userAddress);
+        TFHE.allow(eqEnc, contractAddress);
+        TFHE.allow(eqEnc, userAddress);
 
-        bool eq_ct = FhevmDebugger.decryptBool(eq_enc, contractAddress, userAddress);
+        bool eqCt = FhevmDebug.decryptBool(eqEnc, contractAddress, userAddress);
 
-        vm.assertEq(eq_ct, true);
+        vm.assertEq(eqCt, true);
     }
 
     function test_AddBool() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         input.addBool(true, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         uint256 a = input._list._items[0].extract256();
         vm.assertEq(a, 1);
@@ -129,7 +118,7 @@ contract EncryptedInputTest is Test {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         input.add4(15, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         uint256 a = input._list._items[0].extract256();
         vm.assertEq(a, 15);
@@ -139,7 +128,7 @@ contract EncryptedInputTest is Test {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         input.add8(255, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         uint256 a = input._list._items[0].extract256();
         vm.assertEq(a, 255);
@@ -149,7 +138,7 @@ contract EncryptedInputTest is Test {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         input.add16(65535, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         uint256 a = input._list._items[0].extract256();
         vm.assertEq(a, 65535);
@@ -159,7 +148,7 @@ contract EncryptedInputTest is Test {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         //input = input.add32(2 ** 32 - 1, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         input.add32(2 ** 32 - 1, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         uint256 a = input._list._items[0].extract256();
@@ -170,7 +159,7 @@ contract EncryptedInputTest is Test {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         input.add64(2 ** 64 - 1, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         uint256 a = input._list._items[0].extract256();
         vm.assertEq(a, 2 ** 64 - 1);
@@ -179,7 +168,7 @@ contract EncryptedInputTest is Test {
     function test_Add128() public {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         input.add128(2 ** 128 - 1, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         uint256 a = input._list._items[0].extract256();
         vm.assertEq(a, 2 ** 128 - 1);
@@ -189,7 +178,7 @@ contract EncryptedInputTest is Test {
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         input.add256(2 ** 256 - 1, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         uint256 a = input._list._items[0].extract256();
         vm.assertEq(a, 2 ** 256 - 1);
@@ -203,7 +192,7 @@ contract EncryptedInputTest is Test {
             hex"0201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c43760201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c4376"
         );
 
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         input.addBytes64(b64, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         uint256[8] memory a = input._list._items[0].extract2048();
 
@@ -225,7 +214,7 @@ contract EncryptedInputTest is Test {
             hex"0201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c43760201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c43760201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c43760201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c4376"
         );
 
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         input.addBytes128(b128, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         uint256[8] memory a = input._list._items[0].extract2048();
 
@@ -247,7 +236,7 @@ contract EncryptedInputTest is Test {
             hex"0201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c43760201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c43760201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c43760201c8c28ce7a29ad73a0a0dbd2145443a29bbe1182e8bfeb07d2276d45c4376"
         );
 
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         input.addBytes256(b128, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         uint256[8] memory a = input._list._items[0].extract2048();
 
@@ -262,14 +251,14 @@ contract EncryptedInputTest is Test {
     }
 
     function test_Add64Add32_Coprocessor() public {
-        if (!FhevmInput.isCoprocessor()) {
+        if (!FFhevm.isCoprocessor()) {
             return;
         }
 
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-        EncryptedInput memory input = FhevmInput.createEncryptedInput(contractAddress, userAddress);
+        EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
         input.add64(123456, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         input.add32(7890, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         (einput[] memory handles, bytes memory inputProof) = input.encrypt();

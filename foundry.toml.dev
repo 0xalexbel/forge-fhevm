@@ -1,7 +1,29 @@
 [profile.default]
 libs = ["dependencies", "node_modules"]
 solc = "0.8.24"
+test = "test"
+cache_path = "cache"
 evm_version = 'cancun'
+fs_permissions = [{ access = "read-write", path = "./test/addresses"}]
+remappings = [
+    "forge-std/=dependencies/forge-std-1.9.3/",
+    "forge-fhevm-config/=configs/default/",
+    "fhevm/=src/libs/fhevm-debug/"
+]
+
+[profile.zama]
+libs = ["dependencies", "node_modules"]
+solc = "0.8.24"
+test = "test-zama"
+out = "out-zama"
+cache_path = "cache-zama"
+evm_version = 'cancun'
+fs_permissions = [{ access = "read-write", path = "./test/addresses"}]
+remappings = [
+    "forge-std/=dependencies/forge-std-1.9.3/",
+    "forge-fhevm-config/=configs/default/",
+    "fhevm/=node_modules/fhevm/"
+]
 
 [dependencies]
 forge-std = "1.9.3"
@@ -24,3 +46,7 @@ quote_style = 'double'
 number_underscore = 'preserve'
 single_line_statement_blocks = 'preserve'
 ignore = ["src/console.sol", "src/console2.sol"]
+
+[fuzz]
+runs = 1000
+
