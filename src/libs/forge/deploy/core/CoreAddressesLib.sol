@@ -182,53 +182,82 @@ library CoreAddressesLib {
         }
     }
 
-    function readEnvAddresses() internal view returns (FFhevm.CoreAddresses memory) {
+    // function readEnvAddresses() internal view returns (FFhevm.CoreAddresses memory) {
+    //     FFhevm.CoreAddresses memory coreAddresses;
+
+    //     coreAddresses.ACLAddress = EnvLib.envAddressOr(CONST.ACLAddressEnvName, address(0));
+    //     coreAddresses.TFHEExecutorAddress = EnvLib.envAddressOr(CONST.TFHEExecutorAddressEnvName, address(0));
+    //     coreAddresses.FHEPaymentAddress = EnvLib.envAddressOr(CONST.FHEPaymentAddressEnvName, address(0));
+    //     coreAddresses.KMSVerifierAddress = EnvLib.envAddressOr(CONST.KMSVerifierAddressEnvName, address(0));
+    //     coreAddresses.InputVerifierAddress = EnvLib.envAddressOr(CONST.InputVerifierAddressEnvName, address(0));
+
+    //     if (
+    //         coreAddresses.ACLAddress == address(0) && coreAddresses.TFHEExecutorAddress == address(0)
+    //             && coreAddresses.FHEPaymentAddress == address(0) && coreAddresses.KMSVerifierAddress == address(0)
+    //             && coreAddresses.InputVerifierAddress == address(0)
+    //     ) {
+    //         return coreAddresses;
+    //     }
+
+    //     if (coreAddresses.ACLAddress == address(0)) {
+    //         revert("Missing ACL contract address env value");
+    //     } else {
+    //         checkACLAddress(coreAddresses.ACLAddress);
+    //     }
+
+    //     if (coreAddresses.TFHEExecutorAddress == address(0)) {
+    //         revert("Missing TFHEExecutor contract address env value");
+    //     } else {
+    //         checkTFHEExecutorAddress(coreAddresses.TFHEExecutorAddress);
+    //     }
+
+    //     if (coreAddresses.FHEPaymentAddress == address(0)) {
+    //         revert("Missing FHEPayment contract address env value");
+    //     } else {
+    //         checkFHEPaymentAddress(coreAddresses.FHEPaymentAddress);
+    //     }
+
+    //     if (coreAddresses.KMSVerifierAddress == address(0)) {
+    //         revert("Missing KMSVerifier contract address env value");
+    //     } else {
+    //         checkKMSVerifierAddress(coreAddresses.KMSVerifierAddress);
+    //     }
+
+    //     if (coreAddresses.InputVerifierAddress == address(0)) {
+    //         revert("Missing InputVerifier contract address env value");
+    //     } else {
+    //         checkInputVerifierAddress(coreAddresses.InputVerifierAddress);
+    //     }
+
+    //     return coreAddresses;
+    // }
+
+    function expectedACLAddress() internal pure returns (address expectedAddr) {
+        expectedAddr = CONST.ACL_ADDRESS;
+    }
+
+    function expectedTFHEExecutorAddress() internal pure returns (address expectedAddr) {
+        expectedAddr = CONST.TFHE_EXECUTOR_ADDRESS;
+    }
+
+    function expectedKMSVerifierAddress() internal pure returns (address expectedAddr) {
+        expectedAddr = CONST.KMS_VERIFIER_ADDRESS;
+    }
+    function expectedInputVerifierAddress() internal pure returns (address expectedAddr) {
+        expectedAddr = CONST.INPUT_VERIFIER_ADDRESS;
+    }
+
+    function expectedFHEPaymentAddress() internal pure returns (address expectedAddr) {
+        expectedAddr = CONST.FHE_PAYMENT_ADDRESS;
+    }
+
+    function expectedAddresses() internal pure returns (FFhevm.CoreAddresses memory) {
         FFhevm.CoreAddresses memory coreAddresses;
-
-        coreAddresses.ACLAddress = EnvLib.envAddressOr(CONST.ACLAddressEnvName, address(0));
-        coreAddresses.TFHEExecutorAddress = EnvLib.envAddressOr(CONST.TFHEExecutorAddressEnvName, address(0));
-        coreAddresses.FHEPaymentAddress = EnvLib.envAddressOr(CONST.FHEPaymentAddressEnvName, address(0));
-        coreAddresses.KMSVerifierAddress = EnvLib.envAddressOr(CONST.KMSVerifierAddressEnvName, address(0));
-        coreAddresses.InputVerifierAddress = EnvLib.envAddressOr(CONST.InputVerifierAddressEnvName, address(0));
-
-        if (
-            coreAddresses.ACLAddress == address(0) && coreAddresses.TFHEExecutorAddress == address(0)
-                && coreAddresses.FHEPaymentAddress == address(0) && coreAddresses.KMSVerifierAddress == address(0)
-                && coreAddresses.InputVerifierAddress == address(0)
-        ) {
-            return coreAddresses;
-        }
-
-        if (coreAddresses.ACLAddress == address(0)) {
-            revert("Missing ACL contract address env value");
-        } else {
-            checkACLAddress(coreAddresses.ACLAddress);
-        }
-
-        if (coreAddresses.TFHEExecutorAddress == address(0)) {
-            revert("Missing TFHEExecutor contract address env value");
-        } else {
-            checkTFHEExecutorAddress(coreAddresses.TFHEExecutorAddress);
-        }
-
-        if (coreAddresses.FHEPaymentAddress == address(0)) {
-            revert("Missing FHEPayment contract address env value");
-        } else {
-            checkFHEPaymentAddress(coreAddresses.FHEPaymentAddress);
-        }
-
-        if (coreAddresses.KMSVerifierAddress == address(0)) {
-            revert("Missing KMSVerifier contract address env value");
-        } else {
-            checkKMSVerifierAddress(coreAddresses.KMSVerifierAddress);
-        }
-
-        if (coreAddresses.InputVerifierAddress == address(0)) {
-            revert("Missing InputVerifier contract address env value");
-        } else {
-            checkInputVerifierAddress(coreAddresses.InputVerifierAddress);
-        }
-
+        coreAddresses.ACLAddress = expectedACLAddress();
+        coreAddresses.FHEPaymentAddress = expectedFHEPaymentAddress();
+        coreAddresses.InputVerifierAddress = expectedInputVerifierAddress();
+        coreAddresses.KMSVerifierAddress = expectedKMSVerifierAddress();
+        coreAddresses.TFHEExecutorAddress = expectedTFHEExecutorAddress();
         return coreAddresses;
     }
 }

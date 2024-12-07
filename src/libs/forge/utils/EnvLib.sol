@@ -15,7 +15,7 @@ library EnvLib {
         if (_pk == 0) {
             _pk = defaultPk;
         }
-        signer.addr = vm.rememberKey(_pk);
+        signer.addr = (_pk != 0) ? vm.rememberKey(_pk) : address(0);
         signer.privateKey = _pk;
     }
 

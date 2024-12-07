@@ -4,30 +4,50 @@ pragma solidity ^0.8.24;
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 import {FFhevm} from "../../../../FFhevm.sol";
+import {AddressLib} from "../../../common/AddressLib.sol";
 
 import {GatewayContract} from "../../../core/gateway/GatewayContract.sol";
+import {IGatewayContract} from "../../../core/interfaces/IGatewayContract.sol";
+import {ICoreContract} from "../../../core/interfaces/ICoreContract.sol";
 
-import {IForgeStdVmSafe as IVmSafe, forgeStdVmSafeAdd} from "../../interfaces/IForgeStdVm.sol";
+import {
+    IForgeStdVmSafe as IVmSafe,
+    IForgeStdVmUnsafe as IVmUnsafe,
+    forgeStdVmSafeAdd,
+    forgeStdVmUnsafeAdd
+} from "../../interfaces/IForgeStdVm.sol";
 
 import {GatewayAddressesLib} from "./GatewayAddressesLib.sol";
-import {GatewayContractVersion} from "./constants.sol";
+import {GatewayContractVersion, GatewayDeployerDefaultPK} from "./constants.sol";
 
 library GatewayDeployLib {
+    // solhint-disable const-name-snakecase
     IVmSafe private constant vm = IVmSafe(forgeStdVmSafeAdd);
+    // solhint-disable const-name-snakecase
+    IVmUnsafe private constant vmUnsafe = IVmUnsafe(forgeStdVmUnsafeAdd);
 
     /// @notice Deploy a new set of fhevm gateway contracts
     /// @dev Do not call this function inside a startBroadcast/stopBroadcast block
-    function deployFhevmGateway(address deployerAddr, address relayerAddr)
+    function deployFhevmGateway(FFhevm.Signer memory deployer, address relayerAddr)
         internal
         returns (FFhevm.GatewayAddresses memory addresses)
     {
+        bool useNonce = true;
+        if (deployer.privateKey == 0) {
+            useNonce = false;
+            if (deployer.addr == address(0)) {
+                deployer.addr = vm.rememberKey(GatewayDeployerDefaultPK);
+                deployer.privateKey = GatewayDeployerDefaultPK;
+            }
+        }
+
         // Deploy order:
         // 1. GatewayContract
         // 2. addRelayer
-        GatewayContract gc = _deployGatewayContract(deployerAddr);
+        IGatewayContract gc = _deployGatewayContract(deployer, useNonce);
 
         if (!gc.isRelayer(relayerAddr)) {
-            vm.startBroadcast(deployerAddr);
+            vm.startBroadcast(deployer.addr);
             {
                 gc.addRelayer(relayerAddr);
             }
@@ -46,13 +66,12 @@ library GatewayDeployLib {
         return keccak256(abi.encode(version)) == keccak256(abi.encode(contractVersion));
     }
 
-    /// Deploy a new GatewayContract contract using the specified deployer wallet
-    function _deployGatewayContract(address deployerAddr) private returns (GatewayContract) {
+    function _deployGatewayContractWithNonce(address deployerAddr) private returns (IGatewayContract) {
         (address expectedImplAddr, address expectedAddr, uint64 expectedImplNonce, uint64 expectedNonce) =
             GatewayAddressesLib.expectedCreateGatewayContractAddress(deployerAddr);
 
         if (_isVersion(expectedAddr, GatewayContractVersion)) {
-            return GatewayContract(expectedAddr);
+            return IGatewayContract(expectedAddr);
         }
 
         // Verify nonce
@@ -87,11 +106,52 @@ library GatewayDeployLib {
             "deploy GatewayContract contract proxy: unexpected final nonce"
         );
 
-        GatewayContract _gc = GatewayContract(address(proxy));
+        IGatewayContract _gc = IGatewayContract(address(proxy));
 
         // Verify owner
-        vm.assertEq(_gc.owner(), deployerAddr, "deploy GatewayContract contract: unexpected owner");
+        vm.assertEq(
+            AddressLib.getOwner(address(_gc)), deployerAddr, "deploy GatewayContract contract: unexpected owner"
+        );
 
         return _gc;
+    }
+
+    function _deployGatewayContract(FFhevm.Signer memory deployer, bool useNonce) private returns (IGatewayContract) {
+        return (deployer.privateKey != 0 && useNonce)
+            ? _deployGatewayContractWithNonce(deployer.addr)
+            : _deployGatewayContractNoNonce(deployer.addr);
+    }
+
+    function _deployGatewayContractNoNonce(address ownerAddr) private returns (IGatewayContract) {
+        address expectedAddr = GatewayAddressesLib.expectedGatewayContractAddress();
+        _deployCoreContractAt("GatewayContract", "GatewayContract.sol", expectedAddr, ownerAddr, GatewayContractVersion);
+        return IGatewayContract(expectedAddr);
+    }
+
+    function _deployCoreContractAt(
+        string memory contractName,
+        string memory contractFilename,
+        address expectedAddr,
+        address ownerAddr,
+        string memory expectedVersion
+    ) private {
+        if (_isVersion(expectedAddr, expectedVersion)) {
+            return;
+        }
+
+        /// 
+        /// !! WARNING !! use the modified version of GatewayContract.sol located in forge artifacts.
+        /// !! DO NOT DEPLOY !! fhevm-core-contracts/gateway/GatewayContract.sol
+        ///
+        string memory path = string.concat(
+            "./out/", contractFilename, "/", contractName, ".json"
+        );
+        bytes memory code = vm.getDeployedCode(path);
+
+        vmUnsafe.etch(expectedAddr, code);
+        vm.assertEq(expectedAddr.code, code, "Failed to deploy gateway contract");
+
+        ICoreContract coreContract = ICoreContract(expectedAddr);
+        coreContract.initialize(ownerAddr);
     }
 }

@@ -251,14 +251,23 @@ contract EncryptedInputTest is Test {
     }
 
     function test_Add64Add32_Coprocessor() public {
-        if (!FFhevm.isCoprocessor()) {
-            return;
-        }
-
         address contractAddress = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
         address userAddress = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
         EncryptedInput memory input = FFhevm.createEncryptedInput(contractAddress, userAddress);
+
+        // The encoded result below has been computed using the following addresses:
+        // 
+        input._signer.chainId = 31337;
+        input._signer.acl = 0x339EcE85B9E11a3A3AA557582784a15d7F82AAf2;
+        input._signer.kmsVerifier = 0x208De73316E44722e16f6dDFF40881A3e4F86104;
+        input._signer.inputVerifier = 0x69dE3158643e738a0724418b21a35FAA20CBb1c5;
+        input._signer.coprocSigner.addr = 0xc9990FEfE0c27D31D0C2aa36196b085c0c4d456c;
+        input._signer.coprocSigner.privateKey = 57345986822467263407452523075989323922629812897950173236713635509495877253377;
+        input._signer.kmsSigners = new FFhevm.Signer[](1);
+        input._signer.kmsSigners[0].addr = 0x0971C80fF03B428fD2094dd5354600ab103201C5;
+        input._signer.kmsSigners[0].privateKey = 25575929143713252205522749670265078485541952339991649856291280552944085753489;
+        
         input.add64(123456, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         input.add32(7890, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
         (einput[] memory handles, bytes memory inputProof) = input.encrypt();

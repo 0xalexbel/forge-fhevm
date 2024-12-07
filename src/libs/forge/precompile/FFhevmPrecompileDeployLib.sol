@@ -80,8 +80,8 @@ library FFhevmPrecompileDeployLib {
         }
         vmSafe.stopBroadcast();
 
-        vmUnsafe.allowCheatcodes(FFHEVM_INPUT_PRECOMPILE_ADDRESS);
-        vmUnsafe.allowCheatcodes(FFHEVM_GATEWAY_PRECOMPILE_ADDRESS);
-        vmUnsafe.allowCheatcodes(FFHEVM_REENCRYPT_PRECOMPILE_ADDRESS);
+        // vmUnsafe.allowCheatcodes(FFHEVM_INPUT_PRECOMPILE_ADDRESS);
+        // vmUnsafe.allowCheatcodes(FFHEVM_GATEWAY_PRECOMPILE_ADDRESS);
+        // vmUnsafe.allowCheatcodes(FFHEVM_REENCRYPT_PRECOMPILE_ADDRESS);
     }
 }

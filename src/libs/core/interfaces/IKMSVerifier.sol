@@ -2,7 +2,12 @@
 
 pragma solidity ^0.8.24;
 
-interface IKMSVerifier {
+import {ICoreContract} from "./ICoreContract.sol";
+
+interface IKMSVerifier is ICoreContract {
+    function isSigner(address account) external returns (bool);
+    function addSigner(address signer) external;
+    function getSigners() external view returns (address[] memory);
     function verifyDecryptionEIP712KMSSignatures(
         address aclAddress,
         uint256[] memory handlesList,

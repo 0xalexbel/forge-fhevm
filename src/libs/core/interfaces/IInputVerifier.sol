@@ -3,8 +3,9 @@
 pragma solidity ^0.8.24;
 
 import {ITFHEExecutor} from "./ITFHEExecutor.sol";
+import {ICoreContract} from "./ICoreContract.sol";
 
-interface IInputVerifier {
+interface IInputVerifier is ICoreContract {
     function verifyCiphertext(
         ITFHEExecutor.ContextUserInputs memory context,
         bytes32 inputHandle,

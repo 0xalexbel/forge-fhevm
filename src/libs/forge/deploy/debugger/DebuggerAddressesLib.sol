@@ -84,32 +84,47 @@ library DebuggerAddressesLib {
         return abi.decode(returnData, (address));
     }
 
-    function readEnvAddresses() internal view returns (FFhevm.DebuggerAddresses memory) {
-        FFhevm.DebuggerAddresses memory addresses;
+    // function readEnvAddresses() internal view returns (FFhevm.DebuggerAddresses memory) {
+    //     FFhevm.DebuggerAddresses memory addresses;
 
-        addresses.TFHEDebuggerAddress = EnvLib.envAddressOr(CONST.TFHEDebuggerAddressEnvName, address(0));
-        addresses.TFHEDebuggerDBAddress = EnvLib.envAddressOr(CONST.TFHEDebuggerDBAddressEnvName, address(0));
+    //     addresses.TFHEDebuggerAddress = EnvLib.envAddressOr(CONST.TFHEDebuggerAddressEnvName, address(0));
+    //     addresses.TFHEDebuggerDBAddress = EnvLib.envAddressOr(CONST.TFHEDebuggerDBAddressEnvName, address(0));
 
-        if (addresses.TFHEDebuggerAddress == address(0) && addresses.TFHEDebuggerDBAddress == address(0)) {
-            return addresses;
-        }
+    //     if (addresses.TFHEDebuggerAddress == address(0) && addresses.TFHEDebuggerDBAddress == address(0)) {
+    //         return addresses;
+    //     }
 
-        if (addresses.TFHEDebuggerAddress == address(0)) {
-            revert("Missing TFHEDebugger contract address env value");
-        } else {
-            checkTFHEDebuggerAddress(addresses.TFHEDebuggerAddress);
-        }
+    //     if (addresses.TFHEDebuggerAddress == address(0)) {
+    //         revert("Missing TFHEDebugger contract address env value");
+    //     } else {
+    //         checkTFHEDebuggerAddress(addresses.TFHEDebuggerAddress);
+    //     }
 
-        if (addresses.TFHEDebuggerDBAddress == address(0)) {
-            addresses.TFHEDebuggerDBAddress = _tryCallGetDebuggerDB(addresses.TFHEDebuggerAddress);
-        }
+    //     if (addresses.TFHEDebuggerDBAddress == address(0)) {
+    //         addresses.TFHEDebuggerDBAddress = _tryCallGetDebuggerDB(addresses.TFHEDebuggerAddress);
+    //     }
 
-        if (addresses.TFHEDebuggerDBAddress == address(0)) {
-            revert("Missing TFHEDebuggerDB contract address env value");
-        } else {
-            checkTFHEDebuggerDBAddress(addresses.TFHEDebuggerDBAddress);
-        }
+    //     if (addresses.TFHEDebuggerDBAddress == address(0)) {
+    //         revert("Missing TFHEDebuggerDB contract address env value");
+    //     } else {
+    //         checkTFHEDebuggerDBAddress(addresses.TFHEDebuggerDBAddress);
+    //     }
 
-        return addresses;
+    //     return addresses;
+    // }
+
+    function expectedTFHEDebuggerAddress() internal pure returns (address expectedAddr) {
+        expectedAddr = CONST.FFHEVM_DEBUGGER_ADDRESS;
+    }
+
+    function expectedTFHEDebuggerDBAddress() internal pure returns (address expectedAddr) {
+        expectedAddr = CONST.FFHEVM_DEBUGGER_DB_ADDRESS;
+    }
+
+    function expectedAddresses() internal pure returns (FFhevm.DebuggerAddresses memory) {
+        FFhevm.DebuggerAddresses memory debuggerAddresses;
+        debuggerAddresses.TFHEDebuggerAddress = expectedTFHEDebuggerAddress();
+        debuggerAddresses.TFHEDebuggerDBAddress = expectedTFHEDebuggerDBAddress();
+        return debuggerAddresses;
     }
 }

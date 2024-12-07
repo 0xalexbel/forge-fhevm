@@ -13,12 +13,12 @@ import {
 
 // ================== ⭐️ Env var names (.env files) ⭐️ =================== //
 
-string constant ACLAddressEnvName = "ACL_ADDRESS";
-string constant TFHEExecutorAddressEnvName = "TFHE_EXECUTOR_ADDRESS";
-string constant InputVerifierAddressEnvName = "INPUT_VERIFIER_ADDRESS";
-string constant KMSVerifierAddressEnvName = "KMS_VERIFIER_ADDRESS";
-string constant FHEPaymentAddressEnvName = "FHE_PAYMENT_ADDRESS";
-string constant CoprocessorEnvName = "COPROCESSOR_ADDRESS";
+// string constant ACLAddressEnvName = "ACL_ADDRESS";
+// string constant TFHEExecutorAddressEnvName = "TFHE_EXECUTOR_ADDRESS";
+// string constant InputVerifierAddressEnvName = "INPUT_VERIFIER_ADDRESS";
+// string constant KMSVerifierAddressEnvName = "KMS_VERIFIER_ADDRESS";
+// string constant FHEPaymentAddressEnvName = "FHE_PAYMENT_ADDRESS";
+// string constant CoprocessorEnvName = "COPROCESSOR_ADDRESS";
 
 // =========================== ⭐️ Nonces ⭐️ ============================== //
 
@@ -40,3 +40,7 @@ string constant TFHEExecutorVersion = "TFHEExecutor v0.1.0";
 string constant KMSVerifierVersion = "KMSVerifier v0.1.0";
 string constant FHEPaymentVersion = "FHEPayment v0.1.0";
 string constant InputVerifierVersion = "InputVerifier v0.1.0";
+
+// ===================== ⭐️ Default Deployer PK ⭐️ ======================= //
+
+uint256 constant CoreDeployerDefaultPK = uint256(keccak256(bytes("ffhevm.core.wallet")));

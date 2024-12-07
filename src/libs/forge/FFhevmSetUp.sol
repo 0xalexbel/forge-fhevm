@@ -59,7 +59,9 @@ library FFhevmSetUp {
         internal
         returns (FFhevm.CoreAddresses memory coreAddresses)
     {
-        coreAddresses = CoreAddressesLib.readEnvAddresses();
+        if (block.chainid != 31337) {
+            return CoreAddressesLib.expectedAddresses();
+        }
 
         // Shall we deploy the core suite ?
         if (coreAddresses.ACLAddress == address(0)) {
@@ -67,11 +69,16 @@ library FFhevmSetUp {
             address coprocessorAccountAddr =
                 (deployConfig.isCoprocessor) ? deployConfig.coprocessorAccount.addr : address(0);
 
+            // deployConfig.fhevmDeployer.addr | privateKey can be null.
+            // it will be set to a default value if needed.
             coreAddresses = CoreDeployLib.deployFhevmCore(
-                deployConfig.fhevmDeployer.addr,
+                deployConfig.fhevmDeployer,
                 coprocessorAccountAddr,
                 FFhevmDeployConfigLib.getKmsSignersAddr(deployConfig)
             );
+
+            require(deployConfig.fhevmDeployer.addr != address(0), "Missing Fhevm deployer address.");
+            require(deployConfig.fhevmDeployer.privateKey != 0, "Missing Fhevm deployer private key.");
         }
     }
 
@@ -79,12 +86,19 @@ library FFhevmSetUp {
         internal
         returns (FFhevm.GatewayAddresses memory gatewayAddresses)
     {
-        gatewayAddresses = GatewayAddressesLib.readEnvAddresses();
+        if (block.chainid != 31337) {
+            return GatewayAddressesLib.expectedAddresses();
+        }
 
         // Shall we deploy the gateway suite ?
         if (gatewayAddresses.GatewayContractAddress == address(0)) {
+            // deployConfig.gatewayDeployer.addr | privateKey can be null.
+            // it will be set to a default value if needed.
             gatewayAddresses =
-                GatewayDeployLib.deployFhevmGateway(deployConfig.gatewayDeployer.addr, deployConfig.gatewayRelayer.addr);
+                GatewayDeployLib.deployFhevmGateway(deployConfig.gatewayDeployer, deployConfig.gatewayRelayer.addr);
+
+            require(deployConfig.gatewayDeployer.addr != address(0), "Missing Gateway deployer address.");
+            require(deployConfig.gatewayDeployer.privateKey != 0, "Missing Gateway deployer private key.");
         }
     }
 
@@ -92,14 +106,21 @@ library FFhevmSetUp {
         internal
         returns (FFhevm.DebuggerAddresses memory debuggerAddresses)
     {
-        debuggerAddresses = DebuggerAddressesLib.readEnvAddresses();
+        // if (block.chainid != 31337) {
+        //     return DebuggerAddressesLib.expectedAddresses();
+        // }
 
         // Shall we deploy the debugger suite ?
         if (debuggerAddresses.TFHEDebuggerAddress == address(0)) {
+            // deployConfig.ffhevmDebuggerDeployer.addr | privateKey can be null.
+            // it will be set to a default value if needed.
             debuggerAddresses = DebuggerDeployLib.deployFhevmDebugger(
-                deployConfig.ffhevmDebuggerDeployer.addr,
+                deployConfig.ffhevmDebuggerDeployer,
                 (deployConfig.useDeterministicRandomGenerator) ? address(0) : forgeStdVmSafeAdd
             );
+
+            require(deployConfig.ffhevmDebuggerDeployer.addr != address(0), "Missing Debugger deployer address.");
+            require(deployConfig.ffhevmDebuggerDeployer.privateKey != 0, "Missing Debugger deployer private key.");
         }
     }
 

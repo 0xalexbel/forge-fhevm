@@ -2,7 +2,9 @@
 
 pragma solidity ^0.8.24;
 
-interface ITFHEExecutor {
+import {ICoreContract} from "./ICoreContract.sol";
+
+interface ITFHEExecutor is ICoreContract {
     struct ContextUserInputs {
         address aclAddress;
         address userAddress;

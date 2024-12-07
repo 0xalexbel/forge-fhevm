@@ -50,21 +50,31 @@ library GatewayAddressesLib {
         gatewayAddresses.GatewayContractAddress = computeCreateGatewayContractAddress(deployerAddr);
     }
 
-    function readEnvAddresses() internal view returns (FFhevm.GatewayAddresses memory) {
+    // function readEnvAddresses() internal view returns (FFhevm.GatewayAddresses memory) {
+    //     FFhevm.GatewayAddresses memory gatewayAddresses;
+
+    //     gatewayAddresses.GatewayContractAddress = EnvLib.envAddressOr(CONST.GatewayContractAddressEnvName, address(0));
+
+    //     if (gatewayAddresses.GatewayContractAddress == address(0)) {
+    //         return gatewayAddresses;
+    //     }
+
+    //     if (gatewayAddresses.GatewayContractAddress == address(0)) {
+    //         revert("Missing GatewayContract contract address env value");
+    //     } else {
+    //         checkGatewayContractAddress(gatewayAddresses.GatewayContractAddress);
+    //     }
+
+    //     return gatewayAddresses;
+    // }
+
+    function expectedGatewayContractAddress() internal pure returns (address expectedAddr) {
+        expectedAddr = CONST.GATEWAY_CONTRACT_ADDRESS;
+    }
+
+    function expectedAddresses() internal pure returns (FFhevm.GatewayAddresses memory) {
         FFhevm.GatewayAddresses memory gatewayAddresses;
-
-        gatewayAddresses.GatewayContractAddress = EnvLib.envAddressOr(CONST.GatewayContractAddressEnvName, address(0));
-
-        if (gatewayAddresses.GatewayContractAddress == address(0)) {
-            return gatewayAddresses;
-        }
-
-        if (gatewayAddresses.GatewayContractAddress == address(0)) {
-            revert("Missing GatewayContract contract address env value");
-        } else {
-            checkGatewayContractAddress(gatewayAddresses.GatewayContractAddress);
-        }
-
+        gatewayAddresses.GatewayContractAddress = expectedGatewayContractAddress();
         return gatewayAddresses;
     }
 }

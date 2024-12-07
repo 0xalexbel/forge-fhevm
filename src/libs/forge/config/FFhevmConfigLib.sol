@@ -7,19 +7,9 @@ import {FFhevmDebugConfigStruct} from "../../debugger/config/FFhevmDebugConfig.s
 import {Gateway} from "../../fhevm-debug/gateway/lib/Gateway.sol";
 import {Impl} from "../../fhevm-debug/lib/Impl.sol";
 
-import {
-    ACLAddressEnvName,
-    TFHEExecutorAddressEnvName,
-    InputVerifierAddressEnvName,
-    KMSVerifierAddressEnvName,
-    FHEPaymentAddressEnvName
-} from "../deploy/core/constants.sol";
-import {GatewayContractAddressEnvName} from "../deploy/gateway/constants.sol";
-import {TFHEDebuggerAddressEnvName, TFHEDebuggerDBAddressEnvName} from "../deploy/debugger/constants.sol";
 import {CoreAddressesLib} from "../deploy/core/CoreAddressesLib.sol";
 import {GatewayAddressesLib} from "../deploy/gateway/GatewayAddressesLib.sol";
 import {DebuggerAddressesLib} from "../deploy/debugger/DebuggerAddressesLib.sol";
-import {EnvLib} from "../utils/EnvLib.sol";
 import {FFhevmDeployConfigLib} from "./FFhevmDeployConfigLib.sol";
 
 library FFhevmConfigLib {
@@ -52,33 +42,11 @@ library FFhevmConfigLib {
         config.deployConfig = FFhevmDeployConfigLib.initializeWithEnv();
 
         // Core addresses
-        FFhevm.CoreAddresses memory coreAddresses =
-            CoreAddressesLib.computeAddresses(config.deployConfig.fhevmDeployer.addr, config.deployConfig.isCoprocessor);
-
-        config.core.ACLAddress = EnvLib.envAddressOr(ACLAddressEnvName, coreAddresses.ACLAddress);
-        config.core.TFHEExecutorAddress =
-            EnvLib.envAddressOr(TFHEExecutorAddressEnvName, coreAddresses.TFHEExecutorAddress);
-        config.core.FHEPaymentAddress = EnvLib.envAddressOr(FHEPaymentAddressEnvName, coreAddresses.FHEPaymentAddress);
-        config.core.KMSVerifierAddress =
-            EnvLib.envAddressOr(KMSVerifierAddressEnvName, coreAddresses.KMSVerifierAddress);
-        config.core.InputVerifierAddress =
-            EnvLib.envAddressOr(InputVerifierAddressEnvName, coreAddresses.InputVerifierAddress);
-
+        config.core = CoreAddressesLib.computeAddresses(config.deployConfig.fhevmDeployer.addr, config.deployConfig.isCoprocessor);
         // Gateway addresses
-        FFhevm.GatewayAddresses memory gatewayAddresses =
-            GatewayAddressesLib.computeAddresses(config.deployConfig.fhevmDeployer.addr);
-
-        config.gateway.GatewayContractAddress =
-            EnvLib.envAddressOr(GatewayContractAddressEnvName, gatewayAddresses.GatewayContractAddress);
-
+        config.gateway = GatewayAddressesLib.computeAddresses(config.deployConfig.fhevmDeployer.addr);
         // Debugger addresses
-        FFhevm.DebuggerAddresses memory debuggerAddresses =
-            DebuggerAddressesLib.computeAddresses(config.deployConfig.fhevmDeployer.addr);
-
-        config.debugger.TFHEDebuggerAddress =
-            EnvLib.envAddressOr(TFHEDebuggerAddressEnvName, debuggerAddresses.TFHEDebuggerAddress);
-        config.debugger.TFHEDebuggerDBAddress =
-            EnvLib.envAddressOr(TFHEDebuggerDBAddressEnvName, debuggerAddresses.TFHEDebuggerDBAddress);
+        config.debugger = DebuggerAddressesLib.computeAddresses(config.deployConfig.fhevmDeployer.addr);
     }
 
     function setFFhevmConfig(FFhevm.Config memory ffhevmConfig, address forgeVmAddress) internal {

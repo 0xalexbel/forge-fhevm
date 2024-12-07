@@ -8,27 +8,44 @@ import {TFHEDebuggerDB} from "../../../debugger/impl/TFHEDebuggerDB.sol";
 
 import {FFhevm} from "../../../../FFhevm.sol";
 
-import {IForgeStdVmSafe as IVmSafe, forgeStdVmSafeAdd} from "../../interfaces/IForgeStdVm.sol";
+import {
+    IForgeStdVmSafe as IVmSafe,
+    IForgeStdVmUnsafe as IVmUnsafe,
+    forgeStdVmSafeAdd,
+    forgeStdVmUnsafeAdd
+} from "../../interfaces/IForgeStdVm.sol";
 
 import {DebuggerAddressesLib} from "./DebuggerAddressesLib.sol";
 
-import {TFHEDebuggerVersion, TFHEDebuggerDBVersion} from "./constants.sol";
+import {TFHEDebuggerVersion, TFHEDebuggerDBVersion, TFHEDebuggerDeployerDefaultPK} from "./constants.sol";
 
 //import {console} from "forge-std/src/console.sol";
 
 library DebuggerDeployLib {
+    // solhint-disable const-name-snakecase
     IVmSafe private constant vm = IVmSafe(forgeStdVmSafeAdd);
+    // solhint-disable const-name-snakecase
+    IVmUnsafe private constant vmUnsafe = IVmUnsafe(forgeStdVmUnsafeAdd);
 
     /// @notice Deploy a new set of fhevm debugger contracts
     /// @dev Do not call this function inside a startBroadcast/stopBroadcast block
-    function deployFhevmDebugger(address deployerAddr, address randomGeneratorAddress)
+    function deployFhevmDebugger(FFhevm.Signer memory deployer, address randomGeneratorAddress)
         internal
         returns (FFhevm.DebuggerAddresses memory addresses)
     {
-        TFHEDebugger _tfheDebugger = _deployTFHEDebugger(deployerAddr, randomGeneratorAddress);
-        TFHEDebuggerDB _tfheDebuggerDB = _deployTFHEDebuggerDB(deployerAddr, address(_tfheDebugger));
+        bool useNonce = true;
+        if (deployer.privateKey == 0) {
+            useNonce = false;
+            if (deployer.addr == address(0)) {
+                deployer.addr = vm.rememberKey(TFHEDebuggerDeployerDefaultPK);
+                deployer.privateKey = TFHEDebuggerDeployerDefaultPK;
+            }
+        }
 
-        vm.startBroadcast(deployerAddr);
+        TFHEDebugger _tfheDebugger = _deployTFHEDebugger(deployer, randomGeneratorAddress, useNonce);
+        TFHEDebuggerDB _tfheDebuggerDB = _deployTFHEDebuggerDB(deployer, address(_tfheDebugger), useNonce);
+
+        vm.startBroadcast(deployer.addr);
         {
             if (address(_tfheDebugger.db()) != address(_tfheDebuggerDB)) {
                 _tfheDebugger.setDB(_tfheDebuggerDB);
@@ -50,7 +67,10 @@ library DebuggerDeployLib {
     }
 
     /// Deploy a new TFHEDebugger contract using the specified deployer wallet
-    function _deployTFHEDebugger(address deployerAddr, address randomGeneratorAddress) private returns (TFHEDebugger) {
+    function _deployTFHEDebuggerWithNonce(address deployerAddr, address randomGeneratorAddress)
+        private
+        returns (TFHEDebugger)
+    {
         (address expectedImplAddr, address expectedAddr, uint64 expectedImplNonce, uint64 expectedNonce) =
             DebuggerAddressesLib.expectedCreateTFHEDebuggerAddress(deployerAddr);
 
@@ -99,7 +119,7 @@ library DebuggerDeployLib {
 
     /// https://medium.com/coinmonks/upgrading-smart-contracts-the-easy-way-a-tutorial-with-openzeppelin-a4ca35a56308
     /// Deploy a new TFHEDebuggerDB contract using the specified deployer wallet
-    function _deployTFHEDebuggerDB(address deployerAddr, address _tfheDebuggerAddress)
+    function _deployTFHEDebuggerDBWithNonce(address deployerAddr, address _tfheDebuggerAddress)
         private
         returns (TFHEDebuggerDB)
     {
@@ -147,5 +167,62 @@ library DebuggerDeployLib {
         vm.assertEq(_tfheDebuggerDB.owner(), deployerAddr, "deploy TFHEDebuggerDB contract: unexpected owner");
 
         return _tfheDebuggerDB;
+    }
+
+    function _deployTFHEDebugger(FFhevm.Signer memory deployer, address randomGeneratorAddress, bool useNonce)
+        private
+        returns (TFHEDebugger)
+    {
+        return (deployer.privateKey != 0 && useNonce)
+            ? _deployTFHEDebuggerWithNonce(deployer.addr, randomGeneratorAddress)
+            : _deployTFHEDebuggerNoNonce(deployer.addr, randomGeneratorAddress);
+    }
+
+    function _deployTFHEDebuggerDB(FFhevm.Signer memory deployer, address _tfheDebuggerAddress, bool useNonce)
+        private
+        returns (TFHEDebuggerDB)
+    {
+        return (deployer.privateKey != 0 && useNonce)
+            ? _deployTFHEDebuggerDBWithNonce(deployer.addr, _tfheDebuggerAddress)
+            : _deployTFHEDebuggerDBNoNonce(deployer.addr, _tfheDebuggerAddress);
+    }
+
+    function _deployTFHEDebuggerNoNonce(address ownerAddr, address randomGeneratorAddress)
+        private
+        returns (TFHEDebugger)
+    {
+        address expectedAddr = DebuggerAddressesLib.expectedTFHEDebuggerAddress();
+        _deployDebuggerContractAt("TFHEDebugger", "TFHEDebugger.sol", expectedAddr, TFHEDebuggerVersion);
+        TFHEDebugger debugger = TFHEDebugger(expectedAddr);
+        debugger.initialize(ownerAddr, randomGeneratorAddress);
+        return debugger;
+    }
+
+    function _deployTFHEDebuggerDBNoNonce(address ownerAddr, address _tfheDebuggerAddress)
+        private
+        returns (TFHEDebuggerDB)
+    {
+        address expectedAddr = DebuggerAddressesLib.expectedTFHEDebuggerDBAddress();
+        _deployDebuggerContractAt("TFHEDebuggerDB", "TFHEDebuggerDB.sol", expectedAddr, TFHEDebuggerDBVersion);
+        TFHEDebuggerDB debuggerDB = TFHEDebuggerDB(expectedAddr);
+        debuggerDB.initialize(ownerAddr, _tfheDebuggerAddress);
+        return debuggerDB;
+    }
+
+    function _deployDebuggerContractAt(
+        string memory contractName,
+        string memory contractFilename,
+        address expectedAddr,
+        string memory expectedVersion
+    ) private {
+        if (_isVersion(expectedAddr, expectedVersion)) {
+            return;
+        }
+
+        string memory path = string.concat("./out/", contractFilename, "/", contractName, ".json");
+        bytes memory code = vm.getDeployedCode(path);
+
+        vmUnsafe.etch(expectedAddr, code);
+        vm.assertEq(expectedAddr.code, code, "Failed to deploy gateway contract");
     }
 }

@@ -27,4 +27,31 @@ library AddressLib {
         }
         return size > 0;
     }
+
+    function getOwner(address contractAddress) internal view returns (address) {
+        require(contractAddress != address(0), "Null contract address");
+        (bool success, bytes memory returnData) = contractAddress.staticcall(abi.encodeWithSignature("owner()"));
+        if (!success || returnData.length == 0) {
+            return address(0);
+        }
+        return abi.decode(returnData, (address));
+    }
 }
+
+/*
+
+SEPOLIA 
+    Already deployed 
+        ACL
+        EXECT
+        etc.
+        DEBUGGER
+
+    Already deployed 
+        ACL
+        EXECT
+        etc.
+    Not Deployed
+        DEBUGGER
+
+*/

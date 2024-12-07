@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: BSD-3-Clause-Clear
 pragma solidity ^0.8.24;
 
-interface IACL {
+import {ICoreContract} from "./ICoreContract.sol";
+
+interface IACL is ICoreContract {
     function allowTransient(uint256 ciphertext, address account) external;
     function allow(uint256 handle, address account) external;
     function cleanTransientStorage() external;

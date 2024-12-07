@@ -5,6 +5,14 @@ import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.s
 import {console} from "forge-std/src/Console.sol";
 
 import {FFhevm} from "../../../../FFhevm.sol";
+import {AddressLib} from "../../../common/AddressLib.sol";
+
+import {ICoreContract} from "../../../core/interfaces/ICoreContract.sol";
+import {IACL} from "../../../core/interfaces/IACL.sol";
+import {ITFHEExecutor} from "../../../core/interfaces/ITFHEExecutor.sol";
+import {IFHEPayment} from "../../../core/interfaces/IFHEPayment.sol";
+import {IKMSVerifier} from "../../../core/interfaces/IKMSVerifier.sol";
+import {IInputVerifier} from "../../../core/interfaces/IInputVerifier.sol";
 
 import {ACL} from "../../../core/contracts/ACL.sol";
 import {TFHEExecutor} from "../../../core/contracts/TFHEExecutor.sol";
@@ -13,14 +21,20 @@ import {KMSVerifier} from "../../../core/contracts/KMSVerifier.sol";
 import {InputVerifier as InputVerifierNative} from "../../../core/contracts/InputVerifier.native.sol";
 import {InputVerifier as InputVerifierCoprocessor} from "../../../core/contracts/InputVerifier.coprocessor.sol";
 
-import {IForgeStdVmSafe as IVmSafe, forgeStdVmSafeAdd} from "../../interfaces/IForgeStdVm.sol";
+import {
+    IForgeStdVmSafe as IVmSafe,
+    IForgeStdVmUnsafe as IVmUnsafe,
+    forgeStdVmSafeAdd,
+    forgeStdVmUnsafeAdd
+} from "../../interfaces/IForgeStdVm.sol";
 
 import {
     ACLVersion,
     TFHEExecutorVersion,
     KMSVerifierVersion,
     FHEPaymentVersion,
-    InputVerifierVersion
+    InputVerifierVersion,
+    CoreDeployerDefaultPK
 } from "./constants.sol";
 
 import {CoreAddressesLib} from "./CoreAddressesLib.sol";
@@ -28,13 +42,36 @@ import {CoreAddressesLib} from "./CoreAddressesLib.sol";
 library CoreDeployLib {
     // solhint-disable const-name-snakecase
     IVmSafe private constant vm = IVmSafe(forgeStdVmSafeAdd);
+    // solhint-disable const-name-snakecase
+    IVmUnsafe private constant vmUnsafe = IVmUnsafe(forgeStdVmUnsafeAdd);
+
+    function _getArtifactPath(string memory contractName, string memory contractFilename)
+        private
+        pure
+        returns (string memory)
+    {
+        return string.concat(
+            "./node_modules/fhevm-core-contracts/artifacts/contracts/", contractFilename, "/", contractName, ".json"
+        );
+    }
 
     /// @notice Deploy a new set of fhevm core contracts
     /// @dev Do not call this function inside a startBroadcast/stopBroadcast block
-    function deployFhevmCore(address deployerAddr, address coprocessorAccountAddr, address[] memory kmsSignersAddr)
-        internal
-        returns (FFhevm.CoreAddresses memory addresses)
-    {
+    function deployFhevmCore(
+        FFhevm.Signer memory deployer,
+        address coprocessorAccountAddr,
+        address[] memory kmsSignersAddr
+    ) internal returns (FFhevm.CoreAddresses memory addresses) {
+        bool useNonce = true;
+        if (deployer.privateKey == 0) {
+            useNonce = false;
+            if (deployer.addr == address(0)) {
+                IVmSafe.Wallet memory wallet = vm.createWallet(CoreDeployerDefaultPK);
+                deployer.addr = wallet.addr;
+                deployer.privateKey = wallet.privateKey;
+            }
+        }
+
         // Verify coprocAddress
         // coprocessorAdd
 
@@ -44,21 +81,21 @@ library CoreDeployLib {
         // 3. KMSVerfier
         // 4. InputVerifier
         // 5. FHEPayment
-        ACL acl = _deployACL(deployerAddr);
-        TFHEExecutor tfheExecutor = _deployTFHEExecutor(deployerAddr);
-        KMSVerifier kmsVerifier = _deployKMSVerifier(deployerAddr);
+        IACL acl = _deployACL(deployer, useNonce);
+        ITFHEExecutor tfheExecutor = _deployTFHEExecutor(deployer, useNonce);
+        IKMSVerifier kmsVerifier = _deployKMSVerifier(deployer, useNonce);
 
         if (coprocessorAccountAddr != address(0)) {
             CoreAddressesLib.checkCoprocessorAddress(coprocessorAccountAddr);
 
-            addresses.InputVerifierCoprocessorAddress = address(_deployInputVerifierCoprocessor(deployerAddr));
+            addresses.InputVerifierCoprocessorAddress = _deployInputVerifierCoprocessor(deployer, useNonce);
             addresses.InputVerifierAddress = addresses.InputVerifierCoprocessorAddress;
         } else {
-            addresses.InputVerifierNativeAddress = address(_deployInputVerifierNative(deployerAddr));
+            addresses.InputVerifierNativeAddress = _deployInputVerifierNative(deployer, useNonce);
             addresses.InputVerifierAddress = addresses.InputVerifierNativeAddress;
         }
 
-        FHEPayment fhePayment = _deployFHEPayment(deployerAddr);
+        IFHEPayment fhePayment = _deployFHEPayment(deployer, useNonce);
 
         addresses.ACLAddress = address(acl);
         addresses.TFHEExecutorAddress = address(tfheExecutor);
@@ -68,7 +105,7 @@ library CoreDeployLib {
         // Add kms signers to the KMSVerifier
         for (uint256 i = 0; i < kmsSignersAddr.length; ++i) {
             if (!kmsVerifier.isSigner(kmsSignersAddr[i])) {
-                vm.startBroadcast(deployerAddr);
+                vm.startBroadcast(deployer.addr);
                 {
                     kmsVerifier.addSigner(kmsSignersAddr[i]);
                 }
@@ -92,12 +129,12 @@ library CoreDeployLib {
     }
 
     /// Deploy a new ACL contract using the specified deployer wallet
-    function _deployACL(address deployerAddr) private returns (ACL) {
+    function _deployACLWithNonce(address deployerAddr) private returns (IACL) {
         (address expectedImplAddr, address expectedAddr, uint64 expectedImplNonce, uint64 expectedNonce) =
             CoreAddressesLib.expectedCreateACLAddress(deployerAddr);
 
         if (_isVersion(expectedAddr, ACLVersion)) {
-            return ACL(expectedAddr);
+            return IACL(expectedAddr);
         }
 
         // Verify nonce
@@ -124,21 +161,20 @@ library CoreDeployLib {
         // Verify nonce
         vm.assertEq(vm.getNonce(deployerAddr), expectedNonce + 1, "deploy ACL contract proxy: unexpected final nonce");
 
-        ACL _acl = ACL(address(proxy));
+        IACL _acl = IACL(address(proxy));
 
         // Verify owner
-        vm.assertEq(_acl.owner(), deployerAddr, "deploy ACL contract: unexpected owner");
+        vm.assertEq(AddressLib.getOwner(address(_acl)), deployerAddr, "deploy ACL contract: unexpected owner");
 
         return _acl;
     }
 
-    /// Deploy a new TFHEExecutor contract using the specified deployer wallet
-    function _deployTFHEExecutor(address deployerAddr) private returns (TFHEExecutor) {
+    function _deployTFHEExecutorWithNonce(address deployerAddr) private returns (ITFHEExecutor) {
         (address expectedImplAddr, address expectedAddr, uint64 expectedImplNonce, uint64 expectedNonce) =
             CoreAddressesLib.expectedCreateTFHEExecutorAddress(deployerAddr);
 
         if (_isVersion(expectedAddr, TFHEExecutorVersion)) {
-            return TFHEExecutor(expectedAddr);
+            return ITFHEExecutor(expectedAddr);
         }
 
         // Verify nonce
@@ -171,18 +207,17 @@ library CoreDeployLib {
             vm.getNonce(deployerAddr), expectedNonce + 1, "deploy TFHEExecutor contract proxy: unexpected final nonce"
         );
 
-        TFHEExecutor _tfheExecutor = TFHEExecutor(address(proxy));
+        ITFHEExecutor _tfheExecutor = ITFHEExecutor(address(proxy));
 
         return _tfheExecutor;
     }
 
-    /// Deploy a new KMSVerifier contract using the specified deployer wallet
-    function _deployKMSVerifier(address deployerAddr) private returns (KMSVerifier) {
+    function _deployKMSVerifierWithNonce(address deployerAddr) private returns (IKMSVerifier) {
         (address expectedImplAddr, address expectedAddr, uint64 expectedImplNonce, uint64 expectedNonce) =
             CoreAddressesLib.expectedCreateKMSVerifierAddress(deployerAddr);
 
         if (_isVersion(expectedAddr, KMSVerifierVersion)) {
-            return KMSVerifier(expectedAddr);
+            return IKMSVerifier(expectedAddr);
         }
 
         // Verify nonce
@@ -213,18 +248,17 @@ library CoreDeployLib {
             vm.getNonce(deployerAddr), expectedNonce + 1, "deploy KMSVerifier contract proxy: unexpected final nonce"
         );
 
-        KMSVerifier _kmsVerifier = KMSVerifier(address(proxy));
+        IKMSVerifier _kmsVerifier = IKMSVerifier(address(proxy));
 
         return _kmsVerifier;
     }
 
-    /// Deploy a new FHEPayment contract using the specified deployer wallet
-    function _deployFHEPayment(address deployerAddr) private returns (FHEPayment) {
+    function _deployFHEPaymentWithNonce(address deployerAddr) private returns (IFHEPayment) {
         (address expectedImplAddr, address expectedAddr, uint64 expectedImplNonce, uint64 expectedNonce) =
             CoreAddressesLib.expectedCreateFHEPaymentAddress(deployerAddr);
 
         if (_isVersion(expectedAddr, FHEPaymentVersion)) {
-            return FHEPayment(expectedAddr);
+            return IFHEPayment(expectedAddr);
         }
 
         // Verify nonce
@@ -255,14 +289,12 @@ library CoreDeployLib {
             vm.getNonce(deployerAddr), expectedNonce + 1, "deploy FHEPayment contract proxy: unexpected final nonce"
         );
 
-        FHEPayment _fhePayment = FHEPayment(address(proxy));
+        IFHEPayment _fhePayment = IFHEPayment(address(proxy));
 
         return _fhePayment;
     }
 
-    /// Deploy a new InputVerifier native contract using the specified deployer wallet
-    /// Native verifiers are defined in 'InputVerifier.native.sol'
-    function _deployInputVerifierNative(address deployerAddr) private returns (address) {
+    function _deployInputVerifierNativeWithNonce(address deployerAddr) private returns (address) {
         (address expectedImplAddr, address expectedAddr, uint64 expectedImplNonce, uint64 expectedNonce) =
             CoreAddressesLib.expectedCreateInputVerifierAddress(deployerAddr);
 
@@ -313,9 +345,7 @@ library CoreDeployLib {
         return address(inputVerifier);
     }
 
-    /// Deploy a new InputVerifier coprocessor contract using the specified deployer wallet
-    /// Coprocessor verifiers are defined in 'InputVerifier.coprocessor.sol'
-    function _deployInputVerifierCoprocessor(address deployerAddr) private returns (address) {
+    function _deployInputVerifierCoprocessorWithNonce(address deployerAddr) private returns (address) {
         (address expectedImplAddr, address expectedAddr, uint64 expectedImplNonce, uint64 expectedNonce) =
             CoreAddressesLib.expectedCreateInputVerifierAddress(deployerAddr);
 
@@ -364,5 +394,102 @@ library CoreDeployLib {
         InputVerifierCoprocessor inputVerifier = InputVerifierCoprocessor(address(proxy));
 
         return address(inputVerifier);
+    }
+
+    function _deployACL(FFhevm.Signer memory deployer, bool useNonce) private returns (IACL) {
+        return (deployer.privateKey != 0 && useNonce)
+            ? _deployACLWithNonce(deployer.addr)
+            : _deployACLNoNonce(deployer.addr);
+    }
+
+    function _deployTFHEExecutor(FFhevm.Signer memory deployer, bool useNonce) private returns (ITFHEExecutor) {
+        return (deployer.privateKey != 0 && useNonce)
+            ? _deployTFHEExecutorWithNonce(deployer.addr)
+            : _deployTFHEExecutorNoNonce(deployer.addr);
+    }
+
+    function _deployKMSVerifier(FFhevm.Signer memory deployer, bool useNonce) private returns (IKMSVerifier) {
+        return (deployer.privateKey != 0 && useNonce)
+            ? _deployKMSVerifierWithNonce(deployer.addr)
+            : _deployKMSVerifierNoNonce(deployer.addr);
+    }
+
+    function _deployFHEPayment(FFhevm.Signer memory deployer, bool useNonce) private returns (IFHEPayment) {
+        return (deployer.privateKey != 0 && useNonce)
+            ? _deployFHEPaymentWithNonce(deployer.addr)
+            : _deployFHEPaymentNoNonce(deployer.addr);
+    }
+
+    function _deployInputVerifierNative(FFhevm.Signer memory deployer, bool useNonce) private returns (address) {
+        return (deployer.privateKey != 0 && useNonce)
+            ? _deployInputVerifierNativeWithNonce(deployer.addr)
+            : _deployInputVerifierNativeNoNonce(deployer.addr);
+    }
+
+    function _deployInputVerifierCoprocessor(FFhevm.Signer memory deployer, bool useNonce) private returns (address) {
+        return (deployer.privateKey != 0 && useNonce)
+            ? _deployInputVerifierCoprocessorWithNonce(deployer.addr)
+            : _deployInputVerifierCoprocessorNoNonce(deployer.addr);
+    }
+
+    function _deployACLNoNonce(address ownerAddr) private returns (IACL) {
+        address expectedAddr = CoreAddressesLib.expectedACLAddress();
+        _deployCoreContractAt("ACL", "ACL.sol", expectedAddr, ownerAddr, ACLVersion);
+        return IACL(expectedAddr);
+    }
+
+    function _deployTFHEExecutorNoNonce(address ownerAddr) private returns (ITFHEExecutor) {
+        address expectedAddr = CoreAddressesLib.expectedTFHEExecutorAddress();
+        _deployCoreContractAt("TFHEExecutor", "TFHEExecutor.sol", expectedAddr, ownerAddr, TFHEExecutorVersion);
+        return ITFHEExecutor(expectedAddr);
+    }
+
+    function _deployFHEPaymentNoNonce(address ownerAddr) private returns (IFHEPayment) {
+        address expectedAddr = CoreAddressesLib.expectedFHEPaymentAddress();
+        _deployCoreContractAt("FHEPayment", "FHEPayment.sol", expectedAddr, ownerAddr, FHEPaymentVersion);
+        return IFHEPayment(expectedAddr);
+    }
+
+    function _deployKMSVerifierNoNonce(address ownerAddr) private returns (IKMSVerifier) {
+        address expectedAddr = CoreAddressesLib.expectedKMSVerifierAddress();
+        _deployCoreContractAt("KMSVerifier", "KMSVerifier.sol", expectedAddr, ownerAddr, KMSVerifierVersion);
+        return IKMSVerifier(expectedAddr);
+    }
+
+    function _deployInputVerifierCoprocessorNoNonce(address ownerAddr) private returns (address) {
+        address expectedAddr = CoreAddressesLib.expectedInputVerifierAddress();
+        _deployCoreContractAt(
+            "InputVerifier", "InputVerifier.coprocessor.sol", expectedAddr, ownerAddr, InputVerifierVersion
+        );
+        return expectedAddr;
+    }
+
+    function _deployInputVerifierNativeNoNonce(address ownerAddr) private returns (address) {
+        address expectedAddr = CoreAddressesLib.expectedInputVerifierAddress();
+        _deployCoreContractAt(
+            "InputVerifier", "InputVerifier.native.sol", expectedAddr, ownerAddr, InputVerifierVersion
+        );
+        return expectedAddr;
+    }
+
+    function _deployCoreContractAt(
+        string memory contractName,
+        string memory contractFilename,
+        address expectedAddr,
+        address ownerAddr,
+        string memory expectedVersion
+    ) private {
+        if (_isVersion(expectedAddr, expectedVersion)) {
+            return;
+        }
+
+        string memory path = _getArtifactPath(contractName, contractFilename);
+        bytes memory code = vm.getDeployedCode(path);
+
+        vmUnsafe.etch(expectedAddr, code);
+        vm.assertEq(expectedAddr.code, code, "Failed to deploy core contract");
+
+        ICoreContract coreContract = ICoreContract(expectedAddr);
+        coreContract.initialize(ownerAddr);
     }
 }

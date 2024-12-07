@@ -36,8 +36,7 @@ interface IForgeStdVmSafe {
     function writeFile(string calldata path, string calldata data) external;
     function computeCreateAddress(address deployer, uint256 nonce) external pure returns (address);
     function rpc(string calldata method, string calldata params) external returns (bytes memory data);
-    function etch(address target, bytes calldata newRuntimeBytecode) external;
-    function getCode(string calldata artifactPath) external view returns (bytes memory creationBytecode);
+    function getDeployedCode(string calldata artifactPath) external view returns (bytes memory runtimeBytecode);
 
     // ======== Testing ========
 
@@ -46,6 +45,7 @@ interface IForgeStdVmSafe {
     function assertNotEq(uint256 left, uint256 right, string calldata error) external pure;
     function assertEq(address left, address right, string calldata error) external pure;
     function assertEq(uint256 left, uint256 right, string calldata error) external pure;
+    function assertEq(bytes calldata left, bytes calldata right, string calldata error) external pure;
 
     // ======== Gas metering ========
 
@@ -65,5 +65,6 @@ interface IForgeStdVmUnsafe is IForgeStdVmSafe {
     function readCallers() external returns (CallerMode callerMode, address msgSender, address txOrigin);
     function startPrank(address msgSender, address txOrigin) external;
     function stopPrank() external;
-    function allowCheatcodes(address account) external;
+    //function allowCheatcodes(address account) external;
+    function etch(address target, bytes calldata newRuntimeBytecode) external;
 }
