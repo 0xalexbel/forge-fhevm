@@ -163,7 +163,7 @@ library FhevmDebug {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      * - If the user address and the contract address are equal
-     * - If the handle is the result of any prior arithmetically invalid operation (division by zero, overfow, underflow).
+     * - If the handle is the result of any prior arithmetically invalid operation (division by zero/overfow/underflow)
      */
     function decryptBoolStrict(ebool value, address contractAddress, address userAddress)
         internal
@@ -209,7 +209,7 @@ library FhevmDebug {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      * - If the user address and the contract address are equal
-     * - If the handle is the result of any prior arithmetically invalid operation (division by zero, overfow, underflow).
+     * - If the handle is the result of any prior arithmetically invalid operation (division by zero/overfow/underflow)
      */
     function decryptU4Strict(euint4 value, address contractAddress, address userAddress)
         internal
@@ -255,7 +255,7 @@ library FhevmDebug {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      * - If the user address and the contract address are equal
-     * - If the handle is the result of any prior arithmetically invalid operation (division by zero, overfow, underflow).
+     * - If the handle is the result of any prior arithmetically invalid operation (division by zero/overfow/underflow)
      */
     function decryptU8Strict(euint8 value, address contractAddress, address userAddress)
         internal
@@ -301,7 +301,7 @@ library FhevmDebug {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      * - If the user address and the contract address are equal
-     * - If the handle is the result of any prior arithmetically invalid operation (division by zero, overfow, underflow).
+     * - If the handle is the result of any prior arithmetically invalid operation (division by zero/overfow/underflow)
      */
     function decryptU16Strict(euint16 value, address contractAddress, address userAddress)
         internal
@@ -347,7 +347,7 @@ library FhevmDebug {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      * - If the user address and the contract address are equal
-     * - If the handle is the result of any prior arithmetically invalid operation (division by zero, overfow, underflow).
+     * - If the handle is the result of any prior arithmetically invalid operation (division by zero/overfow/underflow)
      */
     function decryptU32Strict(euint32 value, address contractAddress, address userAddress)
         internal
@@ -393,7 +393,7 @@ library FhevmDebug {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      * - If the user address and the contract address are equal
-     * - If the handle is the result of any prior arithmetically invalid operation (division by zero, overfow, underflow).
+     * - If the handle is the result of any prior arithmetically invalid operation (division by zero/overfow/underflow)
      */
     function decryptU64Strict(euint64 value, address contractAddress, address userAddress)
         internal
@@ -439,7 +439,7 @@ library FhevmDebug {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      * - If the user address and the contract address are equal
-     * - If the handle is the result of any prior arithmetically invalid operation (division by zero, overfow, underflow).
+     * - If the handle is the result of any prior arithmetically invalid operation (division by zero/overfow/underflow)
      */
     function decryptU128Strict(euint128 value, address contractAddress, address userAddress)
         internal
@@ -485,7 +485,7 @@ library FhevmDebug {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      * - If the user address and the contract address are equal
-     * - If the handle is the result of any prior arithmetically invalid operation (division by zero, overfow, underflow).
+     * - If the handle is the result of any prior arithmetically invalid operation (division by zero/overfow/underflow)
      */
     function decryptAddressStrict(eaddress value, address contractAddress, address userAddress)
         internal
@@ -531,7 +531,7 @@ library FhevmDebug {
      * - If the contact address does not have the permission to decrypt the value
      * - If the user address does not have the permission to decrypt the value
      * - If the user address and the contract address are equal
-     * - If the handle is the result of any prior arithmetically invalid operation (division by zero, overfow, underflow).
+     * - If the handle is the result of any prior arithmetically invalid operation (division by zero/overfow/underflow)
      */
     function decryptU256Strict(euint256 value, address contractAddress, address userAddress)
         internal
@@ -708,8 +708,8 @@ library FhevmDebug {
     /// Check any arithmetic error in all subsequent fhevm operations.
     /// if mode = 'ArithmeticCheckMode.Operands', test only applies to operands, for example c = a + b,
     /// both a and b are checked, c is ignored.
-    /// if mode = 'ArithmeticCheckMode.OperandsAndResult', test applies to both operands and result, for example c = a + b,
-    /// a, b and c are all checked.
+    /// if mode = 'ArithmeticCheckMode.OperandsAndResult', test applies to both operands and result, 
+    /// for example if c = a + b: a, b and c are all checked.
     function startArithmeticCheck(ArithmeticCheckMode mode) internal {
         __dbg().startArithmeticCheck(IFhevmDebugger.ArithmeticCheckMode(uint8(mode)));
     }
