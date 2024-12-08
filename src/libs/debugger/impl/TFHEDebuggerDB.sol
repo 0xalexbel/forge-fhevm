@@ -187,22 +187,9 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function __checkClearBytesOverflow(bytes memory clearBytes, uint8 typePt) private pure {
         uint256 maxLen = TFHEHandle.getTypePackedBytesLen(typePt);
-        if (clearBytes.length >= maxLen) {
-            revert ITFHEDebuggerDB.ClearBytesOverflow(typePt);
+        if (clearBytes.length > maxLen) {
+            revert ITFHEDebuggerDB.ClearBytesOverflow(typePt, clearBytes.length, maxLen);
         }
-        // if (typePt == TFHEHandle.ebytes64_t) {
-        //     if (clearBytes.length >= 64) {
-        //         revert ITFHEDebuggerDB.ClearBytesOverflow(typePt);
-        //     }
-        // } else if (typePt == TFHEHandle.ebytes128_t) {
-        //     if (clearBytes.length >= 128) {
-        //         revert ITFHEDebuggerDB.ClearBytesOverflow(typePt);
-        //     }
-        // } else if (typePt == TFHEHandle.ebytes256_t) {
-        //     if (clearBytes.length >= 256) {
-        //         revert ITFHEDebuggerDB.ClearBytesOverflow(typePt);
-        //     }
-        // }
     }
 
     function insertEncryptedInput(uint256 handle, uint256 valuePt, uint8 typePt) external {
@@ -256,11 +243,9 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
     }
 
     function __checkAndInsertBytes(uint256 handle, bytes calldata valuePt, uint8 typePt, bool trivial) private {
-        //TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
         TFHEHandle.checkIsBytes(handle, typePt);
         __checkClearBytesOverflow(valuePt, typePt);
 
-        //ITFHEDebuggerDB.Record memory existingRecord = $.db.records[handle];
         ITFHEDebuggerDB.Record storage existingRecord = _getRecordStorage(handle);
         if (existingRecord.meta.valueType != 0) {
             if (existingRecord.meta.trivial != trivial) {
@@ -307,18 +292,12 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function exist(uint256 handle) external view returns (bool) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         return (r.meta.valueType != 0);
     }
 
     function isTrivial(uint256 handle) external view returns (bool) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         if (r.meta.valueType == 0) {
             revert ITFHEDebuggerDB.HandleDoesNotExist(handle);
@@ -328,9 +307,6 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function isArithmeticallyValid(uint256 handle) external view returns (bool) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         if (r.meta.valueType == 0) {
             revert ITFHEDebuggerDB.HandleDoesNotExist(handle);
@@ -341,9 +317,6 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getNumAsBytes32(uint256 handle) external view returns (bytes32) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
 
         if (r.meta.valueType == 0) {
@@ -357,9 +330,6 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getBool(uint256 handle) external view returns (bool) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         __checkValueTypeEq(handle, r.meta.valueType, TFHEHandle.ebool_t);
         return uint8(uint256(__bytesToBytes32(r.value, 0))) != 0;
@@ -367,9 +337,6 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getU4(uint256 handle) external view returns (uint8) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         __checkValueTypeEq(handle, r.meta.valueType, TFHEHandle.euint4_t);
         return uint8(uint256(__bytesToBytes32(r.value, 0)));
@@ -377,9 +344,6 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getU8(uint256 handle) external view returns (uint8) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         __checkValueTypeEq(handle, r.meta.valueType, TFHEHandle.euint8_t);
         return uint8(uint256(__bytesToBytes32(r.value, 0)));
@@ -387,9 +351,6 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getU16(uint256 handle) external view returns (uint16) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         __checkValueTypeEq(handle, r.meta.valueType, TFHEHandle.euint16_t);
         return uint16(uint256(__bytesToBytes32(r.value, 0)));
@@ -397,9 +358,6 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getU32(uint256 handle) external view returns (uint32) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         __checkValueTypeEq(handle, r.meta.valueType, TFHEHandle.euint32_t);
         return uint32(uint256(__bytesToBytes32(r.value, 0)));
@@ -407,9 +365,6 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getU64(uint256 handle) external view returns (uint64) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         __checkValueTypeEq(handle, r.meta.valueType, TFHEHandle.euint64_t);
         return uint64(uint256(__bytesToBytes32(r.value, 0)));
@@ -417,9 +372,6 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getU128(uint256 handle) external view returns (uint128) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         __checkValueTypeEq(handle, r.meta.valueType, TFHEHandle.euint128_t);
         return uint128(uint256(__bytesToBytes32(r.value, 0)));
@@ -427,9 +379,6 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getAddress(uint256 handle) external view returns (address) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         __checkValueTypeEq(handle, r.meta.valueType, TFHEHandle.euint160_t);
         return address(uint160(uint256(__bytesToBytes32(r.value, 0))));
@@ -437,9 +386,6 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getU256(uint256 handle) external view returns (uint256) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         __checkValueTypeEq(handle, r.meta.valueType, TFHEHandle.euint256_t);
         return uint256(__bytesToBytes32(r.value, 0));
@@ -447,12 +393,9 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getBytes64(uint256 handle) external view returns (bytes memory) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         __checkValueTypeEq(handle, r.meta.valueType, TFHEHandle.ebytes64_t);
-        if (r.value.length >= 64) {
+        if (r.value.length > 64) {
             // should never happen
             revert ITFHEDebuggerDB.InternalError();
         }
@@ -461,12 +404,9 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getBytes128(uint256 handle) external view returns (bytes memory) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         __checkValueTypeEq(handle, r.meta.valueType, TFHEHandle.ebytes128_t);
-        if (r.value.length >= 128) {
+        if (r.value.length > 128) {
             // should never happen
             revert ITFHEDebuggerDB.InternalError();
         }
@@ -475,12 +415,9 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getBytes256(uint256 handle) external view returns (bytes memory) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         __checkValueTypeEq(handle, r.meta.valueType, TFHEHandle.ebytes256_t);
-        if (r.value.length >= 256) {
+        if (r.value.length > 256) {
             // should never happen
             revert ITFHEDebuggerDB.InternalError();
         }
@@ -489,9 +426,6 @@ contract TFHEDebuggerDB is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEDebugg
 
     function getBytes(uint256 handle) external view returns (bytes memory) {
         TFHEHandle.checkNotNull(handle);
-
-        // TFHEDebuggerDBStorage storage $ = _getTFHEDebuggerDBStorage();
-        // ITFHEDebuggerDB.Record memory r = $.db.records[handle];
         ITFHEDebuggerDB.Record storage r = _getRecordStorage(handle);
         if (r.meta.valueType == 0) {
             revert ITFHEDebuggerDB.HandleDoesNotExist(handle);

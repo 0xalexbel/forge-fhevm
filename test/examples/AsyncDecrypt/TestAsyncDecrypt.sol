@@ -17,14 +17,16 @@ import {
     ebytes128,
     ebytes256,
     einput
-} from "../../../src/libs/fhevm-debug/lib/TFHE.sol";
-import {GatewayCaller} from "../../../src/libs/fhevm-debug/gateway/GatewayCaller.sol";
-import {Gateway} from "../../../src/libs/fhevm-debug/gateway/lib/Gateway.sol";
+} from "fhevm/lib/TFHE.sol";
+import {SepoliaZamaFHEVMConfig} from "fhevm/config/ZamaFHEVMConfig.sol";
+import {SepoliaZamaGatewayConfig} from "fhevm/config/ZamaGatewayConfig.sol";
+import {GatewayCaller} from "fhevm/gateway/GatewayCaller.sol";
+import {Gateway} from "fhevm/gateway/lib/Gateway.sol";
 
 //import {console} from "forge-std/src/console.sol";
 
 /// @notice Contract for testing asynchronous decryption using the Gateway
-abstract contract TestAsyncDecrypt is GatewayCaller {
+contract TestAsyncDecrypt is SepoliaZamaFHEVMConfig, SepoliaZamaGatewayConfig, GatewayCaller {
     /// @dev Encrypted state variables
     ebool xBool;
     euint4 xUint4;

@@ -243,6 +243,7 @@ library CoreAddressesLib {
     function expectedKMSVerifierAddress() internal pure returns (address expectedAddr) {
         expectedAddr = CONST.KMS_VERIFIER_ADDRESS;
     }
+
     function expectedInputVerifierAddress() internal pure returns (address expectedAddr) {
         expectedAddr = CONST.INPUT_VERIFIER_ADDRESS;
     }

@@ -15,6 +15,8 @@ import {GatewaySigner, GatewaySignerLib} from "../gateway/GatewaySigner.sol";
 import {IFFhevmGateway} from "../interfaces/IFFhevmGateway.sol";
 import {FFhevmPrecompile} from "./FFhevmPrecompile.sol";
 
+import {console} from "forge-std/src/console.sol";
+
 contract FFhevmGatewayPrecompile is FFhevmPrecompile, IFFhevmGateway {
     uint256 private _requestCount;
 
@@ -27,13 +29,14 @@ contract FFhevmGatewayPrecompile is FFhevmPrecompile, IFFhevmGateway {
 
     function fulfillRequests() external noGasMetering {
         FFhevm.Config memory config = _config();
-        IFhevmDebuggerDB debuggerDB = IFhevmDebuggerDB(config.debugger.TFHEDebuggerDBAddress);
         IGatewayContract gc = IGatewayContract(config.gateway.GatewayContractAddress);
 
         uint256 counter = gc.getCounter();
         if (counter == _requestCount) {
             return;
         }
+
+        IFhevmDebuggerDB debuggerDB = IFhevmDebuggerDB(config.debugger.TFHEDebuggerDBAddress);
 
         GatewaySigner memory signer = GatewaySigner({
             kmsSigners: config.deployConfig.kmsSigners,
@@ -47,25 +50,27 @@ contract FFhevmGatewayPrecompile is FFhevmPrecompile, IFFhevmGateway {
 
             bytes memory decryptedResult;
             bytes memory decryptedResultOffsets;
-            uint256 offset = 0;
+            uint256 offset = (passSignaturesToCaller) ? (cts.length + 2) * 32 : (cts.length + 1) * 32;
+
             for (uint8 j = 0; j < cts.length; ++j) {
                 if (TFHEHandle.is256Bits(cts[j])) {
                     decryptedResult = bytes.concat(decryptedResult, debuggerDB.getNumAsBytes32(cts[j]));
                 } else {
-                    uint256 len = TFHEHandle.getPackedBytesLen(cts[j]);
-                    decryptedResult = bytes.concat(decryptedResult, bytes32((cts.length + 2) * 32 + offset));
+                    bytes memory ctsBytes = debuggerDB.getBytes(cts[j]);
+                    uint256 ctsBytesLenAligned32 = 32*((ctsBytes.length + 31)/32);
+                    // 1 + cts.length + 1 = numArgs (requestID + number of other args + signatures)
+                    decryptedResult = bytes.concat(decryptedResult, bytes32(offset));
                     decryptedResultOffsets =
-                        bytes.concat(decryptedResultOffsets, BytesLib.padLeft(debuggerDB.getBytes(cts[j]), len));
-                    offset += len;
+                        bytes.concat(decryptedResultOffsets, bytes32(ctsBytes.length), ctsBytes, new bytes(ctsBytesLenAligned32 - ctsBytes.length));
+                    offset += ctsBytesLenAligned32 + 32;
                 }
             }
 
-            decryptedResult = bytes.concat(decryptedResult, decryptedResultOffsets);
-
             if (passSignaturesToCaller) {
-                // Add room for future signatures array
-                decryptedResult = bytes.concat(decryptedResult, bytes32(uint256((cts.length + 2) * 32)));
+                decryptedResult = bytes.concat(decryptedResult, bytes32(offset));
             }
+
+            decryptedResult = bytes.concat(decryptedResult, decryptedResultOffsets);
 
             bytes[] memory signatures = signer.kmsSign(cts, decryptedResult);
 

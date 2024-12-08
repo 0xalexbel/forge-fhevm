@@ -139,13 +139,11 @@ library GatewayDeployLib {
             return;
         }
 
-        /// 
+        ///
         /// !! WARNING !! use the modified version of GatewayContract.sol located in forge artifacts.
         /// !! DO NOT DEPLOY !! fhevm-core-contracts/gateway/GatewayContract.sol
         ///
-        string memory path = string.concat(
-            "./out/", contractFilename, "/", contractName, ".json"
-        );
+        string memory path = string.concat("./out/", contractFilename, "/", contractName, ".json");
         bytes memory code = vm.getDeployedCode(path);
 
         vmUnsafe.etch(expectedAddr, code);

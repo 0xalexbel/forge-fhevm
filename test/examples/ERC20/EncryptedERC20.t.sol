@@ -10,10 +10,10 @@ import {FhevmDebug} from "../../../src/FhevmDebug.sol";
 import {FFhevm, EncryptedInput} from "../../../src/FFhevm.sol";
 
 import {Signers} from "../Signers.sol";
-import {EncryptedERC20Debug} from "./EncryptedERC20Debug.sol";
+import {EncryptedERC20} from "./EncryptedERC20.sol";
 
 contract EncryptedERC20Test is Test {
-    EncryptedERC20Debug erc20;
+    EncryptedERC20 erc20;
     Signers signers;
 
     function setUp() public {
@@ -23,7 +23,7 @@ contract EncryptedERC20Test is Test {
         signers.setUpWallets();
 
         vm.broadcast(signers.alice());
-        erc20 = new EncryptedERC20Debug("Naraggara", "NARA");
+        erc20 = new EncryptedERC20("Naraggara", "NARA");
     }
 
     function test_should_mint_contract() public {

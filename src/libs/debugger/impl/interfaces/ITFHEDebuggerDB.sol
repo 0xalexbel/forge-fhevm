@@ -8,7 +8,7 @@ interface ITFHEDebuggerDB is IFhevmDebuggerDB {
     error HandleAlreadyExist(uint256 handle);
     error HandleDoesNotExist(uint256 handle);
     error ClearNumericOverflow(uint256 clearValue, uint8 typePt);
-    error ClearBytesOverflow(uint8 typePt);
+    error ClearBytesOverflow(uint8 typePt, uint256 len, uint256 maxLen);
     error InternalError();
 
     struct Set {

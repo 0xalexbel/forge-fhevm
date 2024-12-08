@@ -42,7 +42,8 @@ library FFhevmConfigLib {
         config.deployConfig = FFhevmDeployConfigLib.initializeWithEnv();
 
         // Core addresses
-        config.core = CoreAddressesLib.computeAddresses(config.deployConfig.fhevmDeployer.addr, config.deployConfig.isCoprocessor);
+        config.core =
+            CoreAddressesLib.computeAddresses(config.deployConfig.fhevmDeployer.addr, config.deployConfig.isCoprocessor);
         // Gateway addresses
         config.gateway = GatewayAddressesLib.computeAddresses(config.deployConfig.fhevmDeployer.addr);
         // Debugger addresses
