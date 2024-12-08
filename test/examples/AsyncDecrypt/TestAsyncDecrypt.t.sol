@@ -231,9 +231,9 @@ contract TestAsyncDecryptTest is Test {
     }
 
     function test_async_decrypt_ebytes64_non_trivial() public {
-        bytes memory aBytes64 = TFHE.padToBytes64(abi.encodePacked(
-            hex"1da9da96e0fd8fe4f9ae108c5d9149e0f24c097f9a7af0c362be6e44728601017b2f"
-        ));
+        bytes memory aBytes64 = TFHE.padToBytes64(
+            abi.encodePacked(hex"1da9da96e0fd8fe4f9ae108c5d9149e0f24c097f9a7af0c362be6e44728601017b2f")
+        );
         vm.assertEq(aBytes64.length, 64);
 
         EncryptedInput memory inputAlice = FFhevm.createEncryptedInput(address(theContract), signers.aliceAddr());
@@ -250,9 +250,11 @@ contract TestAsyncDecryptTest is Test {
     }
 
     function test_async_decrypt_ebytes128_trivial() public {
-        bytes memory aBytes128 = TFHE.padToBytes128(abi.encodePacked(
-            hex"8701d11594415047dfac2d9cb87e6631df5a735a2f364fba1511fa7b812dfad2972b809b80ff25ec19591a598081af357cba384cf5aa8e085678ff70bc55faee"
-        ));
+        bytes memory aBytes128 = TFHE.padToBytes128(
+            abi.encodePacked(
+                hex"8701d11594415047dfac2d9cb87e6631df5a735a2f364fba1511fa7b812dfad2972b809b80ff25ec19591a598081af357cba384cf5aa8e085678ff70bc55faee"
+            )
+        );
         vm.assertEq(aBytes128.length, 128);
 
         vm.startBroadcast(signers.carol());
@@ -265,9 +267,11 @@ contract TestAsyncDecryptTest is Test {
     }
 
     function test_async_decrypt_ebytes128_non_trivial() public {
-        bytes memory aBytes128 = TFHE.padToBytes128(abi.encodePacked(
-            hex"8701d11594415047dfac2d9cb87e6631df5a735a2f364fba1511fa7b812dfad2972b809b80ff25ec19591a598081af357cba384cf5aa8e085678ff70bc55faee"
-        ));
+        bytes memory aBytes128 = TFHE.padToBytes128(
+            abi.encodePacked(
+                hex"8701d11594415047dfac2d9cb87e6631df5a735a2f364fba1511fa7b812dfad2972b809b80ff25ec19591a598081af357cba384cf5aa8e085678ff70bc55faee"
+            )
+        );
         vm.assertEq(aBytes128.length, 128);
 
         EncryptedInput memory inputAlice = FFhevm.createEncryptedInput(address(theContract), signers.aliceAddr());
@@ -284,9 +288,7 @@ contract TestAsyncDecryptTest is Test {
     }
 
     function test_async_decrypt_ebytes256_trivial() public {
-        bytes memory aBytes256 = TFHE.padToBytes256(abi.encodePacked(
-            hex"78685689"
-        ));
+        bytes memory aBytes256 = TFHE.padToBytes256(abi.encodePacked(hex"78685689"));
         vm.assertEq(aBytes256.length, 256);
 
         vm.startBroadcast(signers.carol());
@@ -370,28 +372,6 @@ contract TestAsyncDecryptTest is Test {
         vm.assertTrue(theContract.yBool());
         vm.assertEq(theContract.yAddress(), address(0x8ba1f109551bD432803012645Ac136ddd64DBA72));
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     function test_async_decrypt_bool3() public {
         vm.startStateDiffRecording();

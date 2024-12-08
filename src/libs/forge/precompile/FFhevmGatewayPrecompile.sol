@@ -57,11 +57,15 @@ contract FFhevmGatewayPrecompile is FFhevmPrecompile, IFFhevmGateway {
                     decryptedResult = bytes.concat(decryptedResult, debuggerDB.getNumAsBytes32(cts[j]));
                 } else {
                     bytes memory ctsBytes = debuggerDB.getBytes(cts[j]);
-                    uint256 ctsBytesLenAligned32 = 32*((ctsBytes.length + 31)/32);
+                    uint256 ctsBytesLenAligned32 = 32 * ((ctsBytes.length + 31) / 32);
                     // 1 + cts.length + 1 = numArgs (requestID + number of other args + signatures)
                     decryptedResult = bytes.concat(decryptedResult, bytes32(offset));
-                    decryptedResultOffsets =
-                        bytes.concat(decryptedResultOffsets, bytes32(ctsBytes.length), ctsBytes, new bytes(ctsBytesLenAligned32 - ctsBytes.length));
+                    decryptedResultOffsets = bytes.concat(
+                        decryptedResultOffsets,
+                        bytes32(ctsBytes.length),
+                        ctsBytes,
+                        new bytes(ctsBytesLenAligned32 - ctsBytes.length)
+                    );
                     offset += ctsBytesLenAligned32 + 32;
                 }
             }

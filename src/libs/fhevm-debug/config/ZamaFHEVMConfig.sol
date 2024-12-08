@@ -3,7 +3,14 @@ pragma solidity ^0.8.24;
 
 import {TFHE} from "../lib/TFHE.sol";
 import {FFhevmDebugConfigStruct} from "../../debugger/config/FFhevmDebugConfig.sol";
-import "forge-fhevm-config/addresses.sol" as ADDRESSES;
+import {
+    ACL_ADDRESS,
+    TFHE_EXECUTOR_ADDRESS,
+    FHE_PAYMENT_ADDRESS,
+    KMS_VERIFIER_ADDRESS,
+    FFHEVM_DEBUGGER_ADDRESS,
+    FFHEVM_DEBUGGER_DB_ADDRESS
+} from "forge-fhevm-config/addresses.sol";
 
 /**
  * @title   ZamaFHEVMConfig.
@@ -15,12 +22,12 @@ import "forge-fhevm-config/addresses.sol" as ADDRESSES;
 library ZamaFHEVMConfig {
     function getSepoliaConfig() internal pure returns (FFhevmDebugConfigStruct memory) {
         return FFhevmDebugConfigStruct({
-            ACLAddress: ADDRESSES.ACL_ADDRESS,
-            TFHEExecutorAddress: ADDRESSES.TFHE_EXECUTOR_ADDRESS,
-            FHEPaymentAddress: ADDRESSES.FHE_PAYMENT_ADDRESS,
-            KMSVerifierAddress: ADDRESSES.KMS_VERIFIER_ADDRESS,
-            TFHEDebuggerAddress: ADDRESSES.FFHEVM_DEBUGGER_ADDRESS,
-            TFHEDebuggerDBAddress: ADDRESSES.FFHEVM_DEBUGGER_DB_ADDRESS,
+            ACLAddress: ACL_ADDRESS,
+            TFHEExecutorAddress: TFHE_EXECUTOR_ADDRESS,
+            FHEPaymentAddress: FHE_PAYMENT_ADDRESS,
+            KMSVerifierAddress: KMS_VERIFIER_ADDRESS,
+            TFHEDebuggerAddress: FFHEVM_DEBUGGER_ADDRESS,
+            TFHEDebuggerDBAddress: FFHEVM_DEBUGGER_DB_ADDRESS,
             forgeVmAddress: address(uint160(uint256(keccak256("hevm cheat code"))))
         });
     }
