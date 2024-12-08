@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {Gateway} from "../gateway/lib/Gateway.sol";
-import "forge-fhevm-config/addresses.sol" as ADDRESSES;
+import {GATEWAY_CONTRACT_ADDRESS} from "forge-fhevm-config/addresses.sol";
 
 /**
  * @title   ZamaGatewayConfig.
@@ -12,7 +12,7 @@ import "forge-fhevm-config/addresses.sol" as ADDRESSES;
  */
 library ZamaGatewayConfig {
     function getSepoliaConfig() internal pure returns (address) {
-        return ADDRESSES.GATEWAY_CONTRACT_ADDRESS;
+        return GATEWAY_CONTRACT_ADDRESS;
     }
 
     function getEthereumConfig() internal pure returns (address) {
