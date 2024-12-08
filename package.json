@@ -1,16 +1,30 @@
 {
     "name": "forge-fhevm",
-    "version": "0.6.0-4",
+    "version": "0.6.0",
     "description": "Forge FHEVM Library is a collection of helpful contracts and libraries for use with Forge and Zama's FHEVM.",
     "homepage": "https://github.com/0xalexbel/forge-fhevm/README.md",
     "bugs": "https://github.com/0xalexbel/forge-fhevm/issues",
     "license": "(Apache-2.0 OR MIT)",
-    "author": "Contributors to Forge FHEVM",
+    "author": "Alexandre BELHOSTE",
     "files": [
-      "src/**/*"
+      "src/**/*",
+      "configs/**/*"
     ],
     "repository": {
       "type": "git",
       "url": "https://github.com/0xalexbel/forge-fhevm.git"
+    },
+    "devDependencies": {
+      "fhevm-core-contracts": "^0.6.0",
+      "fhevm": "^0.6.0",
+      "@openzeppelin/contracts": "^5.1.0",
+      "@openzeppelin/contracts-upgradeable": "^5.1.0",
+      "solhint": "^5.0.3",
+      "solhint-plugin-openzeppelin": "file:solhint-plugin-openzeppelin"      
+    },
+    "scripts": {
+      "clean": "forge clean",
+      "solhint": "solhint --max-warnings 25 \"./src/**/*.sol\"",
+      "slither": "npm run clean && slither ."
     }
   }

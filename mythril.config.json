@@ -1,0 +1,14 @@
+{
+    "remappings": [
+        "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/",
+        "@openzeppelin/contracts-upgradeable/=node_modules/@openzeppelin/contracts-upgradeable/",
+        "forge-std/=dependencies/forge-std-1.9.3/",
+        "forge-fhevm-addresses/gateway/=./src/debug/fhevm/gateway/lib/",
+        "forge-fhevm-addresses/debugger/=./src/debug/addresses/"
+    ],
+    "evmVersion": "cancun",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    }
+}

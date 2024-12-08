@@ -4,8 +4,11 @@ pragma solidity ^0.8.24;
 import {Vm} from "forge-std/src/Vm.sol";
 import {console} from "forge-std/src/Console.sol";
 import {Test} from "forge-std/src/Test.sol";
-import {EncryptedInputList, EncryptedInputListLib} from "../src/encrypted-input/EncryptedInputList.sol";
-import {EncryptedInputSigner} from "../src/encrypted-input/EncryptedInputSigner.sol";
+
+import {EncryptedInputList, EncryptedInputListLib} from "../src/libs/forge/input/EncryptedInputList.sol";
+import {EncryptedInputSigner} from "../src/libs/forge/input/EncryptedInputSigner.sol";
+
+import {FFhevm} from "../src/FFhevm.sol";
 
 contract EncryptedInputListTest is Test {
     function setUp() public {}
@@ -147,9 +150,12 @@ contract EncryptedInputListTest is Test {
         signer.inputVerifier = 0x69dE3158643e738a0724418b21a35FAA20CBb1c5;
         signer.kmsVerifier = 0x208De73316E44722e16f6dDFF40881A3e4F86104;
         signer.chainId = 31337;
-        signer.coprocSigner = 0x7ec8ada6642fc4ccfb7729bc29c17cf8d21b61abd5642d1db992c0b8672ab901;
-        signer.kmsSigners = new uint256[](1);
-        signer.kmsSigners[0] = 0x388b7680e4e1afa06efbfd45cdd1fe39f3c6af381df6555a19661f283b97de91;
+
+        signer.coprocSigner.privateKey = 0x7ec8ada6642fc4ccfb7729bc29c17cf8d21b61abd5642d1db992c0b8672ab901;
+        signer.coprocSigner.addr = vm.addr(signer.coprocSigner.privateKey);
+        signer.kmsSigners = new FFhevm.Signer[](1);
+        signer.kmsSigners[0].privateKey = 0x388b7680e4e1afa06efbfd45cdd1fe39f3c6af381df6555a19661f283b97de91;
+        signer.kmsSigners[0].addr = vm.addr(signer.kmsSigners[0].privateKey);
 
         bytes memory sig = signer.coprocSign(hashOfCiphertext, handlesList, userAddress, contractAddress);
         assertEq(
@@ -168,9 +174,11 @@ contract EncryptedInputListTest is Test {
         EncryptedInputSigner memory signer;
         signer.acl = 0x339EcE85B9E11a3A3AA557582784a15d7F82AAf2;
         signer.chainId = 31337;
-        signer.coprocSigner = 0x7ec8ada6642fc4ccfb7729bc29c17cf8d21b61abd5642d1db992c0b8672ab901;
-        signer.kmsSigners = new uint256[](1);
-        signer.kmsSigners[0] = 0x388b7680e4e1afa06efbfd45cdd1fe39f3c6af381df6555a19661f283b97de91;
+        signer.coprocSigner.privateKey = 0x7ec8ada6642fc4ccfb7729bc29c17cf8d21b61abd5642d1db992c0b8672ab901;
+        signer.coprocSigner.addr = vm.addr(signer.coprocSigner.privateKey);
+        signer.kmsSigners = new FFhevm.Signer[](1);
+        signer.kmsSigners[0].privateKey = 0x388b7680e4e1afa06efbfd45cdd1fe39f3c6af381df6555a19661f283b97de91;
+        signer.kmsSigners[0].addr = vm.addr(signer.kmsSigners[0].privateKey);
         signer.inputVerifier = 0x69dE3158643e738a0724418b21a35FAA20CBb1c5;
         signer.kmsVerifier = 0x208De73316E44722e16f6dDFF40881A3e4F86104;
 
@@ -192,9 +200,11 @@ contract EncryptedInputListTest is Test {
         signer.inputVerifier = 0x69dE3158643e738a0724418b21a35FAA20CBb1c5;
         signer.kmsVerifier = 0x208De73316E44722e16f6dDFF40881A3e4F86104;
         signer.chainId = 31337;
-        signer.coprocSigner = 0x7ec8ada6642fc4ccfb7729bc29c17cf8d21b61abd5642d1db992c0b8672ab901;
-        signer.kmsSigners = new uint256[](1);
-        signer.kmsSigners[0] = 0x388b7680e4e1afa06efbfd45cdd1fe39f3c6af381df6555a19661f283b97de91;
+        signer.coprocSigner.privateKey = 0x7ec8ada6642fc4ccfb7729bc29c17cf8d21b61abd5642d1db992c0b8672ab901;
+        signer.coprocSigner.addr = vm.addr(signer.coprocSigner.privateKey);
+        signer.kmsSigners = new FFhevm.Signer[](1);
+        signer.kmsSigners[0].privateKey = 0x388b7680e4e1afa06efbfd45cdd1fe39f3c6af381df6555a19661f283b97de91;
+        signer.kmsSigners[0].addr = vm.addr(signer.kmsSigners[0].privateKey);
 
         EncryptedInputList memory input;
         input.add64(123456, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
@@ -222,8 +232,9 @@ contract EncryptedInputListTest is Test {
         signer.inputVerifier = 0x69dE3158643e738a0724418b21a35FAA20CBb1c5;
         signer.kmsVerifier = 0x208De73316E44722e16f6dDFF40881A3e4F86104;
         signer.chainId = 31337;
-        signer.kmsSigners = new uint256[](1);
-        signer.kmsSigners[0] = 0x388b7680e4e1afa06efbfd45cdd1fe39f3c6af381df6555a19661f283b97de91;
+        signer.kmsSigners = new FFhevm.Signer[](1);
+        signer.kmsSigners[0].privateKey = 0x388b7680e4e1afa06efbfd45cdd1fe39f3c6af381df6555a19661f283b97de91;
+        signer.kmsSigners[0].addr = vm.addr(signer.kmsSigners[0].privateKey);
 
         EncryptedInputList memory input;
         input.add64(123456, 0x27ecd75f8b48b3c4b6091a31f04b120fa61e0611d6fca0373cac0c0d5ae26209);
@@ -241,16 +252,4 @@ contract EncryptedInputListTest is Test {
             )
         );
     }
-
-    // function log(EncryptedInputSigner memory signer) internal pure {
-    //     console.log("chainId: %s", signer.chainId);
-    //     console.log("ACL: %s", signer.acl);
-    //     console.log("KMSVerifier: %s", signer.kmsVerifier);
-    //     console.log("InputVerifier: %s", signer.inputVerifier);
-    //     console.log("Coprocessor signer: %s", vm.toString(bytes32(signer.coprocSigner)));
-    //     console.log("Num kms signers: %s", signer.kmsSigners.length);
-    //     for (uint256 i = 0; i < signer.kmsSigners.length; ++i) {
-    //         console.log("kms signer #%s: %s", i, vm.toString(bytes32(signer.kmsSigners[i])));
-    //     }
-    // }
 }
