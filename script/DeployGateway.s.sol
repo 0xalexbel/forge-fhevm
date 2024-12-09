@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import {Vm} from "forge-std/src/Vm.sol";
 import {Script} from "forge-std/src/Script.sol";
-import {console} from "forge-std/src/Console.sol";
+import {console} from "forge-std/src/console.sol";
 
 import {FFhevmDeployConfigLib} from "../src/libs/forge/config/FFhevmDeployConfigLib.sol";
 import {FFhevmSetUp} from "../src/libs/forge/FFhevmSetUp.sol";

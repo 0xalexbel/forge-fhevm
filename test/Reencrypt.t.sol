@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import {Vm} from "forge-std/src/Vm.sol";
 import {Test} from "forge-std/src/Test.sol";
-import {console} from "forge-std/src/Console.sol";
+import {console} from "forge-std/src/console.sol";
 
 import {BytesLib} from "../src/libs/common/BytesLib.sol";
 import {ReencryptLib} from "../src/libs/forge/reencrypt/ReencryptLib.sol";

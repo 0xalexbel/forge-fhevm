@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
-import {console} from "forge-std/src/Console.sol";
+import {console} from "forge-std/src/console.sol";
 
 import {FFhevm} from "../../../../FFhevm.sol";
 import {AddressLib} from "../../../common/AddressLib.sol";

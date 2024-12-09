@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import {Vm} from "forge-std/src/Vm.sol";
 import {Test} from "forge-std/src/Test.sol";
-import {console} from "forge-std/src/Console.sol";
+import {console} from "forge-std/src/console.sol";
 
 import {TFHE, einput, ebool, ebytes256} from "../src/libs/fhevm-debug/lib/TFHE.sol";
 
