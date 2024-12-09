@@ -4,6 +4,7 @@ A forge library to run Zama's fhevm
 ## Dependencies
 
 #### package.json
+
 ```json
 "dependencies": {
     "fhevm-core-contracts": "^0.6.0",
@@ -33,7 +34,7 @@ remappings= [
 
 [dependencies]
 forge-std = "1.9.3"
-forge-fhevm = { version = "0.6.0", git = "https://github.com/0xalexbel/forge-fhevm.git", branch = "dev" }
+forge-fhevm = { version = "0.6.0", git = "https://github.com/0xalexbel/forge-fhevm.git" }
 
 [soldeer]
 remappings_version = false
