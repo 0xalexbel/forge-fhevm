@@ -75,7 +75,7 @@ library FFhevm {
         // Fhevm Core
         address ACLAddress;
         address TFHEExecutorAddress;
-        address FHEPaymentAddress;
+        address FHEGasLimitAddress;
         address KMSVerifierAddress;
         // InputVerifiers
         address InputVerifierNativeAddress;
@@ -113,7 +113,7 @@ library FFhevm {
         return FFhevmDebugConfigStruct({
             ACLAddress: ADDRESSES.ACL_ADDRESS,
             TFHEExecutorAddress: ADDRESSES.TFHE_EXECUTOR_ADDRESS,
-            FHEPaymentAddress: ADDRESSES.FHE_PAYMENT_ADDRESS,
+            FHEGasLimitAddress: ADDRESSES.FHE_GASLIMIT_ADDRESS,
             KMSVerifierAddress: ADDRESSES.KMS_VERIFIER_ADDRESS,
             // ffhevm addresses
             TFHEDebuggerAddress: ADDRESSES.FFHEVM_DEBUGGER_ADDRESS,

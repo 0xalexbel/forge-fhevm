@@ -26,8 +26,7 @@ contract ACL is UUPSUpgradeable, Ownable2StepUpgradeable, IACL {
     struct ACLStorage {
         mapping(uint256 handle => mapping(address account => bool isAllowed)) persistedAllowedPairs;
         mapping(uint256 => bool) allowedForDecryption;
-        mapping(address account => mapping(address delegatee => mapping(address contractAddress => bool isDelegate)))
-            delegates;
+        mapping(address account => mapping(address delegatee => mapping(address contractAddress => bool isDelegate))) delegates;
     }
 
     // keccak256(abi.encode(uint256(keccak256("fhevm.storage.ACL")) - 1)) & ~bytes32(uint256(0xff))
@@ -86,12 +85,16 @@ contract ACL is UUPSUpgradeable, Ownable2StepUpgradeable, IACL {
     }
 
     function cleanTransientStorage() external virtual {
-        // this function removes the transient allowances, could be useful for integration with Account Abstraction when bundling several UserOps calling the TFHEExecutorCoprocessor
+        // this function removes the transient allowances, could be useful for integration with Account Abstraction when bundling several UserOps calling ACL
         assembly {
             let length := tload(0)
             tstore(0, 0)
             let lengthPlusOne := add(length, 1)
-            for { let i := 1 } lt(i, lengthPlusOne) { i := add(i, 1) } {
+            for {
+                let i := 1
+            } lt(i, lengthPlusOne) {
+                i := add(i, 1)
+            } {
                 let handle := tload(i)
                 tstore(i, 0)
                 tstore(handle, 0)
@@ -126,15 +129,17 @@ contract ACL is UUPSUpgradeable, Ownable2StepUpgradeable, IACL {
         emit NewDelegation(msg.sender, delegatee, contractAddress);
     }
 
-    function allowedOnBehalf(address delegatee, uint256 handle, address contractAddress, address account)
-        external
-        view
-        virtual
-        returns (bool)
-    {
+    function allowedOnBehalf(
+        address delegatee,
+        uint256 handle,
+        address contractAddress,
+        address account
+    ) external view virtual returns (bool) {
         ACLStorage storage $ = _getACLStorage();
-        return $.persistedAllowedPairs[handle][account] && $.persistedAllowedPairs[handle][contractAddress]
-            && $.delegates[account][delegatee][contractAddress];
+        return
+            $.persistedAllowedPairs[handle][account] &&
+            $.persistedAllowedPairs[handle][contractAddress] &&
+            $.delegates[account][delegatee][contractAddress];
     }
 
     function allowForDecryption(uint256[] memory handlesList) external virtual {
@@ -156,16 +161,17 @@ contract ACL is UUPSUpgradeable, Ownable2StepUpgradeable, IACL {
     /// @notice Getter for the name and version of the contract
     /// @return string representing the name and the version of the contract
     function getVersion() external pure virtual returns (string memory) {
-        return string(
-            abi.encodePacked(
-                CONTRACT_NAME,
-                " v",
-                Strings.toString(MAJOR_VERSION),
-                ".",
-                Strings.toString(MINOR_VERSION),
-                ".",
-                Strings.toString(PATCH_VERSION)
-            )
-        );
+        return
+            string(
+                abi.encodePacked(
+                    CONTRACT_NAME,
+                    " v",
+                    Strings.toString(MAJOR_VERSION),
+                    ".",
+                    Strings.toString(MINOR_VERSION),
+                    ".",
+                    Strings.toString(PATCH_VERSION)
+                )
+            );
     }
 }

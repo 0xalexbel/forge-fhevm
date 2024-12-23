@@ -6,7 +6,7 @@ import {FFhevmDebugConfigStruct} from "../../debugger/config/FFhevmDebugConfig.s
 import {
     ACL_ADDRESS,
     TFHE_EXECUTOR_ADDRESS,
-    FHE_PAYMENT_ADDRESS,
+    FHE_GASLIMIT_ADDRESS,
     KMS_VERIFIER_ADDRESS,
     FFHEVM_DEBUGGER_ADDRESS,
     FFHEVM_DEBUGGER_DB_ADDRESS
@@ -16,7 +16,7 @@ import {
  * @title   ZamaFHEVMConfig.
  * @notice  This library returns the TFHE config for different networks
  *          with the contract addresses for
- *          (1) ACL, (2) TFHEExecutor, (3) FHEPayment, (4) KMSVerifier,
+ *          (1) ACL, (2) TFHEExecutor, (3) FHEGasLimit, (4) KMSVerifier,
  *          which are deployed & maintained by Zama.
  */
 library ZamaFHEVMConfig {
@@ -24,7 +24,7 @@ library ZamaFHEVMConfig {
         return FFhevmDebugConfigStruct({
             ACLAddress: ACL_ADDRESS,
             TFHEExecutorAddress: TFHE_EXECUTOR_ADDRESS,
-            FHEPaymentAddress: FHE_PAYMENT_ADDRESS,
+            FHEGasLimitAddress: FHE_GASLIMIT_ADDRESS,
             KMSVerifierAddress: KMS_VERIFIER_ADDRESS,
             TFHEDebuggerAddress: FFHEVM_DEBUGGER_ADDRESS,
             TFHEDebuggerDBAddress: FFHEVM_DEBUGGER_DB_ADDRESS,

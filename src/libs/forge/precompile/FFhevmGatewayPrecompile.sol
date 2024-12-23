@@ -50,7 +50,7 @@ contract FFhevmGatewayPrecompile is FFhevmPrecompile, IFFhevmGateway {
 
             bytes memory decryptedResult;
             bytes memory decryptedResultOffsets;
-            uint256 offset = (passSignaturesToCaller) ? (cts.length + 2) * 32 : (cts.length + 1) * 32;
+            uint256 offset = (cts.length + 1) * 32;
 
             for (uint8 j = 0; j < cts.length; ++j) {
                 if (TFHEHandle.is256Bits(cts[j])) {
@@ -68,10 +68,6 @@ contract FFhevmGatewayPrecompile is FFhevmPrecompile, IFFhevmGateway {
                     );
                     offset += ctsBytesLenAligned32 + 32;
                 }
-            }
-
-            if (passSignaturesToCaller) {
-                decryptedResult = bytes.concat(decryptedResult, bytes32(offset));
             }
 
             decryptedResult = bytes.concat(decryptedResult, decryptedResultOffsets);

@@ -81,12 +81,12 @@ contract InputVerifier is UUPSUpgradeable, Ownable2StepUpgradeable, EIP712Upgrad
         return typeCt;
     }
 
-    function checkProofCache(bytes memory inputProof, address userAddress, address contractAddress, address aclAddress)
-        internal
-        view
-        virtual
-        returns (bool, bytes32)
-    {
+    function checkProofCache(
+        bytes memory inputProof,
+        address userAddress,
+        address contractAddress,
+        address aclAddress
+    ) internal view virtual returns (bool, bytes32) {
         bool isProofCached;
         bytes32 key = keccak256(abi.encodePacked(contractAddress, aclAddress, userAddress, inputProof));
         assembly {
@@ -98,6 +98,28 @@ contract InputVerifier is UUPSUpgradeable, Ownable2StepUpgradeable, EIP712Upgrad
     function cacheProof(bytes32 proofKey) internal virtual {
         assembly {
             tstore(proofKey, 1)
+            let length := tload(0)
+            let lengthPlusOne := add(length, 1)
+            tstore(lengthPlusOne, proofKey)
+            tstore(0, lengthPlusOne)
+        }
+    }
+
+    function cleanTransientStorage() external virtual {
+        // this function removes the transient allowances, could be useful for integration with Account Abstraction when bundling several UserOps calling InputVerifier
+        assembly {
+            let length := tload(0)
+            tstore(0, 0)
+            let lengthPlusOne := add(length, 1)
+            for {
+                let i := 1
+            } lt(i, lengthPlusOne) {
+                i := add(i, 1)
+            } {
+                let handle := tload(i)
+                tstore(i, 0)
+                tstore(handle, 0)
+            }
         }
     }
 
@@ -106,8 +128,12 @@ contract InputVerifier is UUPSUpgradeable, Ownable2StepUpgradeable, EIP712Upgrad
         bytes32 inputHandle,
         bytes memory inputProof
     ) external virtual returns (uint256) {
-        (bool isProofCached, bytes32 cacheKey) =
-            checkProofCache(inputProof, context.userAddress, context.contractAddress, context.aclAddress);
+        (bool isProofCached, bytes32 cacheKey) = checkProofCache(
+            inputProof,
+            context.userAddress,
+            context.contractAddress,
+            context.aclAddress
+        );
         uint256 result = uint256(inputHandle);
         uint256 indexHandle = (result & 0x0000000000000000000000000000000000000000000000000000000000ff0000) >> 16;
 
@@ -184,34 +210,28 @@ contract InputVerifier is UUPSUpgradeable, Ownable2StepUpgradeable, EIP712Upgrad
         return result;
     }
 
-    function verifyEIP712Copro(CiphertextVerificationForCopro memory cv, bytes memory signature)
-        internal
-        view
-        virtual
-    {
+    function verifyEIP712Copro(CiphertextVerificationForCopro memory cv, bytes memory signature) internal view virtual {
         bytes32 digest = hashCiphertextVerificationForCopro(cv);
         address signer = ECDSA.recover(digest, signature);
         require(signer == coprocessorAddress, "Coprocessor address mismatch");
     }
 
-    function hashCiphertextVerificationForCopro(CiphertextVerificationForCopro memory CVcopro)
-        internal
-        view
-        virtual
-        returns (bytes32)
-    {
-        return _hashTypedDataV4(
-            keccak256(
-                abi.encode(
-                    CIPHERTEXTVERIFICATION_COPRO_TYPE_HASH,
-                    CVcopro.aclAddress,
-                    CVcopro.hashOfCiphertext,
-                    keccak256(abi.encodePacked(CVcopro.handlesList)),
-                    CVcopro.userAddress,
-                    CVcopro.contractAddress
+    function hashCiphertextVerificationForCopro(
+        CiphertextVerificationForCopro memory CVcopro
+    ) internal view virtual returns (bytes32) {
+        return
+            _hashTypedDataV4(
+                keccak256(
+                    abi.encode(
+                        CIPHERTEXTVERIFICATION_COPRO_TYPE_HASH,
+                        CVcopro.aclAddress,
+                        CVcopro.hashOfCiphertext,
+                        keccak256(abi.encodePacked(CVcopro.handlesList)),
+                        CVcopro.userAddress,
+                        CVcopro.contractAddress
+                    )
                 )
-            )
-        );
+            );
     }
 
     /// @notice recovers the signer's address from a `signature` and a `message` digest
@@ -227,16 +247,17 @@ contract InputVerifier is UUPSUpgradeable, Ownable2StepUpgradeable, EIP712Upgrad
     /// @notice Getter for the name and version of the contract
     /// @return string representing the name and the version of the contract
     function getVersion() external pure virtual returns (string memory) {
-        return string(
-            abi.encodePacked(
-                CONTRACT_NAME,
-                " v",
-                Strings.toString(MAJOR_VERSION),
-                ".",
-                Strings.toString(MINOR_VERSION),
-                ".",
-                Strings.toString(PATCH_VERSION)
-            )
-        );
+        return
+            string(
+                abi.encodePacked(
+                    CONTRACT_NAME,
+                    " v",
+                    Strings.toString(MAJOR_VERSION),
+                    ".",
+                    Strings.toString(MINOR_VERSION),
+                    ".",
+                    Strings.toString(PATCH_VERSION)
+                )
+            );
     }
 }

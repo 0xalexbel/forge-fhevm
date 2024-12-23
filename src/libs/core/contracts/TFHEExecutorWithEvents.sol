@@ -35,14 +35,18 @@ contract TFHEExecutorWithEvents is TFHEExecutor {
     event FheNeg(uint256 ct, uint256 result);
     event FheNot(uint256 ct, uint256 result);
     event VerifyCiphertext(
-        bytes32 inputHandle, address userAddress, bytes inputProof, bytes1 inputType, uint256 result
+        bytes32 inputHandle,
+        address userAddress,
+        bytes inputProof,
+        bytes1 inputType,
+        uint256 result
     );
     event Cast(uint256 ct, bytes1 toType, uint256 result);
     event TrivialEncrypt(uint256 pt, bytes1 toType, uint256 result);
     event TrivialEncryptBytes(bytes pt, bytes1 toType, uint256 result);
     event FheIfThenElse(uint256 control, uint256 ifTrue, uint256 ifFalse, uint256 result);
-    event FheRand(bytes1 randType, uint256 result);
-    event FheRandBounded(uint256 upperBound, bytes1 randType, uint256 result);
+    event FheRand(bytes1 randType, bytes16 seed, uint256 result);
+    event FheRandBounded(uint256 upperBound, bytes1 randType, bytes16 seed, uint256 result);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -169,12 +173,12 @@ contract TFHEExecutorWithEvents is TFHEExecutor {
         emit FheNot(ct, result);
     }
 
-    function verifyCiphertext(bytes32 inputHandle, address userAddress, bytes memory inputProof, bytes1 inputType)
-        public
-        virtual
-        override
-        returns (uint256 result)
-    {
+    function verifyCiphertext(
+        bytes32 inputHandle,
+        address userAddress,
+        bytes memory inputProof,
+        bytes1 inputType
+    ) public virtual override returns (uint256 result) {
         result = super.verifyCiphertext(inputHandle, userAddress, inputProof, inputType);
         emit VerifyCiphertext(inputHandle, userAddress, inputProof, inputType, result);
     }
@@ -194,23 +198,24 @@ contract TFHEExecutorWithEvents is TFHEExecutor {
         emit TrivialEncryptBytes(pt, toType, result);
     }
 
-    function fheIfThenElse(uint256 control, uint256 ifTrue, uint256 ifFalse)
-        public
-        virtual
-        override
-        returns (uint256 result)
-    {
+    function fheIfThenElse(
+        uint256 control,
+        uint256 ifTrue,
+        uint256 ifFalse
+    ) public virtual override returns (uint256 result) {
         result = super.fheIfThenElse(control, ifTrue, ifFalse);
         emit FheIfThenElse(control, ifTrue, ifFalse, result);
     }
 
     function fheRand(bytes1 randType) public virtual override returns (uint256 result) {
-        result = super.fheRand(randType);
-        emit FheRand(randType, result);
+        bytes16 seed = generateSeed();
+        result = generateRand(randType, seed);
+        emit FheRand(randType, seed, result);
     }
 
     function fheRandBounded(uint256 upperBound, bytes1 randType) public virtual override returns (uint256 result) {
-        result = super.fheRandBounded(upperBound, randType);
-        emit FheRandBounded(upperBound, randType, result);
+        bytes16 seed = generateSeed();
+        result = generateRandBounded(upperBound, randType, seed);
+        emit FheRandBounded(upperBound, randType, seed, result);
     }
 }

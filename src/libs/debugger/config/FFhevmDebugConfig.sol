@@ -9,7 +9,7 @@ pragma solidity ^0.8.24;
 struct FFhevmDebugConfigStruct {
     address ACLAddress;
     address TFHEExecutorAddress;
-    address FHEPaymentAddress;
+    address FHEGasLimitAddress;
     address KMSVerifierAddress;
     // FFhevm addresses
     address TFHEDebuggerAddress;

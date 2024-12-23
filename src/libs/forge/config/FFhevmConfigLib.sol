@@ -22,7 +22,7 @@ library FFhevmConfigLib {
         // Fhevm Core
         dst.core.ACLAddress = src.core.ACLAddress;
         dst.core.TFHEExecutorAddress = src.core.TFHEExecutorAddress;
-        dst.core.FHEPaymentAddress = src.core.FHEPaymentAddress;
+        dst.core.FHEGasLimitAddress = src.core.FHEGasLimitAddress;
         dst.core.KMSVerifierAddress = src.core.KMSVerifierAddress;
 
         // InputVerifiers
@@ -55,7 +55,7 @@ library FFhevmConfigLib {
             FFhevmDebugConfigStruct({
                 ACLAddress: ffhevmConfig.core.ACLAddress,
                 TFHEExecutorAddress: ffhevmConfig.core.TFHEExecutorAddress,
-                FHEPaymentAddress: ffhevmConfig.core.FHEPaymentAddress,
+                FHEGasLimitAddress: ffhevmConfig.core.FHEGasLimitAddress,
                 KMSVerifierAddress: ffhevmConfig.core.KMSVerifierAddress,
                 // FFhevm addresses
                 TFHEDebuggerAddress: ffhevmConfig.debugger.TFHEDebuggerAddress,

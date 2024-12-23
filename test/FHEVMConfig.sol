@@ -5,7 +5,7 @@ import {FFhevm, FFhevmDebugConfigStruct} from "../src/FFhevm.sol";
 
 /**
  * @title   FHEVMConfig
- * @notice  This library returns all addresses for the ACL, TFHEExecutor, FHEPayment,
+ * @notice  This library returns all addresses for the ACL, TFHEExecutor, FHEGasLimit,
  *          and KMSVerifier contracts.
  */
 library FHEVMConfig {

@@ -3,4 +3,4 @@ pragma solidity ^0.8.24;
 
 import {ICoreContract} from "./ICoreContract.sol";
 
-interface IFHEPayment is ICoreContract {}
+interface IFHEGasLimit is ICoreContract {}

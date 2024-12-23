@@ -100,7 +100,7 @@ contract TFHEDebugger is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEExecutor
     function verifyFFhevmDebuggerConfig(FFhevmDebugConfigStruct memory ffhevmDebuggerConfig) external {
         if (
             ffhevmDebuggerConfig.ACLAddress == address(0) || ffhevmDebuggerConfig.TFHEExecutorAddress == address(0)
-                || ffhevmDebuggerConfig.FHEPaymentAddress == address(0)
+                || ffhevmDebuggerConfig.FHEGasLimitAddress == address(0)
                 || ffhevmDebuggerConfig.KMSVerifierAddress == address(0)
         ) {
             revert InvalidFhevmConfigMissingAddress();
@@ -108,7 +108,7 @@ contract TFHEDebugger is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEExecutor
         if (
             !AddressLib.isDeployed(ffhevmDebuggerConfig.ACLAddress)
                 || !AddressLib.isDeployed(ffhevmDebuggerConfig.TFHEExecutorAddress)
-                || !AddressLib.isDeployed(ffhevmDebuggerConfig.FHEPaymentAddress)
+                || !AddressLib.isDeployed(ffhevmDebuggerConfig.FHEGasLimitAddress)
                 || !AddressLib.isDeployed(ffhevmDebuggerConfig.KMSVerifierAddress)
         ) {
             revert("Wrong FHEVM config.");
@@ -144,9 +144,9 @@ contract TFHEDebugger is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEExecutor
             revert InvalidFhevmConfigInvalidCoreContract(ffhevmDebuggerConfig.TFHEExecutorAddress);
         }
 
-        try ITFHEExecutor(ffhevmDebuggerConfig.TFHEExecutorAddress).getFHEPaymentAddress() returns (address paymentAddr)
+        try ITFHEExecutor(ffhevmDebuggerConfig.TFHEExecutorAddress).getFHEGasLimitAddress() returns (address fheGasLimitAddr)
         {
-            if (paymentAddr != ffhevmDebuggerConfig.FHEPaymentAddress) {
+            if (fheGasLimitAddr != ffhevmDebuggerConfig.FHEGasLimitAddress) {
                 revert InvalidFhevmConfigAddressMismatch();
             }
         } catch {

@@ -18,7 +18,7 @@ library CoreAddressesLib {
         // FFhevmDebugConfigStruct
         address ACLAddress;
         address TFHEExecutorAddress;
-        address FHEPaymentAddress;
+        address FHEGasLimitAddress;
         address KMSVerifierAddress;
         // InputVerifiers
         address InputVerifierAddress;
@@ -49,8 +49,8 @@ library CoreAddressesLib {
         );
     }
 
-    function checkFHEPaymentAddress(address addr) internal pure {
-        require(CONST.FHE_PAYMENT_ADDRESS == addr, DeployError.message("FHEPayment", CONST.FHE_PAYMENT_ADDRESS, addr));
+    function checkFHEGasLimitAddress(address addr) internal pure {
+        require(CONST.FHE_GASLIMIT_ADDRESS == addr, DeployError.message("FHEGasLimit", CONST.FHE_GASLIMIT_ADDRESS, addr));
     }
 
     function expectedCreateACLAddress(address deployerAddr)
@@ -119,19 +119,19 @@ library CoreAddressesLib {
         );
     }
 
-    function expectedCreateFHEPaymentAddress(address deployerAddr)
+    function expectedCreateFHEGasLimitAddress(address deployerAddr)
         internal
         pure
         returns (address expectedImplAddr, address expectedAddr, uint64 expectedImplNonce, uint64 expectedNonce)
     {
-        expectedImplNonce = CONST.FHEPaymentImplNonce;
-        expectedNonce = CONST.FHEPaymentNonce;
+        expectedImplNonce = CONST.FHEGasLimitImplNonce;
+        expectedNonce = CONST.FHEGasLimitNonce;
         expectedImplAddr = AddressLib.computeCreateAddress(deployerAddr, expectedImplNonce);
         expectedAddr = AddressLib.computeCreateAddress(deployerAddr, expectedNonce);
 
         require(
-            CONST.FHE_PAYMENT_ADDRESS == expectedAddr,
-            DeployError.message("FHEPayment", CONST.FHE_PAYMENT_ADDRESS, expectedAddr, deployerAddr, expectedNonce)
+            CONST.FHE_GASLIMIT_ADDRESS == expectedAddr,
+            DeployError.message("FHEGasLimit", CONST.FHE_GASLIMIT_ADDRESS, expectedAddr, deployerAddr, expectedNonce)
         );
     }
 
@@ -151,8 +151,8 @@ library CoreAddressesLib {
         return AddressLib.computeCreateAddress(deployerAddr, CONST.InputVerifierNonce);
     }
 
-    function computeCreateFHEPaymentAddress(address deployerAddr) internal pure returns (address) {
-        return AddressLib.computeCreateAddress(deployerAddr, CONST.FHEPaymentNonce);
+    function computeCreateFHEGasLimitAddress(address deployerAddr) internal pure returns (address) {
+        return AddressLib.computeCreateAddress(deployerAddr, CONST.FHEGasLimitNonce);
     }
 
     function checkCoprocessorAddress(address coprocAddress) internal pure {
@@ -169,7 +169,7 @@ library CoreAddressesLib {
     {
         coreAddresses.ACLAddress = computeCreateACLAddress(deployerAddr);
         coreAddresses.TFHEExecutorAddress = computeCreateTFHEExecutorAddress(deployerAddr);
-        coreAddresses.FHEPaymentAddress = computeCreateFHEPaymentAddress(deployerAddr);
+        coreAddresses.FHEGasLimitAddress = computeCreateFHEGasLimitAddress(deployerAddr);
         coreAddresses.KMSVerifierAddress = computeCreateKMSVerifierAddress(deployerAddr);
         if (isCoprocessor) {
             coreAddresses.InputVerifierNativeAddress = address(0);
@@ -181,56 +181,6 @@ library CoreAddressesLib {
             coreAddresses.InputVerifierAddress = coreAddresses.InputVerifierNativeAddress;
         }
     }
-
-    // function readEnvAddresses() internal view returns (FFhevm.CoreAddresses memory) {
-    //     FFhevm.CoreAddresses memory coreAddresses;
-
-    //     coreAddresses.ACLAddress = EnvLib.envAddressOr(CONST.ACLAddressEnvName, address(0));
-    //     coreAddresses.TFHEExecutorAddress = EnvLib.envAddressOr(CONST.TFHEExecutorAddressEnvName, address(0));
-    //     coreAddresses.FHEPaymentAddress = EnvLib.envAddressOr(CONST.FHEPaymentAddressEnvName, address(0));
-    //     coreAddresses.KMSVerifierAddress = EnvLib.envAddressOr(CONST.KMSVerifierAddressEnvName, address(0));
-    //     coreAddresses.InputVerifierAddress = EnvLib.envAddressOr(CONST.InputVerifierAddressEnvName, address(0));
-
-    //     if (
-    //         coreAddresses.ACLAddress == address(0) && coreAddresses.TFHEExecutorAddress == address(0)
-    //             && coreAddresses.FHEPaymentAddress == address(0) && coreAddresses.KMSVerifierAddress == address(0)
-    //             && coreAddresses.InputVerifierAddress == address(0)
-    //     ) {
-    //         return coreAddresses;
-    //     }
-
-    //     if (coreAddresses.ACLAddress == address(0)) {
-    //         revert("Missing ACL contract address env value");
-    //     } else {
-    //         checkACLAddress(coreAddresses.ACLAddress);
-    //     }
-
-    //     if (coreAddresses.TFHEExecutorAddress == address(0)) {
-    //         revert("Missing TFHEExecutor contract address env value");
-    //     } else {
-    //         checkTFHEExecutorAddress(coreAddresses.TFHEExecutorAddress);
-    //     }
-
-    //     if (coreAddresses.FHEPaymentAddress == address(0)) {
-    //         revert("Missing FHEPayment contract address env value");
-    //     } else {
-    //         checkFHEPaymentAddress(coreAddresses.FHEPaymentAddress);
-    //     }
-
-    //     if (coreAddresses.KMSVerifierAddress == address(0)) {
-    //         revert("Missing KMSVerifier contract address env value");
-    //     } else {
-    //         checkKMSVerifierAddress(coreAddresses.KMSVerifierAddress);
-    //     }
-
-    //     if (coreAddresses.InputVerifierAddress == address(0)) {
-    //         revert("Missing InputVerifier contract address env value");
-    //     } else {
-    //         checkInputVerifierAddress(coreAddresses.InputVerifierAddress);
-    //     }
-
-    //     return coreAddresses;
-    // }
 
     function expectedACLAddress() internal pure returns (address expectedAddr) {
         expectedAddr = CONST.ACL_ADDRESS;
@@ -248,14 +198,14 @@ library CoreAddressesLib {
         expectedAddr = CONST.INPUT_VERIFIER_ADDRESS;
     }
 
-    function expectedFHEPaymentAddress() internal pure returns (address expectedAddr) {
-        expectedAddr = CONST.FHE_PAYMENT_ADDRESS;
+    function expectedFHEGasLimitAddress() internal pure returns (address expectedAddr) {
+        expectedAddr = CONST.FHE_GASLIMIT_ADDRESS;
     }
 
     function expectedAddresses() internal pure returns (FFhevm.CoreAddresses memory) {
         FFhevm.CoreAddresses memory coreAddresses;
         coreAddresses.ACLAddress = expectedACLAddress();
-        coreAddresses.FHEPaymentAddress = expectedFHEPaymentAddress();
+        coreAddresses.FHEGasLimitAddress = expectedFHEGasLimitAddress();
         coreAddresses.InputVerifierAddress = expectedInputVerifierAddress();
         coreAddresses.KMSVerifierAddress = expectedKMSVerifierAddress();
         coreAddresses.TFHEExecutorAddress = expectedTFHEExecutorAddress();

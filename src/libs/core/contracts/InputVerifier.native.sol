@@ -54,12 +54,12 @@ contract InputVerifier is UUPSUpgradeable, Ownable2StepUpgradeable, IInputVerifi
         return typeCt;
     }
 
-    function checkProofCache(bytes memory inputProof, address userAddress, address contractAddress, address aclAddress)
-        internal
-        view
-        virtual
-        returns (bool, bytes32)
-    {
+    function checkProofCache(
+        bytes memory inputProof,
+        address userAddress,
+        address contractAddress,
+        address aclAddress
+    ) internal view virtual returns (bool, bytes32) {
         bool isProofCached;
         bytes32 key = keccak256(abi.encodePacked(contractAddress, aclAddress, userAddress, inputProof));
         assembly {
@@ -71,6 +71,28 @@ contract InputVerifier is UUPSUpgradeable, Ownable2StepUpgradeable, IInputVerifi
     function cacheProof(bytes32 proofKey) internal virtual {
         assembly {
             tstore(proofKey, 1)
+            let length := tload(0)
+            let lengthPlusOne := add(length, 1)
+            tstore(lengthPlusOne, proofKey)
+            tstore(0, lengthPlusOne)
+        }
+    }
+
+    function cleanTransientStorage() external virtual {
+        // this function removes the transient allowances, could be useful for integration with Account Abstraction when bundling several UserOps calling InputVerifier
+        assembly {
+            let length := tload(0)
+            tstore(0, 0)
+            let lengthPlusOne := add(length, 1)
+            for {
+                let i := 1
+            } lt(i, lengthPlusOne) {
+                i := add(i, 1)
+            } {
+                let handle := tload(i)
+                tstore(i, 0)
+                tstore(handle, 0)
+            }
         }
     }
 
@@ -79,8 +101,12 @@ contract InputVerifier is UUPSUpgradeable, Ownable2StepUpgradeable, IInputVerifi
         bytes32 inputHandle,
         bytes memory inputProof
     ) external virtual returns (uint256) {
-        (bool isProofCached, bytes32 cacheKey) =
-            checkProofCache(inputProof, context.userAddress, context.contractAddress, context.aclAddress);
+        (bool isProofCached, bytes32 cacheKey) = checkProofCache(
+            inputProof,
+            context.userAddress,
+            context.contractAddress,
+            context.aclAddress
+        );
         uint256 result = uint256(inputHandle);
         uint256 indexHandle = (result & 0x0000000000000000000000000000000000000000000000000000000000ff0000) >> 16;
 
@@ -135,14 +161,14 @@ contract InputVerifier is UUPSUpgradeable, Ownable2StepUpgradeable, IInputVerifi
                 }
                 // check all handles are from correct version
                 require(uint8(element) == HANDLE_VERSION, "Wrong handle version");
-                uint256 indexElement =
-                    (element & 0x0000000000000000000000000000000000000000000000000000000000ff0000) >> 16;
+                uint256 indexElement = (element & 0x0000000000000000000000000000000000000000000000000000000000ff0000) >>
+                    16;
                 require(indexElement == i, "Wrong index for serialized handle");
 
                 uint256 recomputedHandle = uint256(keccak256(abi.encodePacked(hashCT, uint8(i))));
                 require(
-                    (recomputedHandle & 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000)
-                        == (element & 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000),
+                    (recomputedHandle & 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000) ==
+                        (element & 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000),
                     "Wrong handle in inputProof"
                 ); // @note only the before last byte corresponding to type, ie element[30] could not be checked, i.e on native type is malleable, this means it will be casted accordingly by the backend (or trivialEncrypt(0) if index is invalid)
                 if (i == indexHandle) {
@@ -166,16 +192,17 @@ contract InputVerifier is UUPSUpgradeable, Ownable2StepUpgradeable, IInputVerifi
     /// @notice Getter for the name and version of the contract
     /// @return string representing the name and the version of the contract
     function getVersion() external pure virtual returns (string memory) {
-        return string(
-            abi.encodePacked(
-                CONTRACT_NAME,
-                " v",
-                Strings.toString(MAJOR_VERSION),
-                ".",
-                Strings.toString(MINOR_VERSION),
-                ".",
-                Strings.toString(PATCH_VERSION)
-            )
-        );
+        return
+            string(
+                abi.encodePacked(
+                    CONTRACT_NAME,
+                    " v",
+                    Strings.toString(MAJOR_VERSION),
+                    ".",
+                    Strings.toString(MINOR_VERSION),
+                    ".",
+                    Strings.toString(PATCH_VERSION)
+                )
+            );
     }
 }

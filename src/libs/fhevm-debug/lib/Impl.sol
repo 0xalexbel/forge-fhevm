@@ -24,7 +24,7 @@ library Impl {
         /// The problem is even trickier when contract A creates contract B which creates contract C
         /// with C using TFHE. It can be painfull to find out why nothing is running...
         require(
-            $.TFHEExecutorAddress != address(0) || $.ACLAddress != address(0) || $.FHEPaymentAddress != address(0)
+            $.TFHEExecutorAddress != address(0) || $.ACLAddress != address(0) || $.FHEGasLimitAddress != address(0)
                 || $.KMSVerifierAddress != address(0),
             "A contract calls a function from the TFHE library without having initialized it beforehand. Call 'TFHE.setFHEVM(<your debug config>)' first!"
         );
@@ -48,7 +48,7 @@ library Impl {
         }
         $.ACLAddress = fhevmConfig.ACLAddress;
         $.TFHEExecutorAddress = fhevmConfig.TFHEExecutorAddress;
-        $.FHEPaymentAddress = fhevmConfig.FHEPaymentAddress;
+        $.FHEGasLimitAddress = fhevmConfig.FHEGasLimitAddress;
         $.KMSVerifierAddress = fhevmConfig.KMSVerifierAddress;
         // Extra
         $.TFHEDebuggerAddress = fhevmConfig.TFHEDebuggerAddress;

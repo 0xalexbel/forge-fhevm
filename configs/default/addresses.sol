@@ -14,7 +14,7 @@ address constant KMS_VERIFIER_ADDRESS = 0x208De73316E44722e16f6dDFF40881A3e4F861
 // Nonce = 7 (Impl nonce = 6) (included)
 address constant INPUT_VERIFIER_ADDRESS = 0x69dE3158643e738a0724418b21a35FAA20CBb1c5;
 // Nonce = 9 (Impl nonce = 8) (included)
-address constant FHE_PAYMENT_ADDRESS = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
+address constant FHE_GASLIMIT_ADDRESS = 0x6d5A11aC509C707c00bc3A0a113ACcC26c532547;
 
 // Fhevm Coprocessor
 uint256 constant COPROCESSOR_PK = 0x7ec8ada6642fc4ccfb7729bc29c17cf8d21b61abd5642d1db992c0b8672ab901;

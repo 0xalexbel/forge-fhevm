@@ -12,7 +12,7 @@ interface ITFHEExecutor is ICoreContract {
     }
 
     function getACLAddress() external view returns (address);
-    function getFHEPaymentAddress() external view returns (address);
+    function getFHEGasLimitAddress() external view returns (address);
     function getInputVerifierAddress() external view returns (address);
 
     function fheAdd(uint256 lhs, uint256 rhs, bytes1 scalarByte) external returns (uint256 result);

@@ -10,13 +10,13 @@ import {AddressLib} from "../../../common/AddressLib.sol";
 import {ICoreContract} from "../../../core/interfaces/ICoreContract.sol";
 import {IACL} from "../../../core/interfaces/IACL.sol";
 import {ITFHEExecutor} from "../../../core/interfaces/ITFHEExecutor.sol";
-import {IFHEPayment} from "../../../core/interfaces/IFHEPayment.sol";
+import {IFHEGasLimit} from "../../../core/interfaces/IFHEGasLimit.sol";
 import {IKMSVerifier} from "../../../core/interfaces/IKMSVerifier.sol";
 import {IInputVerifier} from "../../../core/interfaces/IInputVerifier.sol";
 
 import {ACL} from "../../../core/contracts/ACL.sol";
 import {TFHEExecutor} from "../../../core/contracts/TFHEExecutor.sol";
-import {FHEPayment} from "../../../core/contracts/FHEPayment.sol";
+import {FHEGasLimit} from "../../../core/contracts/FHEGasLimit.sol";
 import {KMSVerifier} from "../../../core/contracts/KMSVerifier.sol";
 import {InputVerifier as InputVerifierNative} from "../../../core/contracts/InputVerifier.native.sol";
 import {InputVerifier as InputVerifierCoprocessor} from "../../../core/contracts/InputVerifier.coprocessor.sol";
@@ -32,7 +32,7 @@ import {
     ACLVersion,
     TFHEExecutorVersion,
     KMSVerifierVersion,
-    FHEPaymentVersion,
+    FHEGasLimitVersion,
     InputVerifierVersion,
     CoreDeployerDefaultPK
 } from "./constants.sol";
@@ -80,7 +80,7 @@ library CoreDeployLib {
         // 2. TFHEExecutor
         // 3. KMSVerfier
         // 4. InputVerifier
-        // 5. FHEPayment
+        // 5. FHEGasLimit
         IACL acl = _deployACL(deployer, useNonce);
         ITFHEExecutor tfheExecutor = _deployTFHEExecutor(deployer, useNonce);
         IKMSVerifier kmsVerifier = _deployKMSVerifier(deployer, useNonce);
@@ -95,12 +95,12 @@ library CoreDeployLib {
             addresses.InputVerifierAddress = addresses.InputVerifierNativeAddress;
         }
 
-        IFHEPayment fhePayment = _deployFHEPayment(deployer, useNonce);
+        IFHEGasLimit fheGasLimit = _deployFHEGasLimit(deployer, useNonce);
 
         addresses.ACLAddress = address(acl);
         addresses.TFHEExecutorAddress = address(tfheExecutor);
         addresses.KMSVerifierAddress = address(kmsVerifier);
-        addresses.FHEPaymentAddress = address(fhePayment);
+        addresses.FHEGasLimitAddress = address(fheGasLimit);
 
         // Add kms signers to the KMSVerifier
         for (uint256 i = 0; i < kmsSignersAddr.length; ++i) {
@@ -253,45 +253,45 @@ library CoreDeployLib {
         return _kmsVerifier;
     }
 
-    function _deployFHEPaymentWithNonce(address deployerAddr) private returns (IFHEPayment) {
+    function _deployFHEGasLimitWithNonce(address deployerAddr) private returns (IFHEGasLimit) {
         (address expectedImplAddr, address expectedAddr, uint64 expectedImplNonce, uint64 expectedNonce) =
-            CoreAddressesLib.expectedCreateFHEPaymentAddress(deployerAddr);
+            CoreAddressesLib.expectedCreateFHEGasLimitAddress(deployerAddr);
 
-        if (_isVersion(expectedAddr, FHEPaymentVersion)) {
-            return IFHEPayment(expectedAddr);
+        if (_isVersion(expectedAddr, FHEGasLimitVersion)) {
+            return IFHEGasLimit(expectedAddr);
         }
 
         // Verify nonce
         vm.assertEq(
-            vm.getNonce(deployerAddr), expectedImplNonce, "deploy FHEPayment contract implementation: unexpected nonce"
+            vm.getNonce(deployerAddr), expectedImplNonce, "deploy FHEGasLimit contract implementation: unexpected nonce"
         );
 
-        // Deploy FHEPayment implementation
+        // Deploy FHEGasLimit implementation
         vm.broadcast(deployerAddr);
-        FHEPayment impl = new FHEPayment();
+        FHEGasLimit impl = new FHEGasLimit();
 
         // Verify deployed contract address
         vm.assertEq(
-            address(impl), expectedImplAddr, "deploy FHEPayment contract implementation: unexpected deploy address"
+            address(impl), expectedImplAddr, "deploy FHEGasLimit contract implementation: unexpected deploy address"
         );
         // Verify nonce
-        vm.assertEq(vm.getNonce(deployerAddr), expectedNonce, "deploy FHEPayment contract proxy: unexpected nonce");
+        vm.assertEq(vm.getNonce(deployerAddr), expectedNonce, "deploy FHEGasLimit contract proxy: unexpected nonce");
 
-        // Deploy FHEPayment proxy
+        // Deploy FHEGasLimit proxy
         vm.broadcast(deployerAddr);
         ERC1967Proxy proxy =
             new ERC1967Proxy(address(impl), abi.encodeWithSignature("initialize(address)", deployerAddr));
 
         // Verify deployed contract address
-        vm.assertEq(address(proxy), expectedAddr, "deploy FHEPayment contract proxy: unexpected deploy address");
+        vm.assertEq(address(proxy), expectedAddr, "deploy FHEGasLimit contract proxy: unexpected deploy address");
         // Verify nonce
         vm.assertEq(
-            vm.getNonce(deployerAddr), expectedNonce + 1, "deploy FHEPayment contract proxy: unexpected final nonce"
+            vm.getNonce(deployerAddr), expectedNonce + 1, "deploy FHEGasLimit contract proxy: unexpected final nonce"
         );
 
-        IFHEPayment _fhePayment = IFHEPayment(address(proxy));
+        IFHEGasLimit _fheGasLimit = IFHEGasLimit(address(proxy));
 
-        return _fhePayment;
+        return _fheGasLimit;
     }
 
     function _deployInputVerifierNativeWithNonce(address deployerAddr) private returns (address) {
@@ -414,10 +414,10 @@ library CoreDeployLib {
             : _deployKMSVerifierNoNonce(deployer.addr);
     }
 
-    function _deployFHEPayment(FFhevm.Signer memory deployer, bool useNonce) private returns (IFHEPayment) {
+    function _deployFHEGasLimit(FFhevm.Signer memory deployer, bool useNonce) private returns (IFHEGasLimit) {
         return (deployer.privateKey != 0 && useNonce)
-            ? _deployFHEPaymentWithNonce(deployer.addr)
-            : _deployFHEPaymentNoNonce(deployer.addr);
+            ? _deployFHEGasLimitWithNonce(deployer.addr)
+            : _deployFHEGasLimitNoNonce(deployer.addr);
     }
 
     function _deployInputVerifierNative(FFhevm.Signer memory deployer, bool useNonce) private returns (address) {
@@ -444,10 +444,10 @@ library CoreDeployLib {
         return ITFHEExecutor(expectedAddr);
     }
 
-    function _deployFHEPaymentNoNonce(address ownerAddr) private returns (IFHEPayment) {
-        address expectedAddr = CoreAddressesLib.expectedFHEPaymentAddress();
-        _deployCoreContractAt("FHEPayment", "FHEPayment.sol", expectedAddr, ownerAddr, FHEPaymentVersion);
-        return IFHEPayment(expectedAddr);
+    function _deployFHEGasLimitNoNonce(address ownerAddr) private returns (IFHEGasLimit) {
+        address expectedAddr = CoreAddressesLib.expectedFHEGasLimitAddress();
+        _deployCoreContractAt("FHEGasLimit", "FHEGasLimit.sol", expectedAddr, ownerAddr, FHEGasLimitVersion);
+        return IFHEGasLimit(expectedAddr);
     }
 
     function _deployKMSVerifierNoNonce(address ownerAddr) private returns (IKMSVerifier) {
