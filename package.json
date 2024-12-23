@@ -1,6 +1,6 @@
 {
     "name": "forge-fhevm",
-    "version": "0.6.0",
+    "version": "0.7.0",
     "description": "Forge FHEVM Library is a collection of helpful contracts and libraries for use with Forge and Zama's FHEVM.",
     "homepage": "https://github.com/0xalexbel/forge-fhevm/README.md",
     "bugs": "https://github.com/0xalexbel/forge-fhevm/issues",
