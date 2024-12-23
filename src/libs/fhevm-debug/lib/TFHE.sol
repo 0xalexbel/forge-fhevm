@@ -6,29 +6,17 @@ import {Impl} from "./Impl.sol";
 import {FFhevmDebugConfigStruct} from "../../debugger/config/FFhevmDebugConfig.sol";
 
 type ebool is uint256;
-
 type euint4 is uint256;
-
 type euint8 is uint256;
-
 type euint16 is uint256;
-
 type euint32 is uint256;
-
 type euint64 is uint256;
-
 type euint128 is uint256;
-
 type euint256 is uint256;
-
 type eaddress is uint256;
-
 type ebytes64 is uint256;
-
 type ebytes128 is uint256;
-
 type ebytes256 is uint256;
-
 type einput is bytes32;
 
 library Common {
@@ -47,7 +35,21 @@ library Common {
     uint8 internal constant ebytes256_t = 11;
 }
 
+/**
+ * @title   TFHE
+ * @notice  This library is the interaction point for all smart contract developers
+ *          that interact with TFHE.
+ */
 library TFHE {
+    /// @notice Returned if the input's length is greater than 64 bytes.
+    error InputLengthAbove64Bytes(uint256 inputLength);
+
+    /// @notice Returned if the input's length is greater than 128 bytes.
+    error InputLengthAbove128Bytes(uint256 inputLength);
+
+    /// @notice Returned if the input's length is greater than 256 bytes.
+    error InputLengthAbove256Bytes(uint256 inputLength);
+
     function setFHEVM(FFhevmDebugConfigStruct memory fhevmConfig) internal {
         Impl.setFHEVM(fhevmConfig);
     }
@@ -10443,13 +10445,19 @@ library TFHE {
 
     // Left-pad a bytes array with zeros such that it becomes of length 64.
     function padToBytes64(bytes memory input) internal pure returns (bytes memory) {
-        require(input.length <= 64, "Input exceeds 64 bytes");
+        uint256 inputLength = input.length;
+
+        if (inputLength > 64) {
+            revert InputLengthAbove64Bytes(inputLength);
+        }
+
         bytes memory result = new bytes(64);
-        uint256 paddingLength = 64 - input.length;
+        uint256 paddingLength = 64 - inputLength;
+
         for (uint256 i = 0; i < paddingLength; i++) {
             result[i] = 0;
         }
-        for (uint256 i = 0; i < input.length; i++) {
+        for (uint256 i = 0; i < inputLength; i++) {
             result[paddingLength + i] = input[i];
         }
         return result;
@@ -10467,13 +10475,18 @@ library TFHE {
 
     // Left-pad a bytes array with zeros such that it becomes of length 128.
     function padToBytes128(bytes memory input) internal pure returns (bytes memory) {
-        require(input.length <= 128, "Input exceeds 128 bytes");
+        uint256 inputLength = input.length;
+
+        if (inputLength > 128) {
+            revert InputLengthAbove128Bytes(inputLength);
+        }
+
         bytes memory result = new bytes(128);
-        uint256 paddingLength = 128 - input.length;
+        uint256 paddingLength = 128 - inputLength;
         for (uint256 i = 0; i < paddingLength; i++) {
             result[i] = 0;
         }
-        for (uint256 i = 0; i < input.length; i++) {
+        for (uint256 i = 0; i < inputLength; i++) {
             result[paddingLength + i] = input[i];
         }
         return result;
@@ -10491,13 +10504,18 @@ library TFHE {
 
     // Left-pad a bytes array with zeros such that it becomes of length 256.
     function padToBytes256(bytes memory input) internal pure returns (bytes memory) {
-        require(input.length <= 256, "Input exceeds 256 bytes");
+        uint256 inputLength = input.length;
+
+        if (inputLength > 256) {
+            revert InputLengthAbove256Bytes(inputLength);
+        }
+
         bytes memory result = new bytes(256);
-        uint256 paddingLength = 256 - input.length;
+        uint256 paddingLength = 256 - inputLength;
         for (uint256 i = 0; i < paddingLength; i++) {
             result[i] = 0;
         }
-        for (uint256 i = 0; i < input.length; i++) {
+        for (uint256 i = 0; i < inputLength; i++) {
             result[paddingLength + i] = input[i];
         }
         return result;
@@ -10837,9 +10855,11 @@ library TFHE {
     }
 
     // cleans the transient storage of ACL containing all the allowedTransient accounts
+    // also cleans transient storage of InputVerifier containing cached inputProofs
     // to be used for integration with Account Abstraction or when bundling UserOps calling the FHEVMCoprocessor
     function cleanTransientStorage() internal {
-        return Impl.cleanTransientStorage();
+        Impl.cleanTransientStorageACL();
+        Impl.cleanTransientStorageInputVerifier();
     }
 
     function isAllowed(ebool value, address account) internal view returns (bool) {
@@ -11052,6 +11072,14 @@ library TFHE {
 
     function allowTransient(eaddress value, address account) internal {
         Impl.allowTransient(eaddress.unwrap(value), account);
+    }
+
+    function allowTransient(ebytes64 value, address account) internal {
+        Impl.allowTransient(ebytes64.unwrap(value), account);
+    }
+
+    function allowTransient(ebytes128 value, address account) internal {
+        Impl.allowTransient(ebytes128.unwrap(value), account);
     }
 
     function allowTransient(ebytes256 value, address account) internal {

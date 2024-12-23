@@ -46,7 +46,7 @@ contract FFhevmGatewayPrecompile is FFhevmPrecompile, IFFhevmGateway {
         });
 
         for (uint256 id = _requestCount; id < counter; ++id) {
-            (uint256[] memory cts, uint256 msgValue, bool passSignaturesToCaller) = gc.getDecryptionRequest(id);
+            (uint256[] memory cts, uint256 msgValue, /*bool passSignaturesToCaller*/) = gc.getDecryptionRequest(id);
 
             bytes memory decryptedResult;
             bytes memory decryptedResultOffsets;

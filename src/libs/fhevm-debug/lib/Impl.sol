@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 
 import {AddressLib} from "../../common/AddressLib.sol";
 import {IACL} from "../../core/interfaces/IACL.sol";
+import {IInputVerifier} from "../../core/interfaces/IInputVerifier.sol";
 import {ITFHEExecutor} from "../../core/interfaces/ITFHEExecutor.sol";
 import {ITFHEExecutorDebugger} from "../../debugger/impl/interfaces/ITFHEExecutorDebugger.sol";
 import {FFhevmDebugConfigStruct} from "../../debugger/config/FFhevmDebugConfig.sol";
@@ -24,7 +25,7 @@ library Impl {
         /// The problem is even trickier when contract A creates contract B which creates contract C
         /// with C using TFHE. It can be painfull to find out why nothing is running...
         require(
-            $.TFHEExecutorAddress != address(0) || $.ACLAddress != address(0) || $.FHEGasLimitAddress != address(0)
+            $.TFHEExecutorAddress != address(0) || $.ACLAddress != address(0) || $.InputVerifierAddress != address(0)
                 || $.KMSVerifierAddress != address(0),
             "A contract calls a function from the TFHE library without having initialized it beforehand. Call 'TFHE.setFHEVM(<your debug config>)' first!"
         );
@@ -48,7 +49,7 @@ library Impl {
         }
         $.ACLAddress = fhevmConfig.ACLAddress;
         $.TFHEExecutorAddress = fhevmConfig.TFHEExecutorAddress;
-        $.FHEGasLimitAddress = fhevmConfig.FHEGasLimitAddress;
+        $.InputVerifierAddress = fhevmConfig.InputVerifierAddress;
         $.KMSVerifierAddress = fhevmConfig.KMSVerifierAddress;
         // Extra
         $.TFHEDebuggerAddress = fhevmConfig.TFHEDebuggerAddress;
@@ -610,9 +611,14 @@ library Impl {
         IACL($.ACLAddress).allow(handle, account);
     }
 
-    function cleanTransientStorage() internal {
+    function cleanTransientStorageACL() internal {
         FFhevmDebugConfigStruct storage $ = getFHEVMConfig();
         IACL($.ACLAddress).cleanTransientStorage();
+    }
+
+    function cleanTransientStorageInputVerifier() internal {
+        FFhevmDebugConfigStruct storage $ = getFHEVMConfig();
+        IInputVerifier($.InputVerifierAddress).cleanTransientStorage();
     }
 
     function isAllowed(uint256 handle, address account) internal view returns (bool) {

@@ -55,7 +55,7 @@ library FFhevmConfigLib {
             FFhevmDebugConfigStruct({
                 ACLAddress: ffhevmConfig.core.ACLAddress,
                 TFHEExecutorAddress: ffhevmConfig.core.TFHEExecutorAddress,
-                FHEGasLimitAddress: ffhevmConfig.core.FHEGasLimitAddress,
+                InputVerifierAddress: ffhevmConfig.core.InputVerifierAddress,
                 KMSVerifierAddress: ffhevmConfig.core.KMSVerifierAddress,
                 // FFhevm addresses
                 TFHEDebuggerAddress: ffhevmConfig.debugger.TFHEDebuggerAddress,

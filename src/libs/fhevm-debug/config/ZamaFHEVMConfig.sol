@@ -6,7 +6,7 @@ import {FFhevmDebugConfigStruct} from "../../debugger/config/FFhevmDebugConfig.s
 import {
     ACL_ADDRESS,
     TFHE_EXECUTOR_ADDRESS,
-    FHE_GASLIMIT_ADDRESS,
+    INPUT_VERIFIER_ADDRESS,
     KMS_VERIFIER_ADDRESS,
     FFHEVM_DEBUGGER_ADDRESS,
     FFHEVM_DEBUGGER_DB_ADDRESS
@@ -24,7 +24,7 @@ library ZamaFHEVMConfig {
         return FFhevmDebugConfigStruct({
             ACLAddress: ACL_ADDRESS,
             TFHEExecutorAddress: TFHE_EXECUTOR_ADDRESS,
-            FHEGasLimitAddress: FHE_GASLIMIT_ADDRESS,
+            InputVerifierAddress: INPUT_VERIFIER_ADDRESS,
             KMSVerifierAddress: KMS_VERIFIER_ADDRESS,
             TFHEDebuggerAddress: FFHEVM_DEBUGGER_ADDRESS,
             TFHEDebuggerDBAddress: FFHEVM_DEBUGGER_DB_ADDRESS,

@@ -113,7 +113,7 @@ library FFhevm {
         return FFhevmDebugConfigStruct({
             ACLAddress: ADDRESSES.ACL_ADDRESS,
             TFHEExecutorAddress: ADDRESSES.TFHE_EXECUTOR_ADDRESS,
-            FHEGasLimitAddress: ADDRESSES.FHE_GASLIMIT_ADDRESS,
+            InputVerifierAddress: ADDRESSES.INPUT_VERIFIER_ADDRESS,
             KMSVerifierAddress: ADDRESSES.KMS_VERIFIER_ADDRESS,
             // ffhevm addresses
             TFHEDebuggerAddress: ADDRESSES.FFHEVM_DEBUGGER_ADDRESS,

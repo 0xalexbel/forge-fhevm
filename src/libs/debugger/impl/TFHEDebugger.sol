@@ -100,7 +100,7 @@ contract TFHEDebugger is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEExecutor
     function verifyFFhevmDebuggerConfig(FFhevmDebugConfigStruct memory ffhevmDebuggerConfig) external {
         if (
             ffhevmDebuggerConfig.ACLAddress == address(0) || ffhevmDebuggerConfig.TFHEExecutorAddress == address(0)
-                || ffhevmDebuggerConfig.FHEGasLimitAddress == address(0)
+                || ffhevmDebuggerConfig.InputVerifierAddress == address(0)
                 || ffhevmDebuggerConfig.KMSVerifierAddress == address(0)
         ) {
             revert InvalidFhevmConfigMissingAddress();
@@ -108,7 +108,7 @@ contract TFHEDebugger is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEExecutor
         if (
             !AddressLib.isDeployed(ffhevmDebuggerConfig.ACLAddress)
                 || !AddressLib.isDeployed(ffhevmDebuggerConfig.TFHEExecutorAddress)
-                || !AddressLib.isDeployed(ffhevmDebuggerConfig.FHEGasLimitAddress)
+                || !AddressLib.isDeployed(ffhevmDebuggerConfig.InputVerifierAddress)
                 || !AddressLib.isDeployed(ffhevmDebuggerConfig.KMSVerifierAddress)
         ) {
             revert("Wrong FHEVM config.");
@@ -144,23 +144,34 @@ contract TFHEDebugger is UUPSUpgradeable, Ownable2StepUpgradeable, ITFHEExecutor
             revert InvalidFhevmConfigInvalidCoreContract(ffhevmDebuggerConfig.TFHEExecutorAddress);
         }
 
-        try ITFHEExecutor(ffhevmDebuggerConfig.TFHEExecutorAddress).getFHEGasLimitAddress() returns (address fheGasLimitAddr)
+        // try ITFHEExecutor(ffhevmDebuggerConfig.TFHEExecutorAddress).getFHEGasLimitAddress() returns (address fheGasLimitAddr)
+        // {
+        //     if (fheGasLimitAddr != ffhevmDebuggerConfig.FHEGasLimitAddress) {
+        //         revert InvalidFhevmConfigAddressMismatch();
+        //     }
+        // } catch {
+        //     revert InvalidFhevmConfigInvalidCoreContract(ffhevmDebuggerConfig.TFHEExecutorAddress);
+        // }
+
+        address _inputVerifierAddr;
+        try ITFHEExecutor(ffhevmDebuggerConfig.TFHEExecutorAddress).getInputVerifierAddress() returns (address inputVerifierAddr)
         {
-            if (fheGasLimitAddr != ffhevmDebuggerConfig.FHEGasLimitAddress) {
+            _inputVerifierAddr = inputVerifierAddr;
+            if (_inputVerifierAddr != ffhevmDebuggerConfig.InputVerifierAddress) {
                 revert InvalidFhevmConfigAddressMismatch();
             }
         } catch {
             revert InvalidFhevmConfigInvalidCoreContract(ffhevmDebuggerConfig.TFHEExecutorAddress);
         }
 
-        address _inputVerifierAddr;
-        try ITFHEExecutor(ffhevmDebuggerConfig.TFHEExecutorAddress).getInputVerifierAddress() returns (
-            address inputVerifierAddr
-        ) {
-            _inputVerifierAddr = inputVerifierAddr;
-        } catch {
-            revert InvalidFhevmConfigInvalidCoreContract(ffhevmDebuggerConfig.TFHEExecutorAddress);
-        }
+        // address _inputVerifierAddr;
+        // try ITFHEExecutor(ffhevmDebuggerConfig.TFHEExecutorAddress).getInputVerifierAddress() returns (
+        //     address inputVerifierAddr
+        // ) {
+        //     _inputVerifierAddr = inputVerifierAddr;
+        // } catch {
+        //     revert InvalidFhevmConfigInvalidCoreContract(ffhevmDebuggerConfig.TFHEExecutorAddress);
+        // }
 
         try IInputVerifier(_inputVerifierAddr).getKMSVerifierAddress() returns (address kmsVerifierAddr) {
             if (kmsVerifierAddr != ffhevmDebuggerConfig.KMSVerifierAddress) {

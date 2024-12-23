@@ -13,4 +13,5 @@ interface IInputVerifier is ICoreContract {
     ) external returns (uint256);
 
     function getKMSVerifierAddress() external returns (address);
+    function cleanTransientStorage() external;
 }
