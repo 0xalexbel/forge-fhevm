@@ -4,24 +4,11 @@ solc = "0.8.24"
 test = "test"
 cache_path = "cache"
 evm_version = 'cancun'
-fs_permissions = [{ access = "read", path = "./node_modules/fhevm-core-contracts/artifacts"}, { access = "read", path = "./out"}]
+fs_permissions = [{ access = "read", path = "./node_modules/fhevm-core-contracts/artifacts"}]
 remappings = [
     "forge-std/=dependencies/forge-std-1.9.3/",
-    "forge-fhevm-config/=configs/sepolia/",
+    "forge-fhevm-config/=configs/default/",
     "fhevm/=src/libs/fhevm-debug/"
-]
-
-[profile.zama]
-libs = ["dependencies", "node_modules"]
-solc = "0.8.24"
-test = "test-zama"
-out = "out-zama"
-cache_path = "cache-zama"
-evm_version = 'cancun'
-remappings = [
-    "forge-std/=dependencies/forge-std-1.9.3/",
-    "forge-fhevm-config/=configs/sepolia/",
-    "fhevm/=node_modules/fhevm/"
 ]
 
 [dependencies]

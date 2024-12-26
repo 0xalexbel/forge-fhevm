@@ -7,7 +7,7 @@ A forge library to run Zama's fhevm
 
 ```json
 "dependencies": {
-    "fhevm-core-contracts": "^0.6.0",
+    "fhevm-core-contracts": "^0.6.1",
     "@openzeppelin/contracts": "^5.1.0",
     "@openzeppelin/contracts-upgradeable": "^5.1.0",
 }
@@ -27,14 +27,14 @@ fs_permissions = [{ access = "read", path = "./node_modules/fhevm-core-contracts
 libs = ["dependencies", "node-modules"]
 remappings= [
     "forge-std/=dependencies/forge-std-1.9.3/",
-    "forge-fhevm/=dependencies/forge-fhevm-0.6.0/",
-    "forge-fhevm-config/=dependencies/forge-fhevm-0.6.0/configs/default/",
-    "fhevm/=dependencies/forge-fhevm-0.6.0/src/libs/fhevm-debug/"
+    "forge-fhevm/=dependencies/forge-fhevm-0.6.2/",
+    "forge-fhevm-config/=dependencies/forge-fhevm-0.6.2/configs/sepolia/",
+    "fhevm/=dependencies/forge-fhevm-0.6.2/src/libs/fhevm-debug/"
 ]
 
 [dependencies]
 forge-std = "1.9.3"
-forge-fhevm = { version = "0.6.0", git = "https://github.com/0xalexbel/forge-fhevm.git" }
+forge-fhevm = { version = "0.6.2", git = "https://github.com/0xalexbel/forge-fhevm.git" }
 
 [soldeer]
 remappings_version = false
@@ -47,6 +47,9 @@ remappings_location = "config"
 ## Development
 
 ```bash
+# restore .env
+cp ./env.sepolia ./.env
+
 # restore foundry.toml
 cp ./foundry.toml.dev ./foundry.toml
 

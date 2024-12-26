@@ -1,0 +1,38 @@
+[profile.default]
+libs = ["dependencies", "node_modules"]
+solc = "0.8.24"
+test = "test"
+cache_path = "cache"
+evm_version = 'cancun'
+fs_permissions = [{ access = "read", path = "./node_modules/fhevm-core-contracts/artifacts"}]
+remappings = [
+    "forge-std/=dependencies/forge-std-1.9.3/",
+    "forge-fhevm-config/=configs/sepolia/",
+    "fhevm/=src/libs/fhevm-debug/"
+]
+
+[dependencies]
+forge-std = "1.9.3"
+
+[soldeer]
+remappings_version = false
+remappings_generate = false
+remappings_regenerate = false
+remappings_prefix = ""
+remappings_location = "config"
+
+[fmt]
+# These are all the `forge fmt` defaults.
+line_length = 120
+tab_width = 4
+bracket_spacing = false
+int_types = 'long'
+multiline_func_header = 'attributes_first'
+quote_style = 'double'
+number_underscore = 'preserve'
+single_line_statement_blocks = 'preserve'
+ignore = ["src/console.sol", "src/console2.sol"]
+
+[fuzz]
+runs = 1000
+
