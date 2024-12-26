@@ -20,7 +20,7 @@ cache_path = "cache-zama"
 evm_version = 'cancun'
 remappings = [
     "forge-std/=dependencies/forge-std-1.9.3/",
-    "forge-fhevm-config/=configs/default/",
+    "forge-fhevm-config/=configs/sepolia/",
     "fhevm/=node_modules/fhevm/"
 ]
 
