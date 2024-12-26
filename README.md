@@ -46,16 +46,35 @@ remappings_location = "config"
 
 ## Development
 
+### Dev env using sepolia addresses 
+
 ```bash
 # restore .env
 cp ./env.sepolia ./.env
 
 # restore foundry.toml
-cp ./foundry.toml.dev ./foundry.toml
+cp ./foundry.toml.sepolia ./foundry.toml
 
 # restore remappings.txt (for vscode)
-cp ./remappings.txt.debug ./remappings.txt
+cp ./remappings.txt.sepolia ./remappings.txt
+```
 
+### Dev env using ffhevm default addresses 
+
+```bash
+# restore .env
+cp ./env.default ./.env
+
+# restore foundry.toml
+cp ./foundry.toml.default ./foundry.toml
+
+# restore remappings.txt (for vscode)
+cp ./remappings.txt.default ./remappings.txt
+```
+
+### Install+Test
+
+```bash
 # install dependencies
 forge soldeer install
 
