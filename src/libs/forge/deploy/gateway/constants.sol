@@ -15,7 +15,7 @@ uint64 constant GatewayContractNonce = 1;
 
 // ====================== ⭐️ Required versions ⭐️ ======================== //
 
-string constant GatewayContractVersion = "GatewayContract v0.1.0";
+string constant GatewayContractVersion = "GatewayContract v0.1.1";
 
 // ===================== ⭐️ Default Deployer PK ⭐️ ======================= //
 

@@ -46,11 +46,12 @@ contract FFhevmGatewayPrecompile is FFhevmPrecompile, IFFhevmGateway {
         });
 
         for (uint256 id = _requestCount; id < counter; ++id) {
-            (uint256[] memory cts, uint256 msgValue, bool passSignaturesToCaller) = gc.getDecryptionRequest(id);
+            (uint256[] memory cts, uint256 msgValue, /*bool passSignaturesToCaller*/) = gc.getDecryptionRequest(id);
 
             bytes memory decryptedResult;
             bytes memory decryptedResultOffsets;
-            uint256 offset = (passSignaturesToCaller) ? (cts.length + 2) * 32 : (cts.length + 1) * 32;
+            //uint256 offset = (passSignaturesToCaller) ? (cts.length + 2) * 32 : (cts.length + 1) * 32;
+            uint256 offset = (cts.length + 1) * 32;
 
             for (uint8 j = 0; j < cts.length; ++j) {
                 if (TFHEHandle.is256Bits(cts[j])) {
@@ -70,9 +71,9 @@ contract FFhevmGatewayPrecompile is FFhevmPrecompile, IFFhevmGateway {
                 }
             }
 
-            if (passSignaturesToCaller) {
-                decryptedResult = bytes.concat(decryptedResult, bytes32(offset));
-            }
+            // if (passSignaturesToCaller) {
+            //     decryptedResult = bytes.concat(decryptedResult, bytes32(offset));
+            // }
 
             decryptedResult = bytes.concat(decryptedResult, decryptedResultOffsets);
 

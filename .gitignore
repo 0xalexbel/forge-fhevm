@@ -8,6 +8,7 @@ foundry.toml
 remappings.txt
 broadcast/
 *.solcx-lock*.*
+legacy-core-contracts/
 
 # Logs
 logs
