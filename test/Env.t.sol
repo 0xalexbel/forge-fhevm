@@ -14,8 +14,28 @@ import {FFhevm} from "../src/FFhevm.sol";
 
 import {CORE_DEPLOYER_PK, COPROCESSOR_PK, GATEWAY_DEPLOYER_PK} from "forge-fhevm-config/addresses.sol";
 
+contract EnvTestRevert is Test {
+    // Use "__" prefix, because forge does not support same function name as calling function!
+    function __testRevert_missing_kms_signer_pk() public {
+        uint256[] memory defaultPks = new uint256[](10);
+        for (uint256 i = 0; i < defaultPks.length; ++i) {
+            defaultPks[i] =
+                uint256(keccak256(bytes(string.concat("ffhevm.default_kms_signer.wallet.", vm.toString(i)))));
+        }
+        
+        FFhevm.Signer[] memory signers = EnvLib.envSignersArray("PRIVATE_KEY_KMS_SIGNER_", defaultPks);
+        for (uint256 i = 0; i < signers.length; ++i) {
+            console.log("signers[%s] = %s", i, signers[i].privateKey);
+        }
+    }
+}
+
 contract EnvTest is Test {
-    function setUp() public {}
+    EnvTestRevert envTestRevert;
+
+    function setUp() public {
+        envTestRevert = new EnvTestRevert();
+    }
 
     function test_FhevmEnvConfig() public {
         FFhevm.DeployConfig memory cfg = FFhevmDeployConfigLib.initializeWithEnv();
@@ -26,16 +46,9 @@ contract EnvTest is Test {
         vm.assertEq(cfg.coprocessorAccount.privateKey, COPROCESSOR_PK, "COPROCESSOR_PK");
     }
 
-    function testFail_missing_kms_signer_pk() public {
-        uint256[] memory defaultPks = new uint256[](10);
-        for (uint256 i = 0; i < defaultPks.length; ++i) {
-            defaultPks[i] =
-                uint256(keccak256(bytes(string.concat("ffhevm.default_kms_signer.wallet.", vm.toString(i)))));
-        }
-        FFhevm.Signer[] memory signers = EnvLib.envSignersArray("PRIVATE_KEY_KMS_SIGNER_", defaultPks);
-        for (uint256 i = 0; i < signers.length; ++i) {
-            console.log("signers[%s] = %s", i, signers[i].privateKey);
-        }
+    function testRevert_missing_kms_signer_pk() public {
+        vm.expectRevert("Missing signer env variable PRIVATE_KEY_KMS_SIGNER_4");
+        envTestRevert.__testRevert_missing_kms_signer_pk();
     }
 
     function test_env_kms_signer_pk() public {

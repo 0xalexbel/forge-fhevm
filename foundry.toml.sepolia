@@ -6,13 +6,13 @@ cache_path = "cache"
 evm_version = 'cancun'
 fs_permissions = [{ access = "read", path = "./node_modules/fhevm-core-contracts/artifacts"}, { access = "read", path = "./out"}]
 remappings = [
-    "forge-std/=dependencies/forge-std-1.9.3/",
+    "forge-std/=dependencies/forge-std-1.10.0/",
     "forge-fhevm-config/=configs/sepolia/",
     "fhevm/=src/libs/fhevm-debug/"
 ]
 
 [dependencies]
-forge-std = "1.9.3"
+forge-std = "1.10.0"
 
 [soldeer]
 remappings_version = false
