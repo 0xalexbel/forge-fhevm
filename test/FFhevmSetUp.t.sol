@@ -15,8 +15,30 @@ import {AddressLib} from "../src/libs/common/AddressLib.sol";
 
 import {FHEVMConfig} from "./FHEVMConfig.sol";
 
+contract FFhevmSetUpTestRevert is Test {
+    // Use "__" prefix, because forge does not support same function name as calling function!
+    function __testRevert_access_TFHE_without_setup() public {
+        // "A contract calls a function from the TFHE library without having initialized it beforehand. Call 'TFHE.setFHEVM(<your debug config>)' first!"
+        TFHE.asEuint32(123);
+    }    
+
+    // Use "__" prefix, because forge does not support same function name as calling function!
+    function __testRevert_access_TFHE_undeployed_config() public {
+        FFhevm.Config memory ffhevmConfig = FFhevmConfigLib.initializeWithEnv();
+        // in rpc mode, contracts are already deployed. Bypass the test.
+        vm.assume(!AddressLib.isDeployed(ffhevmConfig.core.ACLAddress));
+
+        // error: FFhevm debugger not deployed.
+        TFHE.setFHEVM(FHEVMConfig.defaultConfig());
+    }
+}
+
 contract FFhevmSetUpTest is Test {
-    function setUp() public {}
+    FFhevmSetUpTestRevert ffhevmSetUpTestRevert;
+
+    function setUp() public {
+        ffhevmSetUpTestRevert = new FFhevmSetUpTestRevert();
+    }
 
     function test_setUpCore() public {
         FFhevm.DeployConfig memory deployConfig = FFhevmDeployConfigLib.initializeWithEnv();
@@ -42,17 +64,13 @@ contract FFhevmSetUpTest is Test {
         TFHE.asEuint32(123);
     }
 
-    function testFail_access_TFHE_without_setup() public {
-        // "A contract calls a function from the TFHE library without having initialized it beforehand. Call 'TFHE.setFHEVM(<your debug config>)' first!"
-        TFHE.asEuint32(123);
+    function testRevert_access_TFHE_without_setup() public {
+        vm.expectRevert();
+        ffhevmSetUpTestRevert.__testRevert_access_TFHE_without_setup();
     }
 
-    function testFail_access_TFHE_undeployed_config() public {
-        FFhevm.Config memory ffhevmConfig = FFhevmConfigLib.initializeWithEnv();
-        // in rpc mode, contracts are already deployed. Bypass the test.
-        vm.assume(!AddressLib.isDeployed(ffhevmConfig.core.ACLAddress));
-
-        // error: FFhevm debugger not deployed.
-        TFHE.setFHEVM(FHEVMConfig.defaultConfig());
+    function testRevert_access_TFHE_undeployed_config() public {
+        vm.expectRevert();
+        ffhevmSetUpTestRevert.__testRevert_access_TFHE_undeployed_config();
     }
 }

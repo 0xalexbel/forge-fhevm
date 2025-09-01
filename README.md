@@ -26,14 +26,14 @@ cache_path = "cache"
 fs_permissions = [{ access = "read", path = "./node_modules/fhevm-core-contracts/artifacts"}, { access = "read", path = "./out"}]
 libs = ["dependencies", "node-modules"]
 remappings= [
-    "forge-std/=dependencies/forge-std-1.9.3/",
+    "forge-std/=dependencies/forge-std-1.10.0/",
     "forge-fhevm/=dependencies/forge-fhevm-0.6.2/",
     "forge-fhevm-config/=dependencies/forge-fhevm-0.6.2/configs/sepolia/",
     "fhevm/=dependencies/forge-fhevm-0.6.2/src/libs/fhevm-debug/"
 ]
 
 [dependencies]
-forge-std = "1.9.3"
+forge-std = "1.10.0"
 forge-fhevm = { version = "0.6.2", git = "https://github.com/0xalexbel/forge-fhevm.git" }
 
 [soldeer]
@@ -50,7 +50,7 @@ remappings_location = "config"
 
 ```bash
 # restore .env
-cp ./env.sepolia ./.env
+cp ./.env.sepolia ./.env
 
 # restore foundry.toml
 cp ./foundry.toml.sepolia ./foundry.toml
@@ -63,7 +63,7 @@ cp ./remappings.txt.sepolia ./remappings.txt
 
 ```bash
 # restore .env
-cp ./env.default ./.env
+cp ./.env.default ./.env
 
 # restore foundry.toml
 cp ./foundry.toml.default ./foundry.toml
