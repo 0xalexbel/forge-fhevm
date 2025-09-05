@@ -50,6 +50,7 @@ library CoreDeployLib {
         pure
         returns (string memory)
     {
+        // string memory path = string.concat("./out/", contractFilename, "/", contractName, ".json");
         return string.concat(
             "./node_modules/fhevm-core-contracts/artifacts/contracts/", contractFilename, "/", contractName, ".json"
         );

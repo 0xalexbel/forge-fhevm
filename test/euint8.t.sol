@@ -5,22 +5,144 @@ import {Vm} from "forge-std/src/Vm.sol";
 import {Test} from "forge-std/src/Test.sol";
 import {console} from "forge-std/src/console.sol";
 
-import {TFHE, euint4, euint8, euint64, einput, ebool, ebytes256} from "../src/libs/fhevm-debug/lib/TFHE.sol";
+import {SepoliaZamaFHEVMConfig} from "fhevm/config/ZamaFHEVMConfig.sol";
 
+import {TFHE, euint4, euint8, euint64, einput, ebool, ebytes256} from "../src/libs/fhevm-debug/lib/TFHE.sol";
 import {FhevmDebug} from "../src/FhevmDebug.sol";
 import {FFhevm} from "../src/FFhevm.sol";
+import {MathLib} from "../src/libs/debugger/impl/lib/MathLib.sol";
+import {ITFHEDebuggerDB} from "../src/libs/debugger/impl/interfaces/ITFHEDebuggerDB.sol";
+
+contract EUint8TestRevert is SepoliaZamaFHEVMConfig {
+    // Use "__" prefix, because forge does not support same function name as calling function!
+    function __testRevert_AsEUint8_overflow() public {
+        TFHE.asEuint8(65000);
+    }
+
+    // Use "__" prefix, because forge does not support same function name as calling function!
+    function __testRevert_revert_Add_no_contract_permission() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(2);
+        euint8 ei3 = TFHE.add(ei1, ei2);
+
+        TFHE.allow(ei3, userAddress);
+
+        // contractAddress does not have permission to decrypt handle
+        // Note cannot use vm.expectRevert().
+        // forge does not detect it
+        // use testFail_xxx instead
+        FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
+    }
+
+    // Use "__" prefix, because forge does not support same function name as calling function!
+    function __testRevert_revert_Sub_no_contract_permission() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(2);
+        euint8 ei3 = TFHE.sub(ei1, ei2);
+
+        TFHE.allow(ei3, userAddress);
+
+        // contractAddress does not have permission to decrypt handle
+        // Note cannot use vm.expectRevert().
+        // forge does not detect it
+        // use testFail_xxx instead
+        FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
+    }
+
+    // Use "__" prefix, because forge does not support same function name as calling function!
+    function __testRevert_revert_Sub_no_user_permission() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(2);
+        euint8 ei3 = TFHE.sub(ei1, ei2);
+
+        TFHE.allow(ei3, contractAddress);
+
+        // userAddress does not have permission to decrypt handle
+        // Note cannot use vm.expectRevert().
+        // forge does not detect it
+        // use testFail_xxx instead
+        FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
+    }
+
+    // Use "__" prefix, because forge does not support same function name as calling function!
+    function __testRevert_revert_Sub_underflow() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(2);
+        euint8 ei3 = TFHE.sub(ei2, ei1);
+
+        TFHE.allow(ei3, contractAddress);
+        TFHE.allow(ei3, userAddress);
+
+        // Note in strict mode, cannot use vm.expectRevert().
+        // forge does not detect it
+        // use testFail_xxx instead
+        FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
+    }
+
+    // Use "__" prefix, because forge does not support same function name as calling function!
+    function __testRevert_revert_Add_no_user_permission() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(2);
+        euint8 ei3 = TFHE.add(ei1, ei2);
+
+        TFHE.allow(ei3, contractAddress);
+
+        // serAddress does not have permission to decrypt handle
+        // Note cannot use vm.expectRevert().
+        // forge does not detect it
+        // use testFail_xxx instead
+        FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
+    }
+
+    // Use "__" prefix, because forge does not support same function name as calling function!
+    function __testRevert_revert_Add_overflow() public {
+        address userAddress = msg.sender;
+        address contractAddress = address(this);
+
+        euint8 ei1 = TFHE.asEuint8(128);
+        euint8 ei2 = TFHE.asEuint8(129);
+        euint8 ei3 = TFHE.add(ei1, ei2);
+
+        TFHE.allow(ei3, contractAddress);
+        TFHE.allow(ei3, userAddress);
+
+        // Note cannot use vm.expectRevert().
+        // forge does not detect it
+        // use testFail_xxx instead
+        FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
+    }
+}
 
 contract EUint8Test is Test {
+    EUint8TestRevert euint8TestRevert;
+
     function setUp() public {
         FFhevm.setUp();
+        euint8TestRevert = new EUint8TestRevert();
     }
 
     function test_AsEUint8() public {
         TFHE.asEuint8(128);
     }
 
-    function testFail_AsEUint8_overflow() public {
-        TFHE.asEuint8(65000);
+    function testRevert_AsEUint8_overflow() public {
+        vm.expectPartialRevert(ITFHEDebuggerDB.ClearNumericOverflow.selector);
+        euint8TestRevert.__testRevert_AsEUint8_overflow();
     }
 
     // ===== Add =====
@@ -61,38 +183,14 @@ contract EUint8Test is Test {
         vm.assertEq(i3, v);
     }
 
-    function testFail_revert_Add_no_user_permission() public {
-        address userAddress = msg.sender;
-        address contractAddress = address(this);
-
-        euint8 ei1 = TFHE.asEuint8(128);
-        euint8 ei2 = TFHE.asEuint8(2);
-        euint8 ei3 = TFHE.add(ei1, ei2);
-
-        TFHE.allow(ei3, contractAddress);
-
-        // serAddress does not have permission to decrypt handle
-        // Note cannot use vm.expectRevert().
-        // forge does not detect it
-        // use testFail_xxx instead
-        FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
+    function testRevert_revert_Add_no_user_permission() public {
+        vm.expectPartialRevert(FhevmDebug.UserAddressNotPermanentlyAllowed.selector);
+        euint8TestRevert.__testRevert_revert_Add_no_user_permission();
     }
 
-    function testFail_revert_Add_no_contract_permission() public {
-        address userAddress = msg.sender;
-        address contractAddress = address(this);
-
-        euint8 ei1 = TFHE.asEuint8(128);
-        euint8 ei2 = TFHE.asEuint8(2);
-        euint8 ei3 = TFHE.add(ei1, ei2);
-
-        TFHE.allow(ei3, userAddress);
-
-        // contractAddress does not have permission to decrypt handle
-        // Note cannot use vm.expectRevert().
-        // forge does not detect it
-        // use testFail_xxx instead
-        FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
+    function testRevert_revert_Add_no_contract_permission() public {
+        vm.expectPartialRevert(FhevmDebug.ContractAddressNotPermanentlyAllowed.selector);
+        euint8TestRevert.__testRevert_revert_Add_no_contract_permission();
     }
 
     function test_Add_overflow() public {
@@ -110,21 +208,9 @@ contract EUint8Test is Test {
         vm.assertEq(i3, uint8(uint16(128 + 129)));
     }
 
-    function testFail_revert_Add_overflow() public {
-        address userAddress = msg.sender;
-        address contractAddress = address(this);
-
-        euint8 ei1 = TFHE.asEuint8(128);
-        euint8 ei2 = TFHE.asEuint8(129);
-        euint8 ei3 = TFHE.add(ei1, ei2);
-
-        TFHE.allow(ei3, contractAddress);
-        TFHE.allow(ei3, userAddress);
-
-        // Note cannot use vm.expectRevert().
-        // forge does not detect it
-        // use testFail_xxx instead
-        FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
+    function testRevert_revert_Add_overflow() public {
+        vm.expectPartialRevert(MathLib.ArithmeticOverflow.selector);
+        euint8TestRevert.__testRevert_revert_Add_overflow();
     }
 
     // ===== Sub =====
@@ -178,55 +264,19 @@ contract EUint8Test is Test {
         vm.assertEq(i3, uint8(int8(2 - 128)));
     }
 
-    function testFail_revert_Sub_underflow() public {
-        address userAddress = msg.sender;
-        address contractAddress = address(this);
-
-        euint8 ei1 = TFHE.asEuint8(128);
-        euint8 ei2 = TFHE.asEuint8(2);
-        euint8 ei3 = TFHE.sub(ei2, ei1);
-
-        TFHE.allow(ei3, contractAddress);
-        TFHE.allow(ei3, userAddress);
-
-        // Note in strict mode, cannot use vm.expectRevert().
-        // forge does not detect it
-        // use testFail_xxx instead
-        FhevmDebug.decryptU8Strict(ei3, contractAddress, userAddress);
+    function testRevert_revert_Sub_underflow() public {
+        vm.expectPartialRevert(MathLib.ArithmeticUnderflow.selector);
+        euint8TestRevert.__testRevert_revert_Sub_underflow();
     }
 
-    function testFail_revert_Sub_no_user_permission() public {
-        address userAddress = msg.sender;
-        address contractAddress = address(this);
-
-        euint8 ei1 = TFHE.asEuint8(128);
-        euint8 ei2 = TFHE.asEuint8(2);
-        euint8 ei3 = TFHE.sub(ei1, ei2);
-
-        TFHE.allow(ei3, contractAddress);
-
-        // userAddress does not have permission to decrypt handle
-        // Note cannot use vm.expectRevert().
-        // forge does not detect it
-        // use testFail_xxx instead
-        FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
+    function testRevert_revert_Sub_no_user_permission() public {
+        vm.expectPartialRevert(FhevmDebug.UserAddressNotPermanentlyAllowed.selector);
+        euint8TestRevert.__testRevert_revert_Sub_no_user_permission();
     }
 
-    function testFail_revert_Sub_no_contract_permission() public {
-        address userAddress = msg.sender;
-        address contractAddress = address(this);
-
-        euint8 ei1 = TFHE.asEuint8(128);
-        euint8 ei2 = TFHE.asEuint8(2);
-        euint8 ei3 = TFHE.sub(ei1, ei2);
-
-        TFHE.allow(ei3, userAddress);
-
-        // contractAddress does not have permission to decrypt handle
-        // Note cannot use vm.expectRevert().
-        // forge does not detect it
-        // use testFail_xxx instead
-        FhevmDebug.decryptU8(ei3, contractAddress, userAddress);
+    function testRevert_revert_Sub_no_contract_permission() public {
+        vm.expectPartialRevert(FhevmDebug.ContractAddressNotPermanentlyAllowed.selector);
+        euint8TestRevert.__testRevert_revert_Sub_no_contract_permission();
     }
 
     // ===== Mul =====
